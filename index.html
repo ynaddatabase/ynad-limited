@@ -48,12 +48,9 @@
             transform: scale(1.05);
         }
 
-        /* Animated Corner Strokes on Card Hover (Top-Left & Bottom-Right) */
-        .corner-stroke-card {
-            position: relative;
-        }
-        .corner-stroke-card::before,
-        .corner-stroke-card::after {
+        /* Animated Corner Strokes strictly on Image/Zoom-Container Hover */
+        .zoom-container::before,
+        .zoom-container::after {
             content: "";
             position: absolute;
             width: 0;
@@ -64,16 +61,16 @@
             z-index: 30;
         }
         /* Top-Left Corner Stroke */
-        .corner-stroke-card::before {
-            top: 0;
-            left: 0;
+        .zoom-container::before {
+            top: 8px;
+            left: 8px;
         }
         /* Bottom-Right Corner Stroke */
-        .corner-stroke-card::after {
-            bottom: 0;
-            right: 0;
+        .zoom-container::after {
+            bottom: 8px;
+            right: 8px;
         }
-        .corner-stroke-card:hover::before {
+        .zoom-container:hover::before {
             width: 40px;
             height: 40px;
             border-top-color: #d97706; /* Amber-600 */
@@ -81,7 +78,7 @@
             border-bottom-color: transparent;
             border-right-color: transparent;
         }
-        .corner-stroke-card:hover::after {
+        .zoom-container:hover::after {
             width: 40px;
             height: 40px;
             border-bottom-color: #d97706;
@@ -162,9 +159,9 @@
             <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
                 
                 <!-- Project Card 1 -->
-                <div class="corner-stroke-card min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
+                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <!-- Image with smooth individual zoom wrapper -->
+                        <!-- Image with smooth individual zoom wrapper and corner stroke -->
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-1" class="flex h-full transition-transform duration-300">
                                 <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia.')">
@@ -211,7 +208,7 @@
                 </div>
 
                 <!-- Project Card 2 -->
-                <div class="corner-stroke-card min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
+                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-2" class="flex h-full transition-transform duration-300">
@@ -258,7 +255,7 @@
                 </div>
 
                 <!-- Project Card 3 -->
-                <div class="corner-stroke-card min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
+                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-3" class="flex h-full transition-transform duration-300">
@@ -305,7 +302,7 @@
                 </div>
 
                 <!-- Project Card 4 -->
-                <div class="corner-stroke-card min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
+                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-4" class="flex h-full transition-transform duration-300">
