@@ -69,21 +69,21 @@
         <h2 class="text-3xl md:text-5xl font-light tracking-widest uppercase text-slate-900 mb-16">OUR RECENT PROJECTS</h2>
         
         <div class="max-w-7xl mx-auto px-6 relative">
-            <!-- Main Section Left Arrow (Updated Style) -->
-            <button onclick="scrollMainSlider('left')" class="absolute -left-10 md:-left-16 top-1/2 -translate-y-1/2 z-20 bg-[#0f172a] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl hover:bg-amber-600 transition">
-                <i class="fa-solid fa-arrow-left text-base"></i>
-            </button>
-
-            <!-- Main Section Right Arrow (Updated Style) -->
-            <button onclick="scrollMainSlider('right')" class="absolute -right-10 md:-right-16 top-1/2 -translate-y-1/2 z-20 bg-[#0f172a] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl hover:bg-amber-600 transition">
-                <i class="fa-solid fa-arrow-right text-base"></i>
-            </button>
 
             <!-- Project Cards Container -->
             <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory pb-6">
                 
                 <!-- Project Card 1 -->
-                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
+                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left relative">
+                    <!-- Main Section Left Arrow (Placed inside card image area) -->
+                    <button onclick="scrollMainSlider('left')" class="absolute left-3 top-28 z-20 bg-[#0f172a] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </button>
+                    <!-- Main Section Right Arrow (Placed inside card image area) -->
+                    <button onclick="scrollMainSlider('right')" class="absolute right-3 top-28 z-20 bg-[#0f172a] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition">
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+
                     <div>
                         <div class="relative overflow-hidden group">
                             <div id="cardImages-1" class="flex transition-transform duration-300">
@@ -105,9 +105,9 @@
                             <span class="text-[11px] text-gray-500 font-medium block mt-1 tracking-wider uppercase">Sponsored by: WAMY</span>
                         </div>
                     </div>
-                    <!-- Footer Buttons: Documents width expanded with custom horizontal padding -->
+                    <!-- Footer Buttons: Expanded padding (px-4) for DOCUMENTS -->
                     <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-4 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
@@ -137,7 +137,7 @@
                         </div>
                     </div>
                     <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-4 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
@@ -166,7 +166,7 @@
                         </div>
                     </div>
                     <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-4 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
@@ -195,7 +195,7 @@
                         </div>
                     </div>
                     <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-4 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
