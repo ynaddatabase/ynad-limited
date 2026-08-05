@@ -69,14 +69,14 @@
         <h2 class="text-3xl md:text-5xl font-light tracking-widest uppercase text-slate-900 mb-16">OUR RECENT PROJECTS</h2>
         
         <div class="max-w-7xl mx-auto px-6 relative">
-            <!-- Main Section Left Arrow (Moved outside/further left) -->
-            <button onclick="scrollMainSlider('left')" class="absolute -left-10 md:-left-16 top-1/2 -translate-y-1/2 z-20 bg-slate-900 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl hover:bg-amber-600 transition">
-                <i class="fa-solid fa-arrow-left text-lg"></i>
+            <!-- Main Section Left Arrow (Updated Style) -->
+            <button onclick="scrollMainSlider('left')" class="absolute -left-10 md:-left-16 top-1/2 -translate-y-1/2 z-20 bg-[#0f172a] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl hover:bg-amber-600 transition">
+                <i class="fa-solid fa-arrow-left text-base"></i>
             </button>
 
-            <!-- Main Section Right Arrow (Moved outside/further right) -->
-            <button onclick="scrollMainSlider('right')" class="absolute -right-10 md:-right-16 top-1/2 -translate-y-1/2 z-20 bg-slate-900 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl hover:bg-amber-600 transition">
-                <i class="fa-solid fa-arrow-right text-lg"></i>
+            <!-- Main Section Right Arrow (Updated Style) -->
+            <button onclick="scrollMainSlider('right')" class="absolute -right-10 md:-right-16 top-1/2 -translate-y-1/2 z-20 bg-[#0f172a] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl hover:bg-amber-600 transition">
+                <i class="fa-solid fa-arrow-right text-base"></i>
             </button>
 
             <!-- Project Cards Container -->
@@ -85,7 +85,6 @@
                 <!-- Project Card 1 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <!-- Individual Project Image Container with internal slider support -->
                         <div class="relative overflow-hidden group">
                             <div id="cardImages-1" class="flex transition-transform duration-300">
                                 <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
@@ -97,7 +96,6 @@
                         <div class="p-5">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-base text-amber-600 font-extrabold block">M-512</span>
-                                <!-- Individual Project Image Navigation Arrows -->
                                 <div class="flex gap-1.5 text-amber-500">
                                     <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-500 hover:text-white flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-left"></i></button>
                                     <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-500 hover:text-white flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-right"></i></button>
@@ -107,11 +105,11 @@
                             <span class="text-[11px] text-gray-500 font-medium block mt-1 tracking-wider uppercase">Sponsored by: WAMY</span>
                         </div>
                     </div>
-                    <!-- Centered, subtle opacity buttons with full fill hover effect -->
-                    <div class="px-3 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                    <!-- Footer Buttons: Documents width expanded with custom horizontal padding -->
+                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
                 </div>
 
@@ -138,10 +136,10 @@
                             <span class="text-[11px] text-gray-500 font-medium block mt-1 tracking-wider uppercase">Sponsored by: TEEBAH FOUNDATION</span>
                         </div>
                     </div>
-                    <div class="px-3 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
                 </div>
 
@@ -167,10 +165,10 @@
                             <span class="text-[11px] text-gray-500 font-medium block mt-1 tracking-wider uppercase">Sponsored by: AL FATAH TRUST</span>
                         </div>
                     </div>
-                    <div class="px-3 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
                 </div>
 
@@ -196,10 +194,10 @@
                             <span class="text-[11px] text-gray-500 font-medium block mt-1 tracking-wider uppercase">Sponsored by: ISLAMIC RELIEF</span>
                         </div>
                     </div>
-                    <div class="px-3 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[11px] font-semibold pt-2 border-t border-gray-100">
+                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                     </div>
                 </div>
 
@@ -209,7 +207,6 @@
 
     <!-- Slider Scripts -->
     <script>
-        // Main Section Carousel Scroll
         function scrollMainSlider(direction) {
             const slider = document.getElementById('mainProjectSlider');
             const scrollAmount = 300;
@@ -220,7 +217,6 @@
             }
         }
 
-        // Individual Card Image Index Tracker
         const cardIndices = { 1: 0, 2: 0, 3: 0, 4: 0 };
         const maxImages = { 1: 3, 2: 3, 3: 2, 4: 2 };
 
