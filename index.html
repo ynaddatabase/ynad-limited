@@ -86,11 +86,15 @@
                 <!-- Project Card 1 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group">
+                        <!-- Image with Zoom and Popup Trigger -->
+                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
                             <div id="cardImages-1" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+                                <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> View Story
                             </div>
                         </div>
 
@@ -107,15 +111,22 @@
                             </div>
                             <h4 class="font-bold text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
                             
-                            <!-- Spaced and clickable details -->
+                            <!-- Spaced details with clickable links -->
                             <div class="flex flex-col gap-1.5 mt-2">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: ABDUR RAHIM</span>
+                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUR RAHIM</a>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
+                            </div>
+
+                            <!-- District Filter Name -->
+                            <div class="mt-3 pt-2 border-t border-dashed border-gray-200">
+                                <a href="#" onclick="filterByDistrict('Magura'); return false;" class="inline-block text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded transition">
+                                    <i class="fa-solid fa-location-pin mr-1"></i> MAGURA
+                                </a>
                             </div>
                         </div>
                     </div>
-                    <!-- Footer Buttons with smaller DOCUMENTS font -->
+                    <!-- Footer Buttons -->
                     <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
                         <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
@@ -126,11 +137,14 @@
                 <!-- Project Card 2 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group">
+                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
                             <div id="cardImages-2" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+                                <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> View Story
                             </div>
                         </div>
 
@@ -149,8 +163,14 @@
                             
                             <div class="flex flex-col gap-1.5 mt-2">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">AL FATAH</a>
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: ABDUL KARIM</span>
+                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUL KARIM</a>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">KUWAIT</a>
+                            </div>
+
+                            <div class="mt-3 pt-2 border-t border-dashed border-gray-200">
+                                <a href="#" onclick="filterByDistrict('Bogura'); return false;" class="inline-block text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded transition">
+                                    <i class="fa-solid fa-location-pin mr-1"></i> BOGURA
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -164,10 +184,13 @@
                 <!-- Project Card 3 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group">
+                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
                             <div id="cardImages-3" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+                                <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> View Story
                             </div>
                         </div>
 
@@ -186,8 +209,14 @@
                             
                             <div class="flex flex-col gap-1.5 mt-2">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">TEEBAH FOUNDATION</a>
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: MOHAMMAD ALI</span>
+                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: MOHAMMAD ALI</a>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
+                            </div>
+
+                            <div class="mt-3 pt-2 border-t border-dashed border-gray-200">
+                                <a href="#" onclick="filterByDistrict('Khulna'); return false;" class="inline-block text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded transition">
+                                    <i class="fa-solid fa-location-pin mr-1"></i> KHULNA
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -201,10 +230,13 @@
                 <!-- Project Card 4 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group">
+                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
                             <div id="cardImages-4" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                            </div>
+                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+                                <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> View Story
                             </div>
                         </div>
 
@@ -223,8 +255,14 @@
                             
                             <div class="flex flex-col gap-1.5 mt-2">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: FATIMA BEGUM</span>
+                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: FATIMA BEGUM</a>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">QATAR</a>
+                            </div>
+
+                            <div class="mt-3 pt-2 border-t border-dashed border-gray-200">
+                                <a href="#" onclick="filterByDistrict('Sylhet'); return false;" class="inline-block text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded transition">
+                                    <i class="fa-solid fa-location-pin mr-1"></i> SYLHET
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -239,7 +277,21 @@
         </div>
     </section>
 
-    <!-- Slider Scripts -->
+    <!-- Story Popup Modal -->
+    <div id="storyModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg max-w-lg w-full p-6 relative shadow-2xl animate-fade-in">
+            <button onclick="closeStoryModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-xl font-bold">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="modalTitle" class="text-xl font-bold text-slate-900 mb-3 uppercase">Project Story</h3>
+            <p id="modalDesc" class="text-sm text-slate-600 leading-relaxed"></p>
+            <div class="mt-6 text-right">
+                <button onclick="closeStoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-wider px-5 py-2 rounded transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Section -->
     <script>
         function scrollMainSlider(direction) {
             const slider = document.getElementById('mainProjectSlider');
@@ -263,6 +315,21 @@
             }
             const container = document.getElementById('cardImages-' + cardId);
             container.style.transform = `translateX(-${cardIndices[cardId] * 100}%)`;
+        }
+
+        function openStoryModal(title, desc) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('storyModal').classList.remove('hidden');
+        }
+
+        function closeStoryModal() {
+            document.getElementById('storyModal').classList.add('hidden');
+        }
+
+        function filterByDistrict(districtName) {
+            alert("Filtering projects for district: " + districtName);
+            // এখানে ডিস্ট్రిক্ট অনুযায়ী প্রজেক্ট ফিল্টার করার কোড যুক্ত করা যাবে
         }
     </script>
 
