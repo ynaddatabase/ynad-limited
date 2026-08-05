@@ -12,7 +12,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Individual Image Zoom, Darken Overlay and Corner Stroke Hover Animation */
+        /* Individual Image Zoom and Darken Overlay */
         .zoom-container {
             position: relative;
         }
@@ -48,7 +48,7 @@
             transform: scale(1.05);
         }
 
-        /* Animated Corner Strokes on Hover */
+        /* Animated Corner Strokes on Card Hover (Top-Left & Bottom-Right) */
         .corner-stroke-card {
             position: relative;
         }
@@ -65,25 +65,25 @@
         }
         /* Top-Left Corner Stroke */
         .corner-stroke-card::before {
-            top: 6px;
-            left: 6px;
+            top: 0;
+            left: 0;
         }
         /* Bottom-Right Corner Stroke */
         .corner-stroke-card::after {
-            bottom: 6px;
-            right: 6px;
+            bottom: 0;
+            right: 0;
         }
         .corner-stroke-card:hover::before {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-top-color: #d97706; /* Amber-600 */
             border-left-color: #d97706;
             border-bottom-color: transparent;
             border-right-color: transparent;
         }
         .corner-stroke-card:hover::after {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-bottom-color: #d97706;
             border-right-color: #d97706;
             border-top-color: transparent;
@@ -167,14 +167,11 @@
                         <!-- Image with smooth individual zoom wrapper -->
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-1" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia.')">
                                     <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
                                 </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia.')">
                                     <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
-                                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80">
                                 </div>
                             </div>
                         </div>
@@ -198,7 +195,6 @@
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
                             </div>
 
-                            <!-- District Name right aligned -->
                             <div class="mt-0.5 pt-0">
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">
                                     MAGURA
@@ -219,14 +215,11 @@
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-2" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait.')">
                                     <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80">
                                 </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait.')">
                                     <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
-                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80">
                                 </div>
                             </div>
                         </div>
@@ -269,10 +262,10 @@
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-3" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE.')">
                                     <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80">
                                 </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE.')">
                                     <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80">
                                 </div>
                             </div>
@@ -316,10 +309,10 @@
                     <div>
                         <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                             <div id="cardImages-4" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar.')">
                                     <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80">
                                 </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar.')">
                                     <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
                                 </div>
                             </div>
@@ -389,7 +382,7 @@
         }
 
         const cardIndices = { 1: 0, 2: 0, 3: 0, 4: 0 };
-        const maxImages = { 1: 3, 2: 3, 3: 2, 4: 2 };
+        const maxImages = { 1: 2, 2: 2, 3: 2, 4: 2 };
 
         function changeCardImage(cardId, direction) {
             cardIndices[cardId] += direction;
@@ -412,77 +405,6 @@
             document.getElementById('storyModal').classList.add('hidden');
         }
     </script>
-
-    <!-- What Sets Us Apart Section -->
-    <section class="py-20 bg-slate-900 text-white text-center relative" style="background: linear-gradient(rgba(15,23,42,0.9), rgba(15,23,42,0.9)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18f86f7?auto=format&fit=crop&w=1920&q=80') center/cover;">
-        <h3 class="text-2xl lg:text-3xl font-light tracking-widest uppercase mb-12">What Sets Us Apart</h3>
-        
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div class="bg-white/10 p-6 backdrop-blur border border-white/10 text-center">
-                <i class="fa-solid fa-chart-line text-2xl text-amber-500 mb-3"></i>
-                <h4 class="font-bold uppercase text-sm mb-2">Experience</h4>
-                <p class="text-xs text-gray-300 font-light">Over years of excellence in construction & real estate.</p>
-            </div>
-            <div class="bg-white/10 p-6 backdrop-blur border border-white/10 text-center">
-                <i class="fa-solid fa-award text-2xl text-amber-500 mb-3"></i>
-                <h4 class="font-bold uppercase text-sm mb-2">Credit Rating</h4>
-                <p class="text-xs text-gray-300 font-light">Strong financial strength and reliability.</p>
-            </div>
-            <div class="bg-white/10 p-6 backdrop-blur border border-white/10 text-center">
-                <i class="fa-solid fa-handshake text-2xl text-amber-500 mb-3"></i>
-                <h4 class="font-bold uppercase text-sm mb-2">Trust</h4>
-                <p class="text-xs text-gray-300 font-light">Countless successful units and happy clients.</p>
-            </div>
-            <div class="bg-white/10 p-6 backdrop-blur border border-white/10 text-center">
-                <i class="fa-solid fa-gem text-2xl text-amber-500 mb-3"></i>
-                <h4 class="font-bold uppercase text-sm mb-2">Quality</h4>
-                <p class="text-xs text-gray-300 font-light">Uncompromised safety and premium finishing.</p>
-            </div>
-            <div class="bg-white/10 p-6 backdrop-blur border border-white/10 text-center col-span-2 md:col-span-1">
-                <i class="fa-solid fa-pen-ruler text-2xl text-amber-500 mb-3"></i>
-                <h4 class="font-bold uppercase text-sm mb-2">Design</h4>
-                <p class="text-xs text-gray-300 font-light">Architectural brilliance in every square feet.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Partners & Clients Section -->
-    <section class="py-16 bg-white text-center">
-        <h3 class="text-xs uppercase tracking-[0.3em] text-gray-500 mb-10">Partners & Clients</h3>
-        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8">
-            <div class="relative h-48 bg-slate-200 flex items-center justify-center overflow-hidden group">
-                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-500">
-                <h4 class="relative z-10 text-white font-bold text-2xl uppercase tracking-widest drop-shadow">Landowners</h4>
-            </div>
-            <div class="relative h-48 bg-slate-300 flex items-center justify-center overflow-hidden group">
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-500">
-                <h4 class="relative z-10 text-white font-bold text-2xl uppercase tracking-widest drop-shadow">Buyers</h4>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer Location & Info -->
-    <footer id="contact" class="bg-slate-900 text-white pt-16 pb-8 px-8">
-        <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 mb-12">
-            <div>
-                <h4 class="font-bold uppercase tracking-wider text-lg mb-4">YNAD Construction</h4>
-                <p class="text-gray-400 text-sm">Gulshan Avenue, Dhaka, Bangladesh</p>
-                <p class="text-gray-400 text-sm mt-2">Phone: +880 9612-345678</p>
-            </div>
-            <div class="flex gap-6 justify-center">
-                <a href="#" class="hover:text-amber-500">Our Story</a>
-                <a href="#projects" class="hover:text-amber-500">Projects</a>
-                <a href="#contact" class="hover:text-amber-500">Contact</a>
-            </div>
-            <div class="text-right md:text-right">
-                <p class="text-xs uppercase tracking-widest text-gray-400">There is</p>
-                <h4 class="text-xl font-light italic">no address <span class="font-bold not-italic">like YNAD</span></h4>
-            </div>
-        </div>
-        <div class="border-t border-slate-800 text-center pt-6 text-xs text-gray-500">
-            &copy; 2026 YNAD Construction. All Rights Reserved.
-        </div>
-    </footer>
 
 </body>
 </html>
