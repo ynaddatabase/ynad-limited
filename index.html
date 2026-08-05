@@ -11,6 +11,42 @@
         body { font-family: 'Montserrat', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Individual Image Zoom and Darken Overlay styles */
+        .zoom-container {
+            position: relative;
+        }
+        .zoom-wrapper {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .zoom-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.15); /* Slightly darker overlay for clarity */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .zoom-wrapper:hover::after {
+            opacity: 1;
+        }
+        .zoom-wrapper img {
+            transition: transform 0.3s ease-in-out;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .zoom-wrapper:hover img {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -86,16 +122,22 @@
                 <!-- Project Card 1 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <!-- Image with smooth zoom and direct story popup click -->
-                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
-                            <div id="cardImages-1" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                        <!-- Image with smooth individual zoom wrapper -->
+                        <div class="zoom-container relative h-64 overflow-hidden">
+                            <div id="cardImages-1" class="flex h-full transition-transform duration-300">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
+                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
+                                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-512)', 'This project was initiated in Magura under the generous sponsorship of WAMY and donor Abdur Rahim from Saudi Arabia. It serves as a community hub and a peaceful sanctuary for prayers, featuring modern Islamic architecture combined with robust structural engineering.')">
+                                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-5">
+                        <div class="p-5 pt-3">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-base text-amber-600 font-extrabold block">M-512</span>
@@ -108,14 +150,14 @@
                             </div>
                             <h4 class="font-bold text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
                             
-                            <div class="flex flex-col gap-1 mt-2">
+                            <div class="flex flex-col mt-1">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: ABDUR RAHIM</span>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
                             </div>
 
                             <!-- District Name right aligned with reduced top/bottom spacing -->
-                            <div class="mt-2 pt-1">
+                            <div class="mt-1 pt-0.5">
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">
                                     MAGURA
                                 </span>
@@ -123,7 +165,7 @@
                         </div>
                     </div>
                     <!-- Footer Buttons -->
-                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
+                    <div class="px-2 pb-3 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
                         <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
@@ -133,15 +175,21 @@
                 <!-- Project Card 2 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
-                            <div id="cardImages-2" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                        <div class="zoom-container relative h-64 overflow-hidden">
+                            <div id="cardImages-2" class="flex h-full transition-transform duration-300">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
+                                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
+                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-513)', 'Constructed in Bogura under Al Fatah organization, funded by donor Abdul Karim from Kuwait. This project provides a peaceful neighborhood worship space with expansive facilities.')">
+                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-5">
+                        <div class="p-5 pt-3">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-base text-amber-600 font-extrabold block">M-513</span>
@@ -154,20 +202,20 @@
                             </div>
                             <h4 class="font-bold text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
                             
-                            <div class="flex flex-col gap-1 mt-2">
+                            <div class="flex flex-col mt-1">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">AL FATAH</a>
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: ABDUL KARIM</span>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">KUWAIT</a>
                             </div>
 
-                            <div class="mt-2 pt-1">
+                            <div class="mt-1 pt-0.5">
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">
                                     BOGURA
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
+                    <div class="px-2 pb-3 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
                         <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
@@ -177,14 +225,18 @@
                 <!-- Project Card 3 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
-                            <div id="cardImages-3" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                        <div class="zoom-container relative h-64 overflow-hidden">
+                            <div id="cardImages-3" class="flex h-full transition-transform duration-300">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
+                                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-514)', 'Located in Khulna, this beautiful mosque was built with the assistance of Teebah Foundation and donor Mohammad Ali from UAE, supporting local community gatherings and spiritual practices.')">
+                                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-5">
+                        <div class="p-5 pt-3">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-base text-amber-600 font-extrabold block">M-514</span>
@@ -197,20 +249,20 @@
                             </div>
                             <h4 class="font-bold text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
                             
-                            <div class="flex flex-col gap-1 mt-2">
+                            <div class="flex flex-col mt-1">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">TEEBAH FOUNDATION</a>
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: MOHAMMAD ALI</span>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
                             </div>
 
-                            <div class="mt-2 pt-1">
+                            <div class="mt-1 pt-0.5">
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">
                                     KHULNA
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
+                    <div class="px-2 pb-3 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
                         <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
@@ -220,14 +272,18 @@
                 <!-- Project Card 4 -->
                 <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
                     <div>
-                        <div class="relative overflow-hidden group cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
-                            <div id="cardImages-4" class="flex transition-transform duration-300">
-                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
-                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover flex-shrink-0 group-hover:scale-105 transition duration-500">
+                        <div class="zoom-container relative h-64 overflow-hidden">
+                            <div id="cardImages-4" class="flex h-full transition-transform duration-300">
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
+                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80">
+                                </div>
+                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer" onclick="openStoryModal('Masjid Al Noor (M-515)', 'Established in Sylhet, sponsored by WAMY with contributions from donor Fatima Begum from Qatar. It stands as an architectural landmark serving local devotees.')">
+                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-5">
+                        <div class="p-5 pt-3">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-base text-amber-600 font-extrabold block">M-515</span>
@@ -240,20 +296,20 @@
                             </div>
                             <h4 class="font-bold text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
                             
-                            <div class="flex flex-col gap-1 mt-2">
+                            <div class="flex flex-col mt-1">
                                 <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase">DONOR: FATIMA BEGUM</span>
                                 <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">QATAR</a>
                             </div>
 
-                            <div class="mt-2 pt-1">
+                            <div class="mt-1 pt-0.5">
                                 <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">
                                     SYLHET
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="px-2 pb-4 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
+                    <div class="px-2 pb-3 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-2 border-t border-gray-100">
                         <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1.5 px-3 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
                         <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
                         <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1.5 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
