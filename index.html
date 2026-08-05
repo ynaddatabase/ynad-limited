@@ -1,157 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YNAD Construction | Real Estate & Development</title>
-    <!-- Tailwind CSS CDN for modern styling -->
+    <title>YNAD Construction | Premier Real Estate & Development</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-white text-slate-800">
 
     <!-- Top Bar -->
-    <header class="bg-slate-900 text-white text-sm py-2 px-6 flex justify-between items-center">
+    <div class="bg-slate-900 text-gray-300 text-xs py-2 px-6 lg:px-16 flex justify-between items-center border-b border-slate-800">
+        <div class="flex items-center gap-6">
+            <span><i class="fa-solid fa-phone text-amber-500 mr-2"></i> +880 9612-345678</span>
+            <span class="hidden md:inline"><i class="fa-solid fa-envelope text-amber-500 mr-2"></i> info@ynadconstruction.com</span>
+        </div>
         <div class="flex items-center gap-4">
-            <span><i class="fa-solid fa-phone text-amber-500 mr-2"></i> +880 1234-567890</span>
-            <span><i class="fa-solid fa-envelope text-amber-500 mr-2"></i> info@ynadconstruction.com</span>
+            <span class="text-amber-400 font-medium hidden sm:inline">Excellence in Construction & Living</span>
+            <div class="flex gap-3 ml-4">
+                <a href="#" class="hover:text-amber-400 transition"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="hover:text-amber-400 transition"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="#" class="hover:text-amber-400 transition"><i class="fa-brands fa-youtube"></i></a>
+            </div>
         </div>
-        <div class="hidden md:flex gap-4">
-            <a href="#" class="hover:text-amber-400"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" class="hover:text-amber-400"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" class="hover:text-amber-400"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-    </header>
+    </div>
 
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-        <div class="text-2xl font-bold tracking-wider text-slate-900">
-            YNAD <span class="text-amber-600">Construction</span>
+    <!-- Main Navigation -->
+    <nav class="bg-white sticky top-0 z-50 shadow-sm px-6 lg:px-16 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="text-2xl lg:text-3xl font-bold tracking-wider text-slate-900 uppercase">
+                YNAD <span class="text-amber-600 font-light">Construction</span>
+            </div>
         </div>
-        <div class="hidden md:flex gap-8 font-medium">
-            <a href="#" class="text-amber-600 hover:text-amber-700">Home</a>
-            <a href="#projects" class="hover:text-amber-600">Projects</a>
-            <a href="#reports" class="hover:text-amber-600">Reports & Files</a>
-            <a href="#about" class="hover:text-amber-600">About Us</a>
-            <a href="#contact" class="hover:text-amber-600">Contact</a>
+        <div class="hidden lg:flex items-center gap-8 font-medium text-sm uppercase tracking-wider text-slate-700">
+            <a href="#" class="text-amber-600 font-semibold">Home</a>
+            <a href="#projects" class="hover:text-amber-600 transition">Projects</a>
+            <a href="#reports" class="hover:text-amber-600 transition">Scan & Videos</a>
+            <a href="#about" class="hover:text-amber-600 transition">About Us</a>
+            <a href="#contact" class="hover:text-amber-600 transition">Contact</a>
         </div>
         <div>
-            <a href="#contact" class="bg-amber-600 text-white px-5 py-2.5 rounded shadow hover:bg-amber-700 transition">Get Consultation</a>
+            <a href="#contact" class="bg-slate-900 text-white text-xs uppercase tracking-widest px-6 py-3 rounded-none hover:bg-amber-600 transition font-semibold">Book Consultation</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative bg-slate-900 text-white py-28 px-6 text-center" style="background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18f86f7?auto=format&fit=crop&w=1920&q=80') center/cover;">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">Building Dreams, Shaping Futures</h1>
-            <p class="text-lg text-gray-300 mb-8">Discover our location-finalized, ongoing, and masterfully completed real estate projects with complete transparency.</p>
-            <div class="flex justify-center gap-4">
-                <a href="#projects" class="bg-amber-600 text-white px-6 py-3 rounded font-semibold hover:bg-amber-700 transition">Explore Projects</a>
-                <a href="#reports" class="border border-white text-white px-6 py-3 rounded font-semibold hover:bg-white hover:text-slate-900 transition">View Reports</a>
+    <!-- Hero Section (Concord Style) -->
+    <header class="relative h-[85vh] bg-slate-900 text-white flex items-center justify-center text-center px-6" style="background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
+        <div class="max-w-4xl mx-auto">
+            <span class="text-amber-400 uppercase tracking-widest text-sm font-semibold mb-3 block">Shaping Tomorrow's Landmarks</span>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight">Crafting Iconic Spaces with Uncompromised Quality</h1>
+            <p class="text-lg text-gray-200 mb-8 font-light max-w-2xl mx-auto">Explore our location-finalized, ongoing, and completed architectural marvels backed by complete legal transparency.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#projects" class="bg-amber-600 text-white px-8 py-4 font-semibold uppercase tracking-wider text-sm hover:bg-amber-700 transition">Explore Portfolio</a>
+                <a href="#reports" class="bg-transparent border border-white text-white px-8 py-4 font-semibold uppercase tracking-wider text-sm hover:bg-white hover:text-slate-900 transition">View Progress Reports</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Quick Filter / Search Bar Section -->
+    <section class="bg-amber-600 py-6 px-6 lg:px-16 text-white shadow-lg relative z-20 -mt-10 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-semibold mb-1">Project Status</label>
+                <select class="w-full bg-amber-700 border border-amber-500 text-white p-2.5 text-sm focus:outline-none">
+                    <option>All Categories</option>
+                    <option>Location Finalized</option>
+                    <option>Ongoing Projects</option>
+                    <option>Completed Projects</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-semibold mb-1">Location</label>
+                <select class="w-full bg-amber-700 border border-amber-500 text-white p-2.5 text-sm focus:outline-none">
+                    <option>All Locations</option>
+                    <option>Gulshan</option>
+                    <option>Banani</option>
+                    <option>Uttara</option>
+                    <option>Dhanmondi</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-semibold mb-1">Property Type</label>
+                <select class="w-full bg-amber-700 border border-amber-500 text-white p-2.5 text-sm focus:outline-none">
+                    <option>Residential Apartment</option>
+                    <option>Commercial Space</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-slate-900 text-white font-semibold py-2.5 text-sm uppercase tracking-wider hover:bg-slate-800 transition">Search Projects</button>
             </div>
         </div>
     </section>
 
-    <!-- Projects Section (Categorized) -->
-    <section id="projects" class="py-16 px-6 max-w-7xl mx-auto">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-slate-900">Our Real Estate Portfolio</h2>
-            <p class="text-gray-600 mt-2">Track our journey from finalized locations to completed masterpieces.</p>
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 px-6 lg:px-16 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <span class="text-amber-600 font-semibold tracking-widest text-xs uppercase block mb-2">Our Masterpieces</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">Featured Real Estate Portfolio</h2>
+            <div class="w-16 h-1 bg-amber-600 mx-auto mt-4"></div>
         </div>
 
-        <!-- Project Grid -->
         <div class="grid md:grid-cols-3 gap-8">
             
-            <!-- Category 1: Location Finalized -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" alt="Land" class="w-full h-52 object-cover">
-                    <span class="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded">Location Finalized</span>
+            <!-- Project 1 -->
+            <div class="bg-white border border-gray-100 shadow-xl group overflow-hidden">
+                <div class="relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80" alt="Project" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500">
+                    <span class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 shadow">Location Finalized</span>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">YNAD Green Valley</h3>
-                    <p class="text-gray-600 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Uttara Sector 15, Dhaka</p>
-                    <p class="text-gray-500 text-sm mb-4">Land acquired, municipal approvals in progress. Groundbreaking starting soon.</p>
-                    <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline">View Land Documents &rarr;</a>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">YNAD Lakeside Vista</h3>
+                    <p class="text-gray-500 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Gulshan Avenue, Dhaka</p>
+                    <p class="text-gray-600 text-sm mb-6 font-light">Land acquired and architectural blueprints finalized. Groundbreaking ceremony scheduled soon.</p>
+                    <div class="border-t pt-4 flex justify-between items-center">
+                        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500">Status: Pre-Launch</span>
+                        <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline flex items-center gap-1">View Docs <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Category 2: Ongoing Project -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" alt="Ongoing" class="w-full h-52 object-cover">
-                    <span class="absolute top-3 left-3 bg-amber-600 text-white text-xs font-semibold px-3 py-1 rounded">Ongoing Project</span>
+            <!-- Project 2 -->
+            <div class="bg-white border border-gray-100 shadow-xl group overflow-hidden">
+                <div class="relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80" alt="Project" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500">
+                    <span class="absolute top-4 left-4 bg-amber-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 shadow">Ongoing Project</span>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">YNAD Heights</h3>
-                    <p class="text-gray-600 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Dhanmondi, Dhaka</p>
-                    <p class="text-gray-500 text-sm mb-4">Structural work currently ongoing up to 5th floor. Check video site updates.</p>
-                    <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline">View Video Progress Reports &rarr;</a>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">YNAD Crown Heights</h3>
+                    <p class="text-gray-500 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Dhanmondi 27, Dhaka</p>
+                    <p class="text-gray-600 text-sm mb-6 font-light">Structural construction currently ongoing on the 7th floor. Check latest drone progress.</p>
+                    <div class="border-t pt-4 flex justify-between items-center">
+                        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500">Status: 60% Done</span>
+                        <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline flex items-center gap-1">Video Reports <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Category 3: Completed Project -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" alt="Completed" class="w-full h-52 object-cover">
-                    <span class="absolute top-3 left-3 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded">Completed</span>
+            <!-- Project 3 -->
+            <div class="bg-white border border-gray-100 shadow-xl group overflow-hidden">
+                <div class="relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80" alt="Project" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500">
+                    <span class="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 shadow">Completed</span>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">YNAD Orchid Tower</h3>
-                    <p class="text-gray-600 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Gulshan-2, Dhaka</p>
-                    <p class="text-gray-500 text-sm mb-4">Successfully handed over to apartment owners with all legal deeds delivered.</p>
-                    <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline">View Handover Files &rarr;</a>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">YNAD Royal Garden</h3>
+                    <p class="text-gray-500 text-sm mb-4"><i class="fa-solid fa-location-dot text-amber-600 mr-2"></i> Uttara Sector 3, Dhaka</p>
+                    <p class="text-gray-600 text-sm mb-6 font-light">Successfully handed over to owners. All legal utility connections and deeds delivered.</p>
+                    <div class="border-t pt-4 flex justify-between items-center">
+                        <span class="text-xs uppercase tracking-wider font-semibold text-slate-500">Status: Handed Over</span>
+                        <a href="#reports" class="text-amber-600 font-semibold text-sm hover:underline flex items-center gap-1">Handover Info <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                    </div>
                 </div>
             </div>
 
         </div>
     </section>
 
-    <!-- Scan Files & Video Reports Section -->
-    <section id="reports" class="bg-slate-100 py-16 px-6">
+    <!-- Scan Files & Video Reports Vault -->
+    <section id="reports" class="py-20 bg-slate-50 px-6 lg:px-16 border-t border-b">
         <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-slate-900">Transparency Vault: Scans & Video Reports</h2>
-                <p class="text-gray-600 mt-2">Access verified government papers, layout scans, and monthly drone progress reports.</p>
+            <div class="text-center mb-16">
+                <span class="text-amber-600 font-semibold tracking-widest text-xs uppercase block mb-2">Absolute Transparency</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">Scanned Files & Site Video Reports</h2>
+                <div class="w-16 h-1 bg-amber-600 mx-auto mt-4"></div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Scan Files Repository -->
-                <div class="bg-white p-8 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><i class="fa-solid fa-file-pdf text-red-600"></i> Official Scanned Documents</h3>
-                    <ul class="space-y-4">
-                        <li class="flex justify-between items-center border-b pb-3">
-                            <span class="text-sm font-medium">YNAD Green Valley - Land Deed & Mutation Paper</span>
-                            <a href="#" class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded hover:bg-amber-600"><i class="fa-solid fa-download mr-1"></i> Download PDF</a>
-                        </li>
-                        <li class="flex justify-between items-center border-b pb-3">
-                            <span class="text-sm font-medium">YNAD Heights - Rajuk Approved Layout Plan</span>
-                            <a href="#" class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded hover:bg-amber-600"><i class="fa-solid fa-download mr-1"></i> Download PDF</a>
-                        </li>
-                        <li class="flex justify-between items-center">
-                            <span class="text-sm font-medium">YNAD Orchid Tower - Completion Certificate</span>
-                            <a href="#" class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded hover:bg-amber-600"><i class="fa-solid fa-download mr-1"></i> Download PDF</a>
-                        </li>
-                    </ul>
+            <div class="grid lg:grid-cols-2 gap-10">
+                <!-- Scan Files -->
+                <div class="bg-white p-8 shadow-sm border border-gray-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                        <i class="fa-solid fa-file-shield text-amber-600"></i> Official Verified Document Vault
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-slate-50 border border-gray-100 hover:border-amber-500 transition">
+                            <div>
+                                <h4 class="font-semibold text-sm text-slate-900">YNAD Lakeside Vista - Land Mutation & Deed</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">Format: PDF (Scanned Original)</p>
+                            </div>
+                            <a href="#" class="bg-slate-900 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-amber-600 transition font-semibold"><i class="fa-solid fa-download mr-1"></i> Download</a>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-slate-50 border border-gray-100 hover:border-amber-500 transition">
+                            <div>
+                                <h4 class="font-semibold text-sm text-slate-900">YNAD Crown Heights - Rajuk Approved Layout Plan</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">Format: PDF (Scanned Original)</p>
+                            </div>
+                            <a href="#" class="bg-slate-900 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-amber-600 transition font-semibold"><i class="fa-solid fa-download mr-1"></i> Download</a>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Video Reports -->
-                <div class="bg-white p-8 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><i class="fa-solid fa-video text-amber-600"></i> Site Progress Video Reports</h3>
+                <div class="bg-white p-8 shadow-sm border border-gray-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                        <i class="fa-solid fa-video text-amber-600"></i> Live Construction & Drone Video Reports
+                    </h3>
                     <div class="space-y-4">
-                        <div class="border rounded p-3 bg-gray-50 flex items-center justify-between">
+                        <div class="flex items-center justify-between p-4 bg-slate-50 border border-gray-100 hover:border-amber-500 transition">
                             <div>
-                                <h4 class="font-semibold text-sm">YNAD Heights - Monthly Construction Drone View</h4>
-                                <p class="text-xs text-gray-500">Updated: August 2026</p>
+                                <h4 class="font-semibold text-sm text-slate-900">YNAD Crown Heights - August Drone View</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">Updated: Weekly Site Progress</p>
                             </div>
-                            <a href="#" class="bg-amber-600 text-white text-xs px-3 py-1.5 rounded hover:bg-amber-700"><i class="fa-solid fa-play mr-1"></i> Watch Video</a>
+                            <a href="#" class="bg-amber-600 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-amber-700 transition font-semibold"><i class="fa-solid fa-play mr-1"></i> Watch Video</a>
                         </div>
-                        <div class="border rounded p-3 bg-gray-50 flex items-center justify-between">
+                        <div class="flex items-center justify-between p-4 bg-slate-50 border border-gray-100 hover:border-amber-500 transition">
                             <div>
-                                <h4 class="font-semibold text-sm">YNAD Green Valley - Site Soil Testing & Overview</h4>
-                                <p class="text-xs text-gray-500">Updated: July 2026</p>
+                                <h4 class="font-semibold text-sm text-slate-900">YNAD Lakeside Vista - Soil Testing & Overview</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">Updated: Preliminary Phase</p>
                             </div>
-                            <a href="#" class="bg-amber-600 text-white text-xs px-3 py-1.5 rounded hover:bg-amber-700"><i class="fa-solid fa-play mr-1"></i> Watch Video</a>
+                            <a href="#" class="bg-amber-600 text-white text-xs uppercase tracking-wider px-4 py-2 hover:bg-amber-700 transition font-semibold"><i class="fa-solid fa-play mr-1"></i> Watch Video</a>
                         </div>
                     </div>
                 </div>
@@ -160,29 +223,37 @@
     </section>
 
     <!-- Footer -->
-    <footer id="contact" class="bg-slate-900 text-white py-12 px-6">
-        <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 mb-8">
+    <footer id="contact" class="bg-slate-900 text-white pt-16 pb-10 px-6 lg:px-16">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             <div>
-                <h3 class="text-xl font-bold mb-4">YNAD Construction</h3>
-                <p class="text-gray-400 text-sm">Your trusted partner in building premium residential and commercial spaces with total legal and operational transparency.</p>
+                <h3 class="text-xl font-bold uppercase tracking-wider mb-4">YNAD Construction</h3>
+                <p class="text-gray-400 text-sm font-light leading-relaxed">A trusted name in real estate development, delivering high-end architectural excellence and legal security.</p>
             </div>
             <div>
-                <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                <ul class="space-y-2 text-sm text-gray-400">
-                    <li><a href="#" class="hover:text-white">Projects</a></li>
-                    <li><a href="#" class="hover:text-white">Legal Documents</a></li>
-                    <li><a href="#" class="hover:text-white">Video Updates</a></li>
-                    <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                <h4 class="text-sm font-semibold uppercase tracking-wider text-amber-500 mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-sm text-gray-300 font-light">
+                    <li><a href="#projects" class="hover:text-white transition">Our Projects</a></li>
+                    <li><a href="#reports" class="hover:text-white transition">Document Vault</a></li>
+                    <li><a href="#reports" class="hover:text-white transition">Video Logs</a></li>
+                    <li><a href="#contact" class="hover:text-white transition">Contact Us</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="text-lg font-semibold mb-4">Head Office</h4>
-                <p class="text-sm text-gray-400 mb-2"><i class="fa-solid fa-location-dot text-amber-500 mr-2"></i> Gulshan Avenue, Dhaka, Bangladesh</p>
-                <p class="text-sm text-gray-400 mb-2"><i class="fa-solid fa-phone text-amber-500 mr-2"></i> +880 1234-567890</p>
-                <p class="text-sm text-gray-400"><i class="fa-solid fa-envelope text-amber-500 mr-2"></i> contact@ynadconstruction.com</p>
+                <h4 class="text-sm font-semibold uppercase tracking-wider text-amber-500 mb-4">Project Categories</h4>
+                <ul class="space-y-2 text-sm text-gray-300 font-light">
+                    <li><a href="#" class="hover:text-white transition">Location Finalized</a></li>
+                    <li><a href="#" class="hover:text-white transition">Ongoing Buildings</a></li>
+                    <li><a href="#" class="hover:text-white transition">Completed Masterpieces</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold uppercase tracking-wider text-amber-500 mb-4">Corporate Office</h4>
+                <p class="text-sm text-gray-300 font-light mb-2"><i class="fa-solid fa-location-dot text-amber-500 mr-2"></i> Gulshan Avenue, Dhaka, Bangladesh</p>
+                <p class="text-sm text-gray-300 font-light mb-2"><i class="fa-solid fa-phone text-amber-500 mr-2"></i> +880 9612-345678</p>
+                <p class="text-sm text-gray-300 font-light"><i class="fa-solid fa-envelope text-amber-500 mr-2"></i> info@ynadconstruction.com</p>
             </div>
         </div>
-        <div class="border-t border-slate-800 text-center pt-6 text-sm text-gray-500">
+        <div class="border-t border-slate-800 text-center pt-6 text-xs text-gray-500">
             &copy; 2026 YNAD Construction (YNAD Limited). All Rights Reserved.
         </div>
     </footer>
