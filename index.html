@@ -157,13 +157,13 @@
     <!-- Hero Section with Dynamic Slideshow Background -->
     <header id="heroSection" class="relative min-h-[92vh] bg-slate-900 text-white flex flex-col justify-between overflow-hidden">
         
-        <!-- Left Side Fixed Toggle Arrow Button -->
-        <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="shifted w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
-            <i id="toggleIcon" class="fa-solid fa-chevron-left text-xs"></i>
+        <!-- Left Side Fixed Toggle Arrow Button (Default closed obosthay right arrow thakbe) -->
+        <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
+            <i id="toggleIcon" class="fa-solid fa-chevron-right text-xs"></i>
         </button>
 
-        <!-- Dynamic Popup Sidebar on Left Side -->
-        <div id="categorySidebarWrapper" class="open w-60 sm:w-64 bg-black/70 backdrop-blur-[10px] p-4 border border-white/10 rounded-sm shadow-2xl">
+        <!-- Dynamic Popup Sidebar on Left Side (Default closed obosthay thakbe) -->
+        <div id="categorySidebarWrapper" class="closed w-60 sm:w-64 bg-black/70 backdrop-blur-[10px] p-4 border border-white/10 rounded-sm shadow-2xl">
             <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
                 <h3 class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">STATISTICS BY CATEGORY</h3>
             </div>
