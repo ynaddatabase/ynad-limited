@@ -134,425 +134,609 @@
         #sidebarToggleBtn.shifted {
             left: 285px;
         }
+
+        /* 3-Line Hamburger Icon Click Animation */
+        .hamburger-icon {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+        }
+        .hamburger-icon.clicked {
+            transform: scale(1.25);
+        }
+
+        /* Main Page Blur Wrapper */
+        #pageContentWrapper {
+            transition: filter 0.6s ease-in-out;
+        }
+        #pageContentWrapper.blurred {
+            filter: blur(6px);
+            pointer-events: none;
+        }
+
+        /* Right Overlay Menu with Slower Smooth Fade & Slide */
+        #menuOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: flex-end;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+            pointer-events: none;
+        }
+        #menuOverlay.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        #menuBox {
+            transform: translateX(100%);
+            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #menuOverlay.open #menuBox {
+            transform: translateX(0);
+        }
+
+        /* Staggered Overlapping Up Animation for Menu Items (Slower and smoother) */
+        .menu-item-animate {
+            opacity: 0;
+            transform: translateY(35px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
+                        color 0s ease !important;
+        }
+        #menuOverlay.open .menu-item-animate:nth-child(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.15s, 0.15s, 0s;
+        }
+        #menuOverlay.open .menu-item-animate:nth-child(2) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.25s, 0.25s, 0s;
+        }
+        #menuOverlay.open .menu-item-animate:nth-child(3) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.35s, 0.35s, 0s;
+        }
+        #menuOverlay.open .menu-item-animate:nth-child(4) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.45s, 0.45s, 0s;
+        }
+
+        /* User Profile Dropdown Box Animations */
+        #userDropdownMenu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.96);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        #userDropdownMenu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Search Popup Box Animations */
+        #searchDropdownMenu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.96);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        #searchDropdownMenu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
 
-    <!-- Header / Navigation -->
-    <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
-        <div class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
-            YNAD <span class="text-amber-600 font-light">Construction</span>
-        </div>
-        <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider">
-            <a href="#" class="hover:text-amber-600">HOME</a>
-            <a href="#projects" class="hover:text-amber-600">PROJECTS</a>
-            <a href="#about" class="hover:text-amber-600">ABOUT</a>
-            <a href="#contact" class="hover:text-amber-600">CONTACT</a>
-        </div>
-        <div class="text-2xl cursor-pointer">
-            <i class="fa-solid fa-bars"></i>
-        </div>
-    </nav>
+    <!-- Main Content Wrapper to handle Page Blur Effect -->
+    <div id="pageContentWrapper">
 
-    <!-- Hero Section with Dynamic Slideshow Background -->
-    <header id="heroSection" class="relative min-h-[92vh] bg-slate-900 text-white flex flex-col justify-between overflow-hidden">
-        
-        <!-- Left Side Fixed Toggle Arrow Button (Default closed obosthay right arrow thakbe) -->
-        <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
-            <i id="toggleIcon" class="fa-solid fa-chevron-right text-xs"></i>
-        </button>
-
-        <!-- Dynamic Popup Sidebar on Left Side (Default closed obosthay thakbe) -->
-        <div id="categorySidebarWrapper" class="closed w-60 sm:w-64 bg-black/70 backdrop-blur-[10px] p-4 border border-white/10 rounded-sm shadow-2xl">
-            <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
-                <h3 class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">STATISTICS BY CATEGORY</h3>
+        <!-- Header / Navigation -->
+        <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
+            <div class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
+                YNAD <span class="text-amber-600 font-light">Construction</span>
             </div>
             
-            <div class="space-y-2.5 text-xs max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Masjid</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">15</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">120</strong> <span class="text-[8px] uppercase">Done</span></span>
+            <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider">
+                <a href="#" class="hover:text-amber-600">HOME</a>
+                <a href="#projects" class="hover:text-amber-600">PROJECTS</a>
+                <a href="#about" class="hover:text-amber-600">ABOUT</a>
+                <a href="#contact" class="hover:text-amber-600">CONTACT</a>
+            </div>
+
+            <!-- Right Nav Section: Search Icon, User Profile & Hamburger Menu -->
+            <div class="flex items-center gap-6">
+                <!-- Search Icon with Animated Popup Search Box -->
+                <div class="relative">
+                    <div id="searchIconBtn" onclick="toggleSearchDropdown(event)" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-600 flex items-center justify-center border border-slate-200 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200" title="Search Project">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </div>
+
+                    <!-- Search Popup Box -->
+                    <div id="searchDropdownMenu" class="absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-xl shadow-2xl border border-slate-100 p-4 z-50">
+                        <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 mb-3">
+                            <h4 class="font-bold text-xs text-slate-900 uppercase tracking-wider">Search Project</h4>
+                            <span class="text-[10px] text-slate-400">Type code (e.g. M-512)</span>
+                        </div>
+                        
+                        <div class="relative flex items-center">
+                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter project number..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-amber-600 transition">
+                            <button onclick="executeSearch()" class="absolute right-2 bg-amber-600 hover:bg-amber-700 text-white w-6 h-6 rounded flex items-center justify-center text-xs transition cursor-pointer">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div id="searchResultFeedback" class="mt-2 text-[11px] text-slate-500 hidden"></div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Madrasa</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">8</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">45</strong> <span class="text-[8px] uppercase">Done</span></span>
+
+                <!-- User Profile Image with Animated Dropdown Box -->
+                <div class="relative">
+                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)" class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-600 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Hasanur Rahman" class="w-full h-full object-cover">
+                    </div>
+
+                    <!-- User Dropdown Box -->
+                    <div id="userDropdownMenu" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 p-4 z-50">
+                        <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Hasanur Rahman" class="w-12 h-12 rounded-full object-cover border border-amber-600">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900">HASANUR RAHMAN</h4>
+                                <p class="text-[11px] text-slate-500 truncate">hasanur.rahman@ynad.com</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3">
+                            <a href="#" onclick="handleLogout(event)" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white py-2 px-3 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 transition duration-200 cursor-pointer">
+                                <i class="fa-solid fa-right-from-bracket"></i> LOG OUT
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Markaz</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">5</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">30</strong> <span class="text-[8px] uppercase">Done</span></span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Orphanage</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">4</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">25</strong> <span class="text-[8px] uppercase">Done</span></span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Ablution</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">12</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">80</strong> <span class="text-[8px] uppercase">Done</span></span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Water Well</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">56</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">150</strong> <span class="text-[8px] uppercase">Done</span></span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Clinic</span>
-                    <div class="flex gap-2.5 text-right">
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">2</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">10</strong> <span class="text-[8px] uppercase">Done</span></span>
-                    </div>
+
+                <!-- Hamburger Button -->
+                <div class="text-2xl cursor-pointer p-1" onclick="openMenuWithEffect()">
+                    <i id="hamburgerBtnIcon" class="fa-solid fa-bars hamburger-icon"></i>
                 </div>
             </div>
-        </div>
+        </nav>
 
-        <!-- Background Slideshow Container -->
-        <div id="heroBgSlides" class="absolute inset-0 z-0 pointer-events-none">
-            <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80');"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');"></div>
-        </div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10 pointer-events-none"></div>
-
-        <!-- Spacer to push bottom bar down -->
-        <div class="relative z-20 flex-grow"></div>
-
-        <!-- Bottom Total Statistics & Navigation Bar -->
-        <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20 pointer-events-auto">
-            <div class="flex gap-12 lg:gap-16 text-left w-full md:w-auto justify-around md:justify-start">
-                <div>
-                    <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">102</span>
-                    <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Ongoing</p>
-                </div>
-                <div>
-                    <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">460</span>
-                    <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Completed</p>
-                </div>
-            </div>
+        <!-- Hero Section with Dynamic Slideshow Background -->
+        <header id="heroSection" class="relative min-h-[92vh] bg-slate-900 text-white flex flex-col justify-between overflow-hidden">
             
-            <div class="flex gap-8 lg:gap-16 text-center">
-                <a href="#projects" class="group cursor-pointer">
-                    <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                        <i class="fa-solid fa-building text-lg"></i>
-                    </div>
-                    <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Ongoing</span>
-                </a>
-                <a href="#projects" class="group cursor-pointer">
-                    <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                        <i class="fa-solid fa-circle-check text-lg"></i>
-                    </div>
-                    <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Completed</span>
-                </a>
-                <a href="#projects" class="group cursor-pointer">
-                    <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                        <i class="fa-solid fa-map-location-dot text-lg"></i>
-                    </div>
-                    <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Upcoming</span>
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Recent Projects Section -->
-    <section id="projects" class="py-12 md:py-16 text-center bg-white relative">
-        <h2 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">OUR RECENT PROJECTS</h2>
-        
-        <div class="max-w-7xl mx-auto px-6 relative">
-            <button onclick="scrollMainSlider('left')" class="absolute -left-5 md:-left-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
-                <i class="fa-solid fa-arrow-left text-base"></i>
+            <!-- Left Side Fixed Toggle Arrow Button -->
+            <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
+                <i id="toggleIcon" class="fa-solid fa-chevron-right text-xs"></i>
             </button>
 
-            <button onclick="scrollMainSlider('right')" class="absolute -right-5 md:-right-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
-                <i class="fa-solid fa-arrow-right text-base"></i>
-            </button>
-
-            <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
+            <!-- Dynamic Popup Sidebar on Left Side -->
+            <div id="categorySidebarWrapper" class="closed w-60 sm:w-64 bg-black/70 backdrop-blur-[10px] p-4 border border-white/10 rounded-sm shadow-2xl">
+                <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
+                    <h3 class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">STATISTICS BY CATEGORY</h3>
+                </div>
                 
-                <!-- Project Card 1 -->
-                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
-                    <div>
-                        <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                            <div id="cardImages-1" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 pt-2.5">
-                            <div class="flex justify-between items-center mb-0.5">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-512</span>
-                                    <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015960</span>
-                                </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                            <div class="flex flex-col mt-0.5 space-y-0.5">
-                                <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUR RAHIM</a>
-                                <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
-                            </div>
-                            <div class="mt-0.5 pt-0">
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">MAGURA</span>
-                            </div>
+                <div class="space-y-2.5 text-xs max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Masjid</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">15</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">120</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
-                    <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                    </div>
-                </div>
-
-                <!-- Project Card 2 -->
-                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
-                    <div>
-                        <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                            <div id="cardImages-2" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 pt-2.5">
-                            <div class="flex justify-between items-center mb-0.5">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-513</span>
-                                    <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015961</span>
-                                </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(2, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(2, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                            <div class="flex flex-col mt-0.5 space-y-0.5">
-                                <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">AL FATAH</a>
-                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUL KARIM</a>
-                                <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">KUWAIT</a>
-                            </div>
-                            <div class="mt-0.5 pt-0">
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">BOGURA</span>
-                            </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Madrasa</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">8</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">45</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
-                    <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                    </div>
-                </div>
-
-                <!-- Project Card 3 -->
-                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
-                    <div>
-                        <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                            <div id="cardImages-3" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 pt-2.5">
-                            <div class="flex justify-between items-center mb-0.5">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-514</span>
-                                    <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015962</span>
-                                </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(3, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(3, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                            <div class="flex flex-col mt-0.5 space-y-0.5">
-                                <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">TEEBAH FOUNDATION</a>
-                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: MOHAMMAD ALI</a>
-                                <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
-                            </div>
-                            <div class="mt-0.5 pt-0">
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">KHULNA</span>
-                            </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Markaz</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">5</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">30</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
-                    <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                    </div>
-                </div>
-
-                <!-- Project Card 4 -->
-                <div class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left">
-                    <div>
-                        <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                            <div id="cardImages-4" class="flex h-full transition-transform duration-300">
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 pt-2.5">
-                            <div class="flex justify-between items-center mb-0.5">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-515</span>
-                                    <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015963</span>
-                                </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(4, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(4, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                            <div class="flex flex-col mt-0.5 space-y-0.5">
-                                <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: FATIMA BEGUM</a>
-                                <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">QATAR</a>
-                            </div>
-                            <div class="mt-0.5 pt-0">
-                                <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">SYLHET</span>
-                            </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Orphanage</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">4</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">25</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
-                    <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                        <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                        <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                        <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Ablution</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">12</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">80</strong> <span class="text-[8px] uppercase">Done</span></span>
+                        </div>
                     </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-16 bg-slate-50 border-t border-slate-200 px-6">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">About YNAD Construction</h2>
-                <p class="text-sm text-slate-600 leading-relaxed mb-4">
-                    YNAD Construction is a premier construction and development firm dedicated to delivering high-quality residential, commercial, and philanthropic infrastructure projects across the nation. We combine engineering excellence with structural integrity.
-                </p>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    With international donors and local communities working hand in hand, we build structures that stand the test of time, ensuring safety, reliability, and satisfaction.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-6 shadow-sm border text-center">
-                    <i class="fa-solid fa-shield-halved text-3xl text-amber-600 mb-2"></i>
-                    <h4 class="font-bold text-sm text-slate-900 uppercase">Quality Assured</h4>
-                    <p class="text-xs text-slate-500 mt-1">High standard materials</p>
-                </div>
-                <div class="bg-white p-6 shadow-sm border text-center">
-                    <i class="fa-solid fa-clock text-3xl text-amber-600 mb-2"></i>
-                    <h4 class="font-bold text-sm text-slate-900 uppercase">On-Time Delivery</h4>
-                    <p class="text-xs text-slate-500 mt-1">Efficient project execution</p>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Water Well</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">56</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">150</strong> <span class="text-[8px] uppercase">Done</span></span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Clinic</span>
+                        <div class="flex gap-2.5 text-right">
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">2</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">10</strong> <span class="text-[8px] uppercase">Done</span></span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 bg-white border-t border-slate-200 px-6">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-4">Get In Touch</h2>
-            <p class="text-sm text-slate-600 mb-8">Have questions or want to collaborate with us? Reach out today.</p>
+            <!-- Background Slideshow Container -->
+            <div id="heroBgSlides" class="absolute inset-0 z-0 pointer-events-none">
+                <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');"></div>
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10 pointer-events-none"></div>
+
+            <!-- Spacer -->
+            <div class="relative z-20 flex-grow"></div>
+
+            <!-- Bottom Total Statistics & Navigation Bar -->
+            <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20 pointer-events-auto">
+                <div class="flex gap-12 lg:gap-16 text-left w-full md:w-auto justify-around md:justify-start">
+                    <div>
+                        <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">102</span>
+                        <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Ongoing</p>
+                    </div>
+                    <div>
+                        <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">460</span>
+                        <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Completed</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-8 lg:gap-16 text-center">
+                    <a href="#projects" class="group cursor-pointer">
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-building text-lg"></i>
+                        </div>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Ongoing</span>
+                    </a>
+                    <a href="#projects" class="group cursor-pointer">
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                        </div>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Completed</span>
+                    </a>
+                    <a href="#projects" class="group cursor-pointer">
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-map-location-dot text-lg"></i>
+                        </div>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Upcoming</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Recent Projects Section -->
+        <section id="projects" class="py-12 md:py-16 text-center bg-white relative">
+            <h2 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">OUR RECENT PROJECTS</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-10">
-                <div class="p-6 border bg-slate-50">
-                    <i class="fa-solid fa-location-dot text-amber-600 text-xl mb-2"></i>
-                    <h4 class="font-bold text-sm uppercase text-slate-900">Office Location</h4>
-                    <p class="text-xs text-slate-600 mt-1">Dhaka, Bangladesh</p>
-                </div>
-                <div class="p-6 border bg-slate-50">
-                    <i class="fa-solid fa-envelope text-amber-600 text-xl mb-2"></i>
-                    <h4 class="font-bold text-sm uppercase text-slate-900">Email Address</h4>
-                    <p class="text-xs text-slate-600 mt-1">info@ynadconstruction.com</p>
-                </div>
-                <div class="p-6 border bg-slate-50">
-                    <i class="fa-solid fa-phone text-amber-600 text-xl mb-2"></i>
-                    <h4 class="font-bold text-sm uppercase text-slate-900">Phone Number</h4>
-                    <p class="text-xs text-slate-600 mt-1">+880 1234 567890</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            <div class="max-w-7xl mx-auto px-6 relative">
+                <button onclick="scrollMainSlider('left')" class="absolute -left-5 md:-left-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </button>
 
-    <!-- Footer Section -->
-    <footer class="bg-slate-900 text-slate-300 py-12 px-6 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-                <div class="text-xl font-bold tracking-widest text-white uppercase mb-4">
-                    YNAD <span class="text-amber-600 font-light">Construction</span>
-                </div>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Building a better future through quality craftsmanship, dedication, and professional structural development.
-                </p>
-            </div>
-            <div>
-                <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Quick Links</h4>
-                <ul class="space-y-2 text-xs">
-                    <li><a href="#" class="hover:text-amber-500 transition">Home</a></li>
-                    <li><a href="#projects" class="hover:text-amber-500 transition">Projects</a></li>
-                    <li><a href="#about" class="hover:text-amber-500 transition">About Us</a></li>
-                    <li><a href="#contact" class="hover:text-amber-500 transition">Contact</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Services</h4>
-                <ul class="space-y-2 text-xs">
-                    <li><span class="text-slate-400">Residential Construction</span></li>
-                    <li><span class="text-slate-400">Commercial Buildings</span></li>
-                    <li><span class="text-slate-400">Philanthropic Projects</span></li>
-                    <li><span class="text-slate-400">Architectural Design</span></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Follow Us</h4>
-                <div class="flex space-x-4 text-lg">
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-instagram"></i></a>
-                </div>
-            </div>
-        </div>
-    </footer>
+                <button onclick="scrollMainSlider('right')" class="absolute -right-5 md:-right-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
+                    <i class="fa-solid fa-arrow-right text-base"></i>
+                </button>
 
-    <!-- JavaScript for Slideshow, Toggle Sidebar & Sliders -->
+                <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
+                    
+                    <!-- Project Card 1 -->
+                    <div id="project-card-1" data-project-code="M-512" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                        <div>
+                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
+                                <div id="cardImages-1" class="flex h-full transition-transform duration-300">
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 pt-2.5">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-512</span>
+                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015960</span>
+                                    </div>
+                                    <div class="flex gap-1.5">
+                                        <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                        <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
+                                <div class="flex flex-col mt-0.5 space-y-0.5">
+                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
+                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUR RAHIM</a>
+                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
+                                </div>
+                                <div class="mt-0.5 pt-0">
+                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">MAGURA</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div id="project-card-2" data-project-code="M-513" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                        <div>
+                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
+                                <div id="cardImages-2" class="flex h-full transition-transform duration-300">
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 pt-2.5">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-513</span>
+                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015961</span>
+                                    </div>
+                                    <div class="flex gap-1.5">
+                                        <button onclick="changeCardImage(2, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                        <button onclick="changeCardImage(2, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
+                                <div class="flex flex-col mt-0.5 space-y-0.5">
+                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">AL FATAH</a>
+                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUL KARIM</a>
+                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">KUWAIT</a>
+                                </div>
+                                <div class="mt-0.5 pt-0">
+                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">BOGURA</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 3 -->
+                    <div id="project-card-3" data-project-code="M-514" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                        <div>
+                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
+                                <div id="cardImages-3" class="flex h-full transition-transform duration-300">
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 pt-2.5">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-514</span>
+                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015962</span>
+                                    </div>
+                                    <div class="flex gap-1.5">
+                                        <button onclick="changeCardImage(3, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                        <button onclick="changeCardImage(3, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
+                                <div class="flex flex-col mt-0.5 space-y-0.5">
+                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">TEEBAH FOUNDATION</a>
+                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: MOHAMMAD ALI</a>
+                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
+                                </div>
+                                <div class="mt-0.5 pt-0">
+                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">KHULNA</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 4 -->
+                    <div id="project-card-4" data-project-code="M-515" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                        <div>
+                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
+                                <div id="cardImages-4" class="flex h-full transition-transform duration-300">
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 pt-2.5">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-515</span>
+                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015963</span>
+                                    </div>
+                                    <div class="flex gap-1.5">
+                                        <button onclick="changeCardImage(4, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                        <button onclick="changeCardImage(4, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
+                                <div class="flex flex-col mt-0.5 space-y-0.5">
+                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
+                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: FATIMA BEGUM</a>
+                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">QATAR</a>
+                                </div>
+                                <div class="mt-0.5 pt-0">
+                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">SYLHET</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-16 bg-slate-50 border-t border-slate-200 px-6">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">About YNAD Construction</h2>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                        YNAD Construction is a premier construction and development firm dedicated to delivering high-quality residential, commercial, and philanthropic infrastructure projects across the nation.
+                    </p>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        With international donors and local communities working hand in hand, we build structures that stand the test of time, ensuring safety, reliability, and satisfaction.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-6 shadow-sm border text-center">
+                        <i class="fa-solid fa-shield-halved text-3xl text-amber-600 mb-2"></i>
+                        <h4 class="font-bold text-sm text-slate-900 uppercase">Quality Assured</h4>
+                        <p class="text-xs text-slate-500 mt-1">High standard materials</p>
+                    </div>
+                    <div class="bg-white p-6 shadow-sm border text-center">
+                        <i class="fa-solid fa-clock text-3xl text-amber-600 mb-2"></i>
+                        <h4 class="font-bold text-sm text-slate-900 uppercase">On-Time Delivery</h4>
+                        <p class="text-xs text-slate-500 mt-1">Efficient project execution</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-16 bg-white border-t border-slate-200 px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-4">Get In Touch</h2>
+                <p class="text-sm text-slate-600 mb-8">Have questions or want to collaborate with us? Reach out today.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-10">
+                    <div class="p-6 border bg-slate-50">
+                        <i class="fa-solid fa-location-dot text-amber-600 text-xl mb-2"></i>
+                        <h4 class="font-bold text-sm uppercase text-slate-900">Office Location</h4>
+                        <p class="text-xs text-slate-600 mt-1">Dhaka, Bangladesh</p>
+                    </div>
+                    <div class="p-6 border bg-slate-50">
+                        <i class="fa-solid fa-envelope text-amber-600 text-xl mb-2"></i>
+                        <h4 class="font-bold text-sm uppercase text-slate-900">Email Address</h4>
+                        <p class="text-xs text-slate-600 mt-1">info@ynadconstruction.com</p>
+                    </div>
+                    <div class="p-6 border bg-slate-50">
+                        <i class="fa-solid fa-phone text-amber-600 text-xl mb-2"></i>
+                        <h4 class="font-bold text-sm uppercase text-slate-900">Phone Number</h4>
+                        <p class="text-xs text-slate-600 mt-1">+880 1234 567890</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Section -->
+        <footer class="bg-slate-900 text-slate-300 py-12 px-6 border-t border-slate-800">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="text-xl font-bold tracking-widest text-white uppercase mb-4">
+                        YNAD <span class="text-amber-600 font-light">Construction</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Building a better future through quality craftsmanship, dedication, and professional structural development.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" class="hover:text-amber-500 transition">Home</a></li>
+                        <li><a href="#projects" class="hover:text-amber-500 transition">Projects</a></li>
+                        <li><a href="#about" class="hover:text-amber-500 transition">About Us</a></li>
+                        <li><a href="#contact" class="hover:text-amber-500 transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Services</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><span class="text-slate-400">Residential Construction</span></li>
+                        <li><span class="text-slate-400">Commercial Buildings</span></li>
+                        <li><span class="text-slate-400">Philanthropic Projects</span></li>
+                        <li><span class="text-slate-400">Architectural Design</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Follow Us</h4>
+                    <div class="flex space-x-4 text-lg">
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Right Overlay Menu -->
+    <div id="menuOverlay" onclick="handleOverlayClick(event)">
+        <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+            
+            <!-- Close Button -->
+            <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-slate-100 transition cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Menu Options -->
+            <div class="mt-20 flex flex-col space-y-6">
+                <a href="#projects" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">FILTER BY PROJECT</a>
+                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">FINANCIAL OVERVIEW</a>
+                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">NEWS & AWARDS</a>
+                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">BLOG</a>
+            </div>
+
+            <div class="pb-10"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
         // Hero Background Slideshow Script
         let currentHeroSlide = 0;
@@ -565,7 +749,7 @@
         }
         setInterval(nextHeroSlide, 5000);
 
-        // Toggle Sidebar Function with Smooth Shifting
+        // Toggle Sidebar Function
         function toggleMatSidebar() {
             const wrapper = document.getElementById('categorySidebarWrapper');
             const icon = document.getElementById('toggleIcon');
@@ -581,6 +765,139 @@
                 wrapper.classList.add('open');
                 icon.className = "fa-solid fa-chevron-left text-xs";
                 toggleBtn.classList.add('shifted');
+            }
+        }
+
+        // Toggle User Profile Dropdown Box with Animation
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdownMenu');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            if(searchDropdown) searchDropdown.classList.remove('open');
+            dropdown.classList.toggle('open');
+        }
+
+        // Toggle Search Dropdown Box with Animation
+        function toggleSearchDropdown(event) {
+            event.stopPropagation();
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            if(userDropdown) userDropdown.classList.remove('open');
+            searchDropdown.classList.toggle('open');
+            if(searchDropdown.classList.contains('open')) {
+                document.getElementById('projectSearchInput').focus();
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        window.addEventListener('click', function(e) {
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const profileBtn = document.getElementById('userProfileBtn');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const searchBtn = document.getElementById('searchIconBtn');
+            
+            if (userDropdown && userDropdown.classList.contains('open')) {
+                if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                    userDropdown.classList.remove('open');
+                }
+            }
+            if (searchDropdown && searchDropdown.classList.contains('open')) {
+                if (!searchDropdown.contains(e.target) && !searchBtn.contains(e.target)) {
+                    searchDropdown.classList.remove('open');
+                }
+            }
+        });
+
+        // Search Projects Functionality
+        function executeSearch() {
+            const query = document.getElementById('projectSearchInput').value.trim().toUpperCase();
+            const feedback = document.getElementById('searchResultFeedback');
+            
+            if(!query) {
+                feedback.textContent = "Please enter a project number.";
+                feedback.classList.remove('hidden');
+                feedback.className = "mt-2 text-[11px] text-red-500";
+                return;
+            }
+
+            const cards = document.querySelectorAll('#mainProjectSlider > div');
+            let found = false;
+
+            cards.forEach(card => {
+                const code = card.getAttribute('data-project-code');
+                if(code && code.toUpperCase().includes(query)) {
+                    found = true;
+                    // Scroll to projects section and highlight card
+                    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
+                    card.classList.add('ring-4', 'ring-amber-500', 'scale-[1.02]');
+                    setTimeout(() => {
+                        card.classList.remove('ring-4', 'ring-amber-500', 'scale-[1.02]');
+                    }, 3000);
+                }
+            });
+
+            feedback.classList.remove('hidden');
+            if(found) {
+                feedback.className = "mt-2 text-[11px] text-emerald-600 font-semibold";
+                feedback.textContent = `Project "${query}" found successfully!`;
+                setTimeout(() => {
+                    document.getElementById('searchDropdownMenu').classList.remove('open');
+                }, 1500);
+            } else {
+                feedback.className = "mt-2 text-[11px] text-red-500 font-semibold";
+                feedback.textContent = `No project found matching "${query}". Try M-512, M-513, etc.`;
+            }
+        }
+
+        function handleProjectSearch(event) {
+            if(event.key === 'Enter') {
+                executeSearch();
+            }
+        }
+
+        // Handle Logout Action
+        function handleLogout(event) {
+            event.preventDefault();
+            alert('Successfully logged out!');
+        }
+
+        // Open Menu with Blur Effect
+        function openMenuWithEffect() {
+            const icon = document.getElementById('hamburgerBtnIcon');
+            const pageWrapper = document.getElementById('pageContentWrapper');
+            const overlay = document.getElementById('menuOverlay');
+
+            icon.classList.add('clicked');
+
+            setTimeout(() => {
+                icon.classList.remove('clicked');
+                pageWrapper.classList.add('blurred');
+
+                setTimeout(() => {
+                    overlay.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }, 200);
+
+            }, 200);
+        }
+
+        // Close Menu
+        function closeMenuWithEffect() {
+            const overlay = document.getElementById('menuOverlay');
+            const pageWrapper = document.getElementById('pageContentWrapper');
+
+            overlay.classList.remove('open');
+
+            setTimeout(() => {
+                pageWrapper.classList.remove('blurred');
+                document.body.style.overflow = 'auto';
+            }, 400);
+        }
+
+        // Handle clicking outside the menu box
+        function handleOverlayClick(event) {
+            if (event.target === document.getElementById('menuOverlay')) {
+                closeMenuWithEffect();
             }
         }
 
