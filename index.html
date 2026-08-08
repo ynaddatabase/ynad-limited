@@ -102,37 +102,37 @@
             opacity: 1;
         }
 
-        /* Mat Roll Unroll Animation Effect */
+        /* Smooth Slide Animation for Left Sidebar & Toggle Button */
         #categorySidebarWrapper {
-            position: relative;
-            transform-origin: top left;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 45;
         }
 
-        /* When closed: rolled up into a compact handle */
         #categorySidebarWrapper.closed {
-            transform: scaleX(0.05) scaleY(0.05);
+            transform: translateX(-320px);
             opacity: 0;
             pointer-events: none;
         }
 
-        /* When open: unrolled completely like a mat */
         #categorySidebarWrapper.open {
-            transform: scaleX(1) scaleY(1);
+            transform: translateX(0);
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Sum Handle Button positioned further left and opacity set to 70% */
-        #matCoilHandle {
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            opacity: 0.7; /* Opacity 70% করা হয়েছে */
+        /* Fixed Toggle Arrow Button Style */
+        #sidebarToggleBtn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
         }
-        #matCoilHandle:hover {
-            transform: scale(1.1);
-            opacity: 1; /* Hover করলে সম্পূর্ণ স্পষ্ট হবে */
-            background-color: #d97706;
+        #sidebarToggleBtn.shifted {
+            left: 285px;
         }
     </style>
 </head>
@@ -156,100 +156,84 @@
 
     <!-- Hero Section with Dynamic Slideshow Background -->
     <header id="heroSection" class="relative min-h-[92vh] bg-slate-900 text-white flex flex-col justify-between overflow-hidden">
+        
+        <!-- Left Side Fixed Toggle Arrow Button -->
+        <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="shifted w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
+            <i id="toggleIcon" class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+
+        <!-- Dynamic Popup Sidebar on Left Side -->
+        <div id="categorySidebarWrapper" class="open w-60 sm:w-64 bg-black/70 backdrop-blur-[10px] p-4 border border-white/10 rounded-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
+                <h3 class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">STATISTICS BY CATEGORY</h3>
+            </div>
+            
+            <div class="space-y-2.5 text-xs max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Masjid</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">15</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">120</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Madrasa</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">8</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">45</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Markaz</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">5</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">30</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Orphanage</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">4</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">25</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Ablution</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">12</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">80</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Water Well</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">56</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">150</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Clinic</span>
+                    <div class="flex gap-2.5 text-right">
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">2</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                        <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">10</strong> <span class="text-[8px] uppercase">Done</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Background Slideshow Container -->
-        <div id="heroBgSlides" class="absolute inset-0 z-0">
+        <div id="heroBgSlides" class="absolute inset-0 z-0 pointer-events-none">
             <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');"></div>
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10 pointer-events-none"></div>
 
-        <!-- Main Content Area with Mat-Roll Collapsible Statistics Box -->
-        <div class="relative z-20 max-w-7xl w-full mx-auto px-6 py-8 flex items-start my-auto">
-            
-            <div class="relative flex flex-col items-start">
-                
-                <!-- Sum Data Type Icon Handle (আরও বাম দিকে সরানো এবং 70% Opacity যুক্ত) -->
-                <button onclick="toggleMatSidebar()" id="matCoilHandle" class="absolute -top-3 -left-3 z-30 bg-amber-600/80 text-white w-9 h-9 rounded-full flex items-center justify-center border-2 border-amber-400/70 shadow-2xl cursor-pointer">
-                    <i id="coilIcon" class="fa-solid fa-sigma text-xs font-bold"></i>
-                </button>
-
-                <!-- Left Side Narrow Category-wise Statistics Bar (Mat Roll Unroll Animation) -->
-                <div id="categorySidebarWrapper" class="open w-60 sm:w-64 bg-black/60 backdrop-blur-[8px] p-4 border border-white/10 rounded-sm shadow-2xl">
-                    <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
-                        <h3 class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">Statistics by Category</h3>
-                        <!-- Close button inside the box to roll it back up -->
-                        <button onclick="toggleMatSidebar()" class="text-gray-400 hover:text-white text-xs px-1">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- Category list container -->
-                    <div class="space-y-2.5 text-xs max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
-                        <!-- Masjid -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Masjid</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">15</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">120</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Madrasa -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Madrasa</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">8</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">45</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Markaz -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Markaz</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">5</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">30</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Orphanage -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Orphanage</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">4</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">25</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Ablution Center -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Ablution</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">12</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">80</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Water Well -->
-                        <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Water Well</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">56</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">150</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                        <!-- Clinic -->
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Clinic</span>
-                            <div class="flex gap-2.5 text-right">
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">2</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                                <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">10</strong> <span class="text-[8px] uppercase">Done</span></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        <!-- Spacer to push bottom bar down -->
+        <div class="relative z-20 flex-grow"></div>
 
         <!-- Bottom Total Statistics & Navigation Bar -->
-        <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20">
+        <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20 pointer-events-auto">
             <div class="flex gap-12 lg:gap-16 text-left w-full md:w-auto justify-around md:justify-start">
                 <div>
                     <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">102</span>
@@ -289,11 +273,11 @@
         <h2 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">OUR RECENT PROJECTS</h2>
         
         <div class="max-w-7xl mx-auto px-6 relative">
-            <button onclick="scrollMainSlider('left')" class="absolute -left-5 md:-left-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm">
+            <button onclick="scrollMainSlider('left')" class="absolute -left-5 md:-left-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
                 <i class="fa-solid fa-arrow-left text-base"></i>
             </button>
 
-            <button onclick="scrollMainSlider('right')" class="absolute -right-5 md:-right-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm">
+            <button onclick="scrollMainSlider('right')" class="absolute -right-5 md:-right-12 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition backdrop-blur-sm cursor-pointer">
                 <i class="fa-solid fa-arrow-right text-base"></i>
             </button>
 
@@ -320,8 +304,8 @@
                                     <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015960</span>
                                 </div>
                                 <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-right"></i></button>
+                                    <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
@@ -363,8 +347,8 @@
                                     <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015961</span>
                                 </div>
                                 <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(2, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(2, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-right"></i></button>
+                                    <button onclick="changeCardImage(2, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="changeCardImage(2, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
@@ -406,8 +390,8 @@
                                     <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015962</span>
                                 </div>
                                 <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(3, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(3, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-right"></i></button>
+                                    <button onclick="changeCardImage(3, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="changeCardImage(3, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
@@ -449,8 +433,8 @@
                                     <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015963</span>
                                 </div>
                                 <div class="flex gap-1.5">
-                                    <button onclick="changeCardImage(4, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <button onclick="changeCardImage(4, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs"><i class="fa-solid fa-arrow-right"></i></button>
+                                    <button onclick="changeCardImage(4, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="changeCardImage(4, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
                                 </div>
                             </div>
                             <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
@@ -560,15 +544,15 @@
             <div>
                 <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Follow Us</h4>
                 <div class="flex space-x-4 text-lg">
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-instagram"></i></a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript for Slideshow, Mat Unroll Toggle & Card Sliders -->
+    <!-- JavaScript for Slideshow, Toggle Sidebar & Sliders -->
     <script>
         // Hero Background Slideshow Script
         let currentHeroSlide = 0;
@@ -581,24 +565,22 @@
         }
         setInterval(nextHeroSlide, 5000);
 
-        // Toggle Mat-Roll Unroll Animation Script
+        // Toggle Sidebar Function with Smooth Shifting
         function toggleMatSidebar() {
             const wrapper = document.getElementById('categorySidebarWrapper');
-            const handle = document.getElementById('matCoilHandle');
-            const coilIcon = document.getElementById('coilIcon');
+            const icon = document.getElementById('toggleIcon');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
             
             if (wrapper.classList.contains('open')) {
                 wrapper.classList.remove('open');
                 wrapper.classList.add('closed');
-                handle.style.opacity = '0.7';
-                handle.style.pointerEvents = 'auto';
-                coilIcon.classList.remove('fa-xmark');
-                coilIcon.classList.add('fa-sigma');
+                icon.className = "fa-solid fa-chevron-right text-xs";
+                toggleBtn.classList.remove('shifted');
             } else {
                 wrapper.classList.remove('closed');
                 wrapper.classList.add('open');
-                handle.style.opacity = '0';
-                handle.style.pointerEvents = 'none';
+                icon.className = "fa-solid fa-chevron-left text-xs";
+                toggleBtn.classList.add('shifted');
             }
         }
 
