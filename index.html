@@ -181,7 +181,7 @@
             transform: translateX(0);
         }
 
-        /* Staggered Overlapping Up Animation for Menu Items (Slower and smoother) */
+        /* Staggered Overlapping Up Animation for Menu Items */
         .menu-item-animate {
             opacity: 0;
             transform: translateY(35px);
@@ -225,19 +225,31 @@
             pointer-events: auto;
         }
 
-        /* Search Popup Box Animations */
+        /* Right-to-Left Smooth Slide Animation for Search Box */
         #searchDropdownMenu {
+            width: 0px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(12px) scale(0.96);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            transform: translateX(20px);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.3s ease,
+                        visibility 0.4s ease,
+                        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
+            white-space: nowrap;
         }
         #searchDropdownMenu.open {
+            width: 250px;
             opacity: 1;
             visibility: visible;
-            transform: translateY(0) scale(1);
+            transform: translateX(0);
             pointer-events: auto;
+        }
+        @media (min-width: 640px) {
+            #searchDropdownMenu.open {
+                width: 270px;
+            }
         }
     </style>
 </head>
@@ -259,30 +271,26 @@
                 <a href="#contact" class="hover:text-amber-600">CONTACT</a>
             </div>
 
-            <!-- Right Nav Section: Search Icon, User Profile & Hamburger Menu -->
-            <div class="flex items-center gap-6">
-                <!-- Search Icon with Animated Popup Search Box -->
-                <div class="relative">
-                    <div id="searchIconBtn" onclick="toggleSearchDropdown(event)" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-600 flex items-center justify-center border border-slate-200 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200" title="Search Project">
-                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </div>
-
-                    <!-- Search Popup Box -->
-                    <div id="searchDropdownMenu" class="absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-xl shadow-2xl border border-slate-100 p-4 z-50">
-                        <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 mb-3">
-                            <h4 class="font-bold text-xs text-slate-900 uppercase tracking-wider">Search Project</h4>
-                            <span class="text-[10px] text-slate-400">Type code (e.g. M-512)</span>
-                        </div>
-                        
-                        <div class="relative flex items-center">
-                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter project number..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-amber-600 transition">
-                            <button onclick="executeSearch()" class="absolute right-2 bg-amber-600 hover:bg-amber-700 text-white w-6 h-6 rounded flex items-center justify-center text-xs transition cursor-pointer">
+            <!-- Right Nav Section: Search Container, User Profile & Hamburger Menu -->
+            <div class="flex items-center gap-4">
+                <!-- Search Box Wrapper (Right-to-Left Slide Container) -->
+                <div class="flex items-center gap-2">
+                    <!-- Sliding Search Input Box -->
+                    <div id="searchDropdownMenu" class="bg-white rounded-full shadow-lg border border-slate-200 px-3 py-1.5 flex items-center z-50">
+                        <div class="relative flex items-center w-full">
+                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none px-2 py-1 text-xs text-slate-800 focus:outline-none">
+                            <button onclick="executeSearch()" class="bg-amber-600 hover:bg-amber-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition cursor-pointer flex-shrink-0 ml-1">
                                 <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
-                        <div id="searchResultFeedback" class="mt-2 text-[11px] text-slate-500 hidden"></div>
+                    </div>
+
+                    <!-- Search Icon Button (Toggles search box open/close on click) -->
+                    <div id="searchIconBtn" onclick="toggleSearchDropdown(event)" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-600 flex items-center justify-center border border-slate-200 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200 flex-shrink-0" title="Search Project">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
                     </div>
                 </div>
+                <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
 
                 <!-- User Profile Image with Animated Dropdown Box -->
                 <div class="relative">
@@ -445,15 +453,23 @@
                 <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
                     
                     <!-- Project Card 1 -->
-                    <div id="project-card-1" data-project-code="M-512" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                    <div id="project-card-1" 
+                         data-project-code="M-512" 
+                         data-ho-number="HO-100015960" 
+                         data-project-name="MASJID AL NOOR" 
+                         data-org="WAMY" 
+                         data-donor="ABDUR RAHIM" 
+                         data-country="SAUDI ARABIA" 
+                         data-location="MAGURA" 
+                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
                         <div>
                             <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                                 <div id="cardImages-1" class="flex h-full transition-transform duration-300">
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                 </div>
                             </div>
@@ -488,15 +504,23 @@
                     </div>
 
                     <!-- Project Card 2 -->
-                    <div id="project-card-2" data-project-code="M-513" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                    <div id="project-card-2" 
+                         data-project-code="M-513" 
+                         data-ho-number="HO-100015961" 
+                         data-project-name="MASJID AL NOOR" 
+                         data-org="AL FATAH" 
+                         data-donor="ABDUL KARIM" 
+                         data-country="KUWAIT" 
+                         data-location="BOGURA" 
+                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
                         <div>
                             <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                                 <div id="cardImages-2" class="flex h-full transition-transform duration-300">
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                 </div>
                             </div>
@@ -531,15 +555,23 @@
                     </div>
 
                     <!-- Project Card 3 -->
-                    <div id="project-card-3" data-project-code="M-514" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                    <div id="project-card-3" 
+                         data-project-code="M-514" 
+                         data-ho-number="HO-100015962" 
+                         data-project-name="MASJID AL NOOR" 
+                         data-org="TEEBAH FOUNDATION" 
+                         data-donor="MOHAMMAD ALI" 
+                         data-country="UAE" 
+                         data-location="SYLHET" 
+                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
                         <div>
                             <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                                 <div id="cardImages-3" class="flex h-full transition-transform duration-300">
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                 </div>
                             </div>
@@ -562,7 +594,7 @@
                                     <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
                                 </div>
                                 <div class="mt-0.5 pt-0">
-                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">KHULNA</span>
+                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">SYLHET</span>
                                 </div>
                             </div>
                         </div>
@@ -574,15 +606,23 @@
                     </div>
 
                     <!-- Project Card 4 -->
-                    <div id="project-card-4" data-project-code="M-515" class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                    <div id="project-card-4" 
+                         data-project-code="M-515" 
+                         data-ho-number="HO-100015963" 
+                         data-project-name="MASJID AL NOOR" 
+                         data-org="WAMY" 
+                         data-donor="FATIMA BEGUM" 
+                         data-country="QATAR" 
+                         data-location="SYLHET" 
+                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
                         <div>
                             <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                                 <div id="cardImages-4" class="flex h-full transition-transform duration-300">
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                     <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
+                                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="project-img-item">
                                     </div>
                                 </div>
                             </div>
@@ -777,57 +817,65 @@
             dropdown.classList.toggle('open');
         }
 
-        // Toggle Search Dropdown Box with Animation
+        // Toggle Search Dropdown Box (Right-to-Left Slide from Search Icon)
         function toggleSearchDropdown(event) {
             event.stopPropagation();
             const searchDropdown = document.getElementById('searchDropdownMenu');
             const userDropdown = document.getElementById('userDropdownMenu');
             if(userDropdown) userDropdown.classList.remove('open');
+            
             searchDropdown.classList.toggle('open');
             if(searchDropdown.classList.contains('open')) {
                 document.getElementById('projectSearchInput').focus();
             }
         }
 
-        // Close dropdowns when clicking outside
+        // Window click handler
         window.addEventListener('click', function(e) {
             const userDropdown = document.getElementById('userDropdownMenu');
             const profileBtn = document.getElementById('userProfileBtn');
-            const searchDropdown = document.getElementById('searchDropdownMenu');
-            const searchBtn = document.getElementById('searchIconBtn');
             
             if (userDropdown && userDropdown.classList.contains('open')) {
                 if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
                     userDropdown.classList.remove('open');
                 }
             }
-            if (searchDropdown && searchDropdown.classList.contains('open')) {
-                if (!searchDropdown.contains(e.target) && !searchBtn.contains(e.target)) {
-                    searchDropdown.classList.remove('open');
-                }
-            }
         });
 
-        // Search Projects Functionality
+        // Search Projects Functionality with 3 seconds auto-close delay
         function executeSearch() {
             const query = document.getElementById('projectSearchInput').value.trim().toUpperCase();
             const feedback = document.getElementById('searchResultFeedback');
             
             if(!query) {
-                feedback.textContent = "Please enter a project number.";
+                feedback.textContent = "Please enter project details.";
                 feedback.classList.remove('hidden');
-                feedback.className = "mt-2 text-[11px] text-red-500";
+                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
                 return;
             }
 
             const cards = document.querySelectorAll('#mainProjectSlider > div');
-            let found = false;
+            let matchCount = 0;
 
             cards.forEach(card => {
-                const code = card.getAttribute('data-project-code');
-                if(code && code.toUpperCase().includes(query)) {
-                    found = true;
-                    // Scroll to projects section and highlight card
+                const code = card.getAttribute('data-project-code') || '';
+                const hoNum = card.getAttribute('data-ho-number') || '';
+                const pName = card.getAttribute('data-project-name') || '';
+                const org = card.getAttribute('data-org') || '';
+                const donor = card.getAttribute('data-donor') || '';
+                const country = card.getAttribute('data-country') || '';
+                const location = card.getAttribute('data-location') || '';
+                
+                if(
+                    code.toUpperCase().includes(query) || 
+                    hoNum.toUpperCase().includes(query) || 
+                    pName.toUpperCase().includes(query) || 
+                    org.toUpperCase().includes(query) || 
+                    donor.toUpperCase().includes(query) || 
+                    country.toUpperCase().includes(query) || 
+                    location.toUpperCase().includes(query)
+                ) {
+                    matchCount++;
                     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
                     card.classList.add('ring-4', 'ring-amber-500', 'scale-[1.02]');
                     setTimeout(() => {
@@ -837,15 +885,18 @@
             });
 
             feedback.classList.remove('hidden');
-            if(found) {
-                feedback.className = "mt-2 text-[11px] text-emerald-600 font-semibold";
-                feedback.textContent = `Project "${query}" found successfully!`;
+            if(matchCount > 0) {
+                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
+                feedback.textContent = `Found ${matchCount} matching project(s)!`;
+                
+                // 3 seconds delay before minimizing/closing the search box automatically
                 setTimeout(() => {
                     document.getElementById('searchDropdownMenu').classList.remove('open');
-                }, 1500);
+                    feedback.classList.add('hidden');
+                }, 3000);
             } else {
-                feedback.className = "mt-2 text-[11px] text-red-500 font-semibold";
-                feedback.textContent = `No project found matching "${query}". Try M-512, M-513, etc.`;
+                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50";
+                feedback.textContent = `No match found for "${query}".`;
             }
         }
 
