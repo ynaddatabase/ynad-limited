@@ -60,6 +60,11 @@ tailwind.config = {
     border-color: #ff8c00;
     box-shadow: 0 0 15px rgba(255, 140, 0, 0.35);
   }
+  .field:focus-within {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #ff8c00;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.35);
+  }
   .label { 
     display: block; 
     font-size: 0.7rem; 
@@ -99,6 +104,41 @@ tailwind.config = {
   #knobPointer {
     transition: transform 0.05s linear;
   }
+
+  /* BD-Number prefix widget */
+  .bd-wrap {
+    padding: 0 !important;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .bd-prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #fdba74;
+    background: rgba(0,0,0,0.35);
+    border-right: 1px solid rgba(255,140,0,0.3);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .bd-digits {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f8fafc;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  .bd-digits:disabled {
+    color: #6b6b70;
+    cursor: not-allowed;
+  }
+  .bd-digits::placeholder { color: #71717a; }
 </style>
 </head>
 
@@ -116,6 +156,11 @@ tailwind.config = {
           <div>
             <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
           </div>
+        </div>
+        <!-- Form completion progress bar -->
+        <div id="progressBarWrap" class="hidden sm:flex flex-1 mx-2 h-8 rounded-full border border-orange-500/40 bg-black/30 relative overflow-hidden items-center">
+          <div id="progressBarFill" class="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-600 to-amber-400 transition-all duration-300 ease-out" style="width:0%"></div>
+          <span id="progressBarText" class="relative w-full text-center text-[10px] font-black text-white tracking-wider">0%</span>
         </div>
         <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
         <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
@@ -141,13 +186,34 @@ tailwind.config = {
             <label class="label">Project Name <span class="text-red-500">*</span></label>
             <input id="pName" required autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT NAME">
           </div>
+          <div class="sm:col-span-2">
+            <label class="label">Project Category <span class="text-red-500">*</span></label>
+            <select id="pCategory" required class="field w-full rounded-xl px-4 py-3 text-sm">
+              <option value="" class="bg-zinc-900 text-white">SELECT CATEGORY</option>
+              <option value="MASJID" class="bg-zinc-900 text-white">MASJID</option>
+              <option value="MARKAZ" class="bg-zinc-900 text-white">MARKAZ</option>
+              <option value="MADRASA" class="bg-zinc-900 text-white">MADRASA</option>
+              <option value="ORPHANAGE" class="bg-zinc-900 text-white">ORPHANAGE</option>
+              <option value="ABLUTION CENTER" class="bg-zinc-900 text-white">ABLUTION CENTER</option>
+              <option value="WATER WELL" class="bg-zinc-900 text-white">WATER WELL</option>
+              <option value="CLINIC" class="bg-zinc-900 text-white">CLINIC</option>
+            </select>
+          </div>
           <div>
             <label class="label">BD-Number <span class="text-red-500">*</span></label>
-            <input id="pBd" required autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="M-123">
+            <div class="field bd-wrap rounded-xl">
+              <span id="pBdPrefix" class="bd-prefix">SELECT CATEGORY</span>
+              <input id="pBdDigits" type="text" inputmode="numeric" pattern="[0-9]*" disabled autocomplete="off" class="bd-digits" placeholder="123">
+            </div>
+            <input type="hidden" id="pBd">
           </div>
           <div>
             <label class="label">HO-Number <span class="text-red-500">*</span></label>
-            <input id="pHo" required autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="HO-123">
+            <div class="field bd-wrap rounded-xl">
+              <span class="bd-prefix">HO</span>
+              <input id="pHoDigits" type="text" inputmode="numeric" pattern="[0-9]*" required autocomplete="off" class="bd-digits" placeholder="123">
+            </div>
+            <input type="hidden" id="pHo">
           </div>
           <div>
             <label class="label">Status <span class="text-red-500">*</span></label>
@@ -172,7 +238,10 @@ tailwind.config = {
           </div>
           <div>
             <label class="label">Donated Country Name</label>
-            <input id="pCountry" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER COUNTRY NAME">
+            <input id="pCountry" list="countryList" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="TYPE COUNTRY NAME...">
+            <datalist id="countryList">
+              <option value="AFGHANISTAN"><option value="ALBANIA"><option value="ALGERIA"><option value="ANDORRA"><option value="ANGOLA"><option value="ANTIGUA AND BARBUDA"><option value="ARGENTINA"><option value="ARMENIA"><option value="AUSTRALIA"><option value="AUSTRIA"><option value="AZERBAIJAN"><option value="BAHAMAS"><option value="BAHRAIN"><option value="BANGLADESH"><option value="BARBADOS"><option value="BELARUS"><option value="BELGIUM"><option value="BELIZE"><option value="BENIN"><option value="BHUTAN"><option value="BOLIVIA"><option value="BOSNIA AND HERZEGOVINA"><option value="BOTSWANA"><option value="BRAZIL"><option value="BRUNEI"><option value="BULGARIA"><option value="BURKINA FASO"><option value="BURUNDI"><option value="CABO VERDE"><option value="CAMBODIA"><option value="CAMEROON"><option value="CANADA"><option value="CENTRAL AFRICAN REPUBLIC"><option value="CHAD"><option value="CHILE"><option value="CHINA"><option value="COLOMBIA"><option value="COMOROS"><option value="CONGO"><option value="COSTA RICA"><option value="CROATIA"><option value="CUBA"><option value="CYPRUS"><option value="CZECHIA"><option value="DEMOCRATIC REPUBLIC OF THE CONGO"><option value="DENMARK"><option value="DJIBOUTI"><option value="DOMINICA"><option value="DOMINICAN REPUBLIC"><option value="ECUADOR"><option value="EGYPT"><option value="EL SALVADOR"><option value="EQUATORIAL GUINEA"><option value="ERITREA"><option value="ESTONIA"><option value="ESWATINI"><option value="ETHIOPIA"><option value="FIJI"><option value="FINLAND"><option value="FRANCE"><option value="GABON"><option value="GAMBIA"><option value="GEORGIA"><option value="GERMANY"><option value="GHANA"><option value="GREECE"><option value="GRENADA"><option value="GUATEMALA"><option value="GUINEA"><option value="GUINEA-BISSAU"><option value="GUYANA"><option value="HAITI"><option value="HONDURAS"><option value="HUNGARY"><option value="ICELAND"><option value="INDIA"><option value="INDONESIA"><option value="IRAN"><option value="IRAQ"><option value="IRELAND"><option value="ISRAEL"><option value="ITALY"><option value="IVORY COAST"><option value="JAMAICA"><option value="JAPAN"><option value="JORDAN"><option value="KAZAKHSTAN"><option value="KENYA"><option value="KIRIBATI"><option value="KOSOVO"><option value="KUWAIT"><option value="KYRGYZSTAN"><option value="LAOS"><option value="LATVIA"><option value="LEBANON"><option value="LESOTHO"><option value="LIBERIA"><option value="LIBYA"><option value="LIECHTENSTEIN"><option value="LITHUANIA"><option value="LUXEMBOURG"><option value="MADAGASCAR"><option value="MALAWI"><option value="MALAYSIA"><option value="MALDIVES"><option value="MALI"><option value="MALTA"><option value="MARSHALL ISLANDS"><option value="MAURITANIA"><option value="MAURITIUS"><option value="MEXICO"><option value="MICRONESIA"><option value="MOLDOVA"><option value="MONACO"><option value="MONGOLIA"><option value="MONTENEGRO"><option value="MOROCCO"><option value="MOZAMBIQUE"><option value="MYANMAR"><option value="NAMIBIA"><option value="NAURU"><option value="NEPAL"><option value="NETHERLANDS"><option value="NEW ZEALAND"><option value="NICARAGUA"><option value="NIGER"><option value="NIGERIA"><option value="NORTH KOREA"><option value="NORTH MACEDONIA"><option value="NORWAY"><option value="OMAN"><option value="PAKISTAN"><option value="PALAU"><option value="PALESTINE"><option value="PANAMA"><option value="PAPUA NEW GUINEA"><option value="PARAGUAY"><option value="PERU"><option value="PHILIPPINES"><option value="POLAND"><option value="PORTUGAL"><option value="QATAR"><option value="ROMANIA"><option value="RUSSIA"><option value="RWANDA"><option value="SAINT KITTS AND NEVIS"><option value="SAINT LUCIA"><option value="SAINT VINCENT AND THE GRENADINES"><option value="SAMOA"><option value="SAN MARINO"><option value="SAO TOME AND PRINCIPE"><option value="SAUDI ARABIA"><option value="SENEGAL"><option value="SERBIA"><option value="SEYCHELLES"><option value="SIERRA LEONE"><option value="SINGAPORE"><option value="SLOVAKIA"><option value="SLOVENIA"><option value="SOLOMON ISLANDS"><option value="SOMALIA"><option value="SOUTH AFRICA"><option value="SOUTH KOREA"><option value="SOUTH SUDAN"><option value="SPAIN"><option value="SRI LANKA"><option value="SUDAN"><option value="SURINAME"><option value="SWEDEN"><option value="SWITZERLAND"><option value="SYRIA"><option value="TAIWAN"><option value="TAJIKISTAN"><option value="TANZANIA"><option value="THAILAND"><option value="TIMOR-LESTE"><option value="TOGO"><option value="TONGA"><option value="TRINIDAD AND TOBAGO"><option value="TUNISIA"><option value="TURKEY"><option value="TURKMENISTAN"><option value="TUVALU"><option value="UGANDA"><option value="UKRAINE"><option value="UNITED ARAB EMIRATES"><option value="UNITED KINGDOM"><option value="UNITED STATES"><option value="URUGUAY"><option value="UZBEKISTAN"><option value="VANUATU"><option value="VATICAN CITY"><option value="VENEZUELA"><option value="VIETNAM"><option value="YEMEN"><option value="ZAMBIA"><option value="ZIMBABWE">
+            </datalist>
           </div>
           <div>
             <label class="label">Project Cost (BDT)</label>
@@ -272,6 +341,61 @@ document.getElementById('pDonorId').addEventListener('input', function (e) {
   this.value = this.value.replace(/[^0-9]/g, '');
 });
 
+/* ---- Project Category -> BD-Number auto-prefix ---- */
+const categoryPrefixes = {
+  "MASJID": "M",
+  "MARKAZ": "MRZ",
+  "MADRASA": "MDS",
+  "ORPHANAGE": "ORP",
+  "ABLUTION CENTER": "AB",
+  "WATER WELL": "W",
+  "CLINIC": "CLN"
+};
+
+const pCategory = document.getElementById('pCategory');
+const pBdPrefix = document.getElementById('pBdPrefix');
+const pBdDigits = document.getElementById('pBdDigits');
+const pBdHidden = document.getElementById('pBd');
+
+function syncBdHidden() {
+  const prefix = categoryPrefixes[pCategory.value];
+  pBdHidden.value = prefix ? `${prefix}-${pBdDigits.value}` : '';
+}
+
+function updateBdPrefix() {
+  const prefix = categoryPrefixes[pCategory.value];
+  if (prefix) {
+    pBdPrefix.textContent = prefix;
+    pBdDigits.disabled = false;
+  } else {
+    pBdPrefix.textContent = 'SELECT CATEGORY';
+    pBdDigits.disabled = true;
+    pBdDigits.value = '';
+  }
+  syncBdHidden();
+}
+
+pCategory.addEventListener('change', updateBdPrefix);
+pBdDigits.addEventListener('input', function () {
+  this.value = this.value.replace(/[^0-9]/g, '');
+  syncBdHidden();
+});
+updateBdPrefix();
+
+/* ---- HO-Number: fixed HO- prefix ---- */
+const pHoDigits = document.getElementById('pHoDigits');
+const pHoHidden = document.getElementById('pHo');
+
+function syncHoHidden() {
+  pHoHidden.value = pHoDigits.value ? `HO-${pHoDigits.value}` : '';
+}
+
+pHoDigits.addEventListener('input', function () {
+  this.value = this.value.replace(/[^0-9]/g, '');
+  syncHoHidden();
+});
+syncHoHidden();
+
 const openingDateInput = document.getElementById('pOpening');
 const openedDateInput = document.getElementById('pOpened');
 const delayReasonContainer = document.getElementById('delayReasonSection');
@@ -306,15 +430,84 @@ openedDateInput.addEventListener('change', calculateDelay);
 
 document.getElementById('projectForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  
+
+  if (!pCategory.value) {
+    alert('PLEASE SELECT A PROJECT CATEGORY!');
+    return;
+  }
+  syncBdHidden();
+  if (!pBdDigits.value) {
+    alert('PLEASE ENTER THE BD-NUMBER DIGITS!');
+    return;
+  }
+  syncHoHidden();
+  if (!pHoDigits.value) {
+    alert('PLEASE ENTER THE HO-NUMBER DIGITS!');
+    return;
+  }
+
   const photosInput = document.getElementById('pPhotos');
   if(photosInput.files.length > 10) {
     alert('YOU CAN UPLOAD A MAXIMUM OF 10 PHOTOS!');
     return;
   }
 
-  alert('PROJECT RECORD SUCCESSFULLY VALIDATED & READY FOR SUPABASE!');
+  alert('PROJECT RECORD SUCCESSFULLY VALIDATED & READY FOR SUPABASE! BD-NUMBER: ' + pBdHidden.value);
 });
+
+/* ---- Form Completion Progress Bar ---- */
+(function () {
+  const progressBarFill = document.getElementById('progressBarFill');
+  const progressBarText = document.getElementById('progressBarText');
+  const form = document.getElementById('projectForm');
+
+  function getTrackedFields() {
+    return [
+      document.getElementById('pName'),
+      pCategory,
+      pBdDigits,
+      pHoDigits,
+      document.getElementById('pStatus'),
+      document.getElementById('pOrg'),
+      document.getElementById('pDonor'),
+      document.getElementById('pDonorId'),
+      document.getElementById('pCountry'),
+      document.getElementById('pCost'),
+      document.getElementById('pDistrict'),
+      document.getElementById('pLocation'),
+      document.getElementById('pApproval'),
+      document.getElementById('pStart'),
+      document.getElementById('pOpening'),
+      document.getElementById('pOpened'),
+      document.getElementById('pEngineer'),
+      document.getElementById('pUpdate'),
+      document.getElementById('pDocs'),
+      document.getElementById('pCPhoto'),
+      document.getElementById('pPhotos'),
+      document.getElementById('pVideo')
+    ];
+  }
+
+  function updateProgress() {
+    const fields = getTrackedFields();
+    let filled = 0;
+    fields.forEach(function (el) {
+      if (!el) return;
+      if (el.type === 'file') {
+        if (el.files && el.files.length > 0) filled++;
+      } else if (el.value && el.value.trim() !== '') {
+        filled++;
+      }
+    });
+    const pct = Math.round((filled / fields.length) * 100);
+    progressBarFill.style.width = pct + '%';
+    progressBarText.textContent = pct + '%';
+  }
+
+  form.addEventListener('input', updateProgress);
+  form.addEventListener('change', updateProgress);
+  updateProgress();
+})();
 
 /* ---- Rotating Scroll Knob ---- */
 (function () {
