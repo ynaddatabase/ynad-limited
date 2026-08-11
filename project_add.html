@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YNAD System — Project Record</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script>
+tailwind.config = {
+  darkMode: 'media',
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#ea580c',
+          700: '#c2410c',
+          900: '#7c2d12',
+          glow: '#ff8c00'
+        }
+      },
+      boxShadow: {
+        'neon': '0 0 30px -5px rgba(255, 140, 0, 0.4)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.2)'
+      }
+    }
+  }
+}
+</script>
+<style>
+  body {
+    background-color: #070709;
+    color: #f8fafc;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.18) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(255, 140, 0, 0.12) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+  input:not([type="url"]):not([type="file"]):not([type="date"]), select, textarea {
+    text-transform: uppercase;
+  }
+  .glass-panel {
+    background: rgba(18, 18, 22, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+  }
+  .field {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 140, 0, 0.25);
+    color: #f8fafc;
+  }
+  .field:focus, .field:not(:placeholder-shown) {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #ff8c00;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.35);
+  }
+  .label { 
+    display: block; 
+    font-size: 0.7rem; 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em; 
+    color: #fb923c; 
+    margin-bottom: 0.45rem; 
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255, 140, 0, 0.3); border-radius: 4px; }
+</style>
+</head>
+
+<body class="antialiased selection:bg-orange-500 selection:text-white">
+<div class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+  <main class="w-full max-w-4xl">
+    <!-- Top Header -->
+    <header class="glass-panel rounded-3xl p-6 sm:p-8 mb-8 shadow-neon">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-400 text-black font-black grid place-items-center shadow-neon">
+          <i class="fa-solid fa-plus text-xl animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-normal tracking-tight text-white uppercase">Project Add</h1>
+        </div>
+      </div>
+    </header>
+
+    <form id="projectForm" class="space-y-6">
+
+      <!-- Section 1: General Info -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">01. General Identity & Status</h3>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div class="sm:col-span-2">
+            <label class="label">Project Name <span class="text-red-500">*</span></label>
+            <input id="pName" required class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT NAME">
+          </div>
+          <div>
+            <label class="label">BD-Number <span class="text-red-500">*</span></label>
+            <input id="pBd" required class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="M-123">
+          </div>
+          <div>
+            <label class="label">HO-Number <span class="text-red-500">*</span></label>
+            <input id="pHo" required class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="HO-123">
+          </div>
+          <div>
+            <label class="label">Status <span class="text-red-500">*</span></label>
+            <select id="pStatus" required class="field w-full rounded-xl px-4 py-3 text-sm">
+              <option value="" class="bg-zinc-900 text-white">SELECT STATUS</option>
+              <option value="Ongoing" class="bg-zinc-900 text-white">ONGOING</option>
+              <option value="Completed" class="bg-zinc-900 text-white">COMPLETED</option>
+              <option value="Upcoming" class="bg-zinc-900 text-white">UPCOMING</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Organization Name</label>
+            <input id="pOrg" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ORGANIZATION NAME">
+          </div>
+          <div>
+            <label class="label">Donor Name</label>
+            <input id="pDonor" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DONOR NAME">
+          </div>
+          <div>
+            <label class="label">Donor ID (Digits Only)</label>
+            <input id="pDonorId" type="text" inputmode="numeric" pattern="[0-9]*" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="12345">
+          </div>
+          <div>
+            <label class="label">Donated Country Name</label>
+            <input id="pCountry" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER COUNTRY NAME">
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Location & District -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">02. Geo-Location & District</h3>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="label">BD District (Type to search)</label>
+            <input id="pDistrict" list="districtList" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="TYPE DISTRICT NAME...">
+            <datalist id="districtList">
+              <option value="BAGERHAT"><option value="BANDARBAN"><option value="BARGUNA"><option value="BARISHAL"><option value="BHOLA"><option value="BOGURA"><option value="BRAHMANBARIA"><option value="CHANDPUR"><option value="CHATTOGRAM"><option value="CHUADANGA"><option value="COX'S BAZAR"><option value="CUMILLA"><option value="DHAKA"><option value="DINAJPUR"><option value="FARIDPUR"><option value="FENI"><option value="GAIBANDHA"><option value="GAZIPUR"><option value="GOPALGANJ"><option value="HABIGANJ"><option value="JAMALPUR"><option value="JASHORE"><option value="JHALOKATI"><option value="JHENAIDAH"><option value="JOYPURHAT"><option value="KHAGRACHHARI"><option value="KHULNA"><option value="KISHOREGANJ"><option value="KURIGRAM"><option value="KUSHTIA"><option value="LAKSHMIPUR"><option value="LALMONIRHAT"><option value="MADARIPUR"><option value="MAGURA"><option value="MANIKGANJ"><option value="MEHERPUR"><option value="MOULVIBAZAR"><option value="MUNSHIGANJ"><option value="MYMENSINGH"><option value="NAOGAON"><option value="NARAIL"><option value="NARAYANGANJ"><option value="NARSINGDI"><option value="NATORE"><option value="NETROKONA"><option value="NILPHAMARI"><option value="NOAKHALI"><option value="PABNA"><option value="PANCHAGARH"><option value="PATUAKHALI"><option value="PIROJPUR"><option value="RAJBARI"><option value="RAJSHAHI"><option value="RANGAMATI"><option value="RANGPUR"><option value="SATKHIRA"><option value="SHARIATPUR"><option value="SHERPUR"><option value="SIRAJGANJ"><option value="SUNAMGANJ"><option value="SYLHET"><option value="TANGAIL"><option value="THAKURGAON">
+            </datalist>
+          </div>
+          <div>
+            <label class="label">Location (Google Map Link)</label>
+            <input id="pLocation" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE MAP LOCATION LINK">
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Timeline & Management -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">03. Timeline, Management & Notes</h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+          <div><label class="label">Approval Date</label><input id="pApproval" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div><label class="label">Start Date</label><input id="pStart" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div><label class="label">Opening Date</label><input id="pOpening" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div><label class="label">Opened Date</label><input id="pOpened" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="label">Assigned Site Engineer</label>
+            <input id="pEngineer" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENGINEER NAME">
+          </div>
+          <div>
+            <label class="label">Update Status / Notes (Digits Only)</label>
+            <input id="pUpdate" type="text" inputmode="numeric" pattern="[0-9]*" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER DIGITS ONLY (E.G. 513)">
+          </div>
+          
+          <!-- Reason for Delay -->
+          <div id="delayReasonSection" class="sm:col-span-2 hidden space-y-2">
+            <div class="flex items-center gap-3">
+              <label class="label text-red-400 mb-0">Reason for Delay</label>
+              <span id="delayDisplay" class="text-[10px] font-extrabold text-orange-400 bg-orange-950/60 border border-orange-500/30 px-3 py-0.5 rounded-full"></span>
+            </div>
+            <textarea id="pDelayReason" rows="2" class="field w-full rounded-xl px-4 py-3 text-sm resize-none border-red-500/40" placeholder="PROVIDE REASON FOR DELAY..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Media & Documents -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">04. Media, Photos & Documents</h3>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="label">Documents (PDF / JPG / PNG)</label>
+            <input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="field w-full rounded-xl px-3 py-2 text-xs">
+          </div>
+          <div>
+            <label class="label">C-Photo (Single Photo)</label>
+            <input id="pCPhoto" type="file" accept="image/*" class="field w-full rounded-xl px-3 py-2 text-xs">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">Photos (Max 10 Qty)</label>
+            <input id="pPhotos" type="file" accept="image/*" multiple class="field w-full rounded-xl px-3 py-2 text-xs">
+            <p class="text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 10 IMAGES SIMULTANEOUSLY.</p>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">Video (YouTube Embed Link)</label>
+            <input id="pVideo" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="HTTPS://WWW.YOUTUBE.COM/WATCH?V=...">
+          </div>
+        </div>
+      </section>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end pb-8">
+        <button type="submit" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest shadow-neon transition transform hover:scale-[1.02]">
+          <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save to Supabase
+        </button>
+      </div>
+
+    </form>
+  </main>
+</div>
+
+<script>
+document.getElementById('pUpdate').addEventListener('input', function (e) {
+  this.value = this.value.replace(/[^0-9]/g, '');
+});
+document.getElementById('pDonorId').addEventListener('input', function (e) {
+  this.value = this.value.replace(/[^0-9]/g, '');
+});
+
+const openingDateInput = document.getElementById('pOpening');
+const openedDateInput = document.getElementById('pOpened');
+const delayReasonContainer = document.getElementById('delayReasonSection');
+const delayDisplay = document.getElementById('delayDisplay');
+
+function calculateDelay() {
+  const d1 = new Date(openingDateInput.value);
+  const d2 = new Date(openedDateInput.value);
+
+  if (openingDateInput.value && openedDateInput.value && d2 > d1) {
+    let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+    let days = d2.getDate() - d1.getDate();
+    
+    if (days < 0) {
+      months--;
+      days += new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
+    }
+    
+    let resultText = '';
+    if (months > 0) resultText += `${months} MONTH${months > 1 ? 'S' : ''} `;
+    if (days > 0 || months === 0) resultText += `${days} DAY${days > 1 ? 'S' : ''} `;
+    
+    delayDisplay.textContent = `${resultText.trim()} DELAY`;
+    delayReasonContainer.classList.remove('hidden');
+  } else {
+    delayReasonContainer.classList.add('hidden');
+  }
+}
+
+openingDateInput.addEventListener('change', calculateDelay);
+openedDateInput.addEventListener('change', calculateDelay);
+
+document.getElementById('projectForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const photosInput = document.getElementById('pPhotos');
+  if(photosInput.files.length > 10) {
+    alert('YOU CAN UPLOAD A MAXIMUM OF 10 PHOTOS!');
+    return;
+  }
+
+  alert('PROJECT RECORD SUCCESSFULLY VALIDATED & READY FOR SUPABASE!');
+});
+</script>
+</body>
+</html>
