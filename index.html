@@ -258,14 +258,15 @@
             overflow: hidden;
             position: relative;
             opacity: 0;
-            transform: translateY(24px) scale(0.96);
-            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            transform: scale(0.04);
+            transform-origin: 50% 50%; /* overridden dynamically via JS to the plus button's position */
+            transition: transform 0.5s cubic-bezier(0.34, 1.15, 0.4, 1), opacity 0.35s ease;
             display: flex;
             flex-direction: column;
         }
         #projectAddOverlay.open #projectAddBox {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: scale(1);
         }
         #projectAddCloseBtn {
             width: 30px;
@@ -323,7 +324,7 @@
                 <div class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
                     YNAD <span class="text-amber-600 font-light">Construction</span>
                 </div>
-                <button type="button" title="Add New" onclick="openProjectAddModal()" style="margin-left: 0.4in;" class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md hover:scale-105 hover:shadow-lg transition transform duration-200 cursor-pointer flex-shrink-0">
+                <button type="button" title="Add New" onclick="openProjectAddModal(event)" style="margin-left: 0.4in;" class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md hover:scale-105 hover:shadow-lg transition transform duration-200 cursor-pointer flex-shrink-0">
                     <i class="fa-solid fa-plus text-sm"></i>
                 </button>
             </div>
@@ -841,7 +842,7 @@
     </div>
 
     <!-- Project Add Modal (loads project_add.html inside an iframe) -->
-    <div id="projectAddOverlay" onclick="handleProjectAddOverlayClick(event)">
+    <div id="projectAddOverlay">
         <div id="projectAddBox">
             <button id="projectAddCloseBtn" onclick="closeProjectAddModal()" class="absolute top-3 right-3 z-10 bg-white/90 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 shadow-md cursor-pointer">
                 <i class="fa-solid fa-xmark text-xs"></i>
@@ -987,37 +988,33 @@
         }
 
         // Open Project Add Modal (loads project_add.html into the iframe on open)
-        function openProjectAddModal() {
+        // The box visually "emerges" from the plus icon's position by computing a dynamic transform-origin.
+        function openProjectAddModal(event) {
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
+            const box = document.getElementById('projectAddBox');
+
+            if (event && event.currentTarget) {
+                const btnRect = event.currentTarget.getBoundingClientRect();
+                const boxRect = box.getBoundingClientRect();
+                const originX = (btnRect.left + btnRect.width / 2) - boxRect.left;
+                const originY = (btnRect.top + btnRect.height / 2) - boxRect.top;
+                box.style.transformOrigin = `${originX}px ${originY}px`;
+            }
+
             frame.src = 'project_add.html'; // must be in the same folder/repo as index.html
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        // Close Project Add Modal
+        // Close Project Add Modal — only triggered by the X button (no outside-click / no Escape key)
         function closeProjectAddModal() {
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
             overlay.classList.remove('open');
             document.body.style.overflow = 'auto';
-            setTimeout(() => { frame.src = 'about:blank'; }, 450); // reset after fade-out
+            setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
         }
-
-        // Close modal when clicking outside the box
-        function handleProjectAddOverlayClick(event) {
-            if (event.target === document.getElementById('projectAddOverlay')) {
-                closeProjectAddModal();
-            }
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const overlay = document.getElementById('projectAddOverlay');
-                if (overlay.classList.contains('open')) closeProjectAddModal();
-            }
-        });
 
         // Open Menu with Blur Effect
         function openMenuWithEffect() {
