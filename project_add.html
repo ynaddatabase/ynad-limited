@@ -80,7 +80,7 @@ tailwind.config = {
   /* Sticky header: flush to top, fully opaque so nothing can bleed through behind it */
   #topHeader {
     position: sticky;
-    top: 0;
+    top: 3px;
     z-index: 50;
     background: #0d0d10;
   }
@@ -100,10 +100,29 @@ tailwind.config = {
   #knobPointer {
     transition: transform 0.05s linear;
   }
+
+  /* Form completion progress bar - subtle, sits above everything */
+  #formProgressTrack {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: 3px;
+    width: 100%;
+    background: #0d0d10;
+  }
+  #formProgressFill {
+    height: 100%;
+    width: 0%;
+    background: rgba(255, 140, 0, 0.45);
+    transition: width 0.35s ease;
+  }
 </style>
 </head>
 
 <body class="antialiased selection:bg-orange-500 selection:text-white">
+<div id="formProgressTrack">
+  <div id="formProgressFill"></div>
+</div>
 <div class="min-h-screen flex flex-col items-center p-4 sm:p-8">
 
   <main class="w-full max-w-4xl">
@@ -165,7 +184,11 @@ tailwind.config = {
           </div>
           <div>
             <label class="label">HO-Number <span class="text-red-500">*</span></label>
-            <input id="pHo" required autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="HO-123">
+            <div class="field w-full rounded-xl flex items-stretch overflow-hidden pr-1">
+              <span class="flex items-center px-3 text-sm font-black text-orange-400 bg-orange-500/10 border-r border-orange-500/25 select-none whitespace-nowrap">HO</span>
+              <input id="pHoDigits" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none" placeholder="12345">
+            </div>
+            <input type="hidden" id="pHo">
           </div>
           <div>
             <label class="label">Status <span class="text-red-500">*</span></label>
@@ -223,11 +246,11 @@ tailwind.config = {
       <!-- Section 3: Timeline & Management -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">03. Timeline, Management & Notes</h3>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
-          <div><label class="label">Approval Date</label><input id="pApproval" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
-          <div><label class="label">Start Date</label><input id="pStart" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
-          <div><label class="label">Opening Date</label><input id="pOpening" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
-          <div><label class="label">Opened Date</label><input id="pOpened" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5" id="timelineDatesGrid">
+          <div id="fieldApproval"><label class="label">Approval Date</label><input id="pApproval" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div id="fieldStart"><label class="label">Start Date</label><input id="pStart" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div id="fieldOpening"><label class="label">Opening Date</label><input id="pOpening" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
+          <div id="fieldOpened"><label class="label">Opened Date</label><input id="pOpened" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
         </div>
         <div class="grid sm:grid-cols-2 gap-5">
           <div>
@@ -369,6 +392,96 @@ bdDigitsInput.addEventListener('input', function () {
 categorySelect.addEventListener('change', updateBdPrefix);
 updateBdPrefix();
 
+/* ---- Status -> Timeline Fields Visibility ---- */
+const statusSelect = document.getElementById('pStatus');
+const fieldApproval = document.getElementById('fieldApproval');
+const fieldStart = document.getElementById('fieldStart');
+const fieldOpening = document.getElementById('fieldOpening');
+const fieldOpened = document.getElementById('fieldOpened');
+
+function setFieldVisible(fieldWrapper, visible) {
+  fieldWrapper.classList.toggle('hidden', !visible);
+  if (!visible) {
+    const input = fieldWrapper.querySelector('input');
+    if (input) input.value = '';
+  }
+}
+
+function updateTimelineFieldsVisibility() {
+  const status = statusSelect.value;
+
+  if (status === 'Ongoing') {
+    setFieldVisible(fieldApproval, true);
+    setFieldVisible(fieldStart, true);
+    setFieldVisible(fieldOpening, false);
+    setFieldVisible(fieldOpened, false);
+  } else if (status === 'Completed') {
+    setFieldVisible(fieldApproval, true);
+    setFieldVisible(fieldStart, true);
+    setFieldVisible(fieldOpening, true);
+    setFieldVisible(fieldOpened, true);
+  } else if (status === 'Upcoming') {
+    setFieldVisible(fieldApproval, true);
+    setFieldVisible(fieldStart, false);
+    setFieldVisible(fieldOpening, false);
+    setFieldVisible(fieldOpened, false);
+  } else {
+    // No status selected yet — show all fields
+    setFieldVisible(fieldApproval, true);
+    setFieldVisible(fieldStart, true);
+    setFieldVisible(fieldOpening, true);
+    setFieldVisible(fieldOpened, true);
+  }
+
+  calculateDelay();
+}
+
+statusSelect.addEventListener('change', updateTimelineFieldsVisibility);
+updateTimelineFieldsVisibility();
+
+/* ---- Form Completion Progress Bar ---- */
+const formProgressFill = document.getElementById('formProgressFill');
+const projectFormEl = document.getElementById('projectForm');
+
+function updateFormProgress() {
+  const trackedFields = Array.from(projectFormEl.querySelectorAll('input, select, textarea')).filter(el => {
+    if (el.type === 'hidden') return false;
+    if (el.disabled) return false;
+    if (el.closest('.hidden')) return false; // skip fields hidden by Status logic
+    return true;
+  });
+
+  let filledCount = 0;
+  trackedFields.forEach(el => {
+    if (el.type === 'file') {
+      if (el.files && el.files.length > 0) filledCount++;
+    } else if (el.value && el.value.trim() !== '') {
+      filledCount++;
+    }
+  });
+
+  const percent = trackedFields.length ? Math.round((filledCount / trackedFields.length) * 100) : 0;
+  formProgressFill.style.width = percent + '%';
+}
+
+projectFormEl.addEventListener('input', updateFormProgress);
+projectFormEl.addEventListener('change', updateFormProgress);
+updateFormProgress();
+
+/* ---- HO-Number: fixed "HO" prefix, digits only ---- */
+const hoDigitsInput = document.getElementById('pHoDigits');
+const hoHiddenInput = document.getElementById('pHo');
+
+function syncHoHiddenValue() {
+  const digits = hoDigitsInput.value.trim();
+  hoHiddenInput.value = digits ? `HO-${digits}` : '';
+}
+
+hoDigitsInput.addEventListener('input', function () {
+  this.value = this.value.replace(/[^0-9]/g, '');
+  syncHoHiddenValue();
+});
+
 /* ---- File Upload Helpers (Supabase Storage) ---- */
 
 // Builds a safe, unique storage path for one file inside a folder.
@@ -424,7 +537,12 @@ document.getElementById('projectForm').addEventListener('submit', async function
     alert('PLEASE SELECT A PROJECT CATEGORY AND ENTER THE BD-NUMBER DIGITS!');
     return;
   }
+  if (!hoDigitsInput.value.trim()) {
+    alert('PLEASE ENTER THE HO-NUMBER DIGITS!');
+    return;
+  }
   syncBdHiddenValue();
+  syncHoHiddenValue();
 
   const submitBtn = document.querySelector('#projectForm button[type="submit"]');
   const originalBtnHtml = submitBtn.innerHTML;
@@ -466,7 +584,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     project_name: document.getElementById('pName').value.trim(),
     category: document.getElementById('pCategory').value,
     bd_number: document.getElementById('pBd').value,
-    ho_number: document.getElementById('pHo').value.trim(),
+    ho_number: document.getElementById('pHo').value,
     status: document.getElementById('pStatus').value,
     organization: document.getElementById('pOrg').value.trim() || null,
     donor_name: document.getElementById('pDonor').value.trim() || null,
@@ -502,7 +620,10 @@ document.getElementById('projectForm').addEventListener('submit', async function
   alert('PROJECT RECORD SUCCESSFULLY SAVED TO SUPABASE!');
   document.getElementById('projectForm').reset();
   updateBdPrefix();
+  hoHiddenInput.value = '';
   delayReasonContainer.classList.add('hidden');
+  updateTimelineFieldsVisibility();
+  updateFormProgress();
 });
 
 /* ---- Rotating Scroll Knob ---- */
