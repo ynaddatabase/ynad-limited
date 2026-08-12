@@ -181,34 +181,6 @@
             transform: translateX(0);
         }
 
-        /* Staggered Overlapping Up Animation for Menu Items */
-        .menu-item-animate {
-            opacity: 0;
-            transform: translateY(35px);
-            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
-                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
-                        color 0s ease !important;
-        }
-        #menuOverlay.open .menu-item-animate:nth-child(1) {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.15s, 0.15s, 0s;
-        }
-        #menuOverlay.open .menu-item-animate:nth-child(2) {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.25s, 0.25s, 0s;
-        }
-        #menuOverlay.open .menu-item-animate:nth-child(3) {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.35s, 0.35s, 0s;
-        }
-        #menuOverlay.open .menu-item-animate:nth-child(4) {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.45s, 0.45s, 0s;
-        }
 
         /* User Profile Dropdown Box Animations */
         #userDropdownMenu {
@@ -830,11 +802,8 @@
             </button>
 
             <!-- Menu Options -->
-            <div class="mt-20 flex flex-col space-y-6">
-                <a href="#projects" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">FILTER BY PROJECT</a>
-                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">FINANCIAL OVERVIEW</a>
-                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">NEWS & AWARDS</a>
-                <a href="#" onclick="closeMenuWithEffect()" class="menu-item-animate text-base md:text-lg font-medium text-slate-900 hover:text-amber-600 tracking-wide">BLOG</a>
+            <div class="mt-20 flex-1 flex flex-col">
+                <iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none; width:100%; height:260px;"></iframe>
             </div>
 
             <div class="pb-10"></div>
@@ -1021,6 +990,7 @@
             const icon = document.getElementById('hamburgerBtnIcon');
             const pageWrapper = document.getElementById('pageContentWrapper');
             const overlay = document.getElementById('menuOverlay');
+            const menuFrame = document.getElementById('menuLinksFrame');
 
             icon.classList.add('clicked');
 
@@ -1029,6 +999,7 @@
                 pageWrapper.classList.add('blurred');
 
                 setTimeout(() => {
+                    menuFrame.src = 'menu.html'; // fresh load replays the staggered fade-in each time
                     overlay.classList.add('open');
                     document.body.style.overflow = 'hidden';
                 }, 200);
@@ -1040,12 +1011,14 @@
         function closeMenuWithEffect() {
             const overlay = document.getElementById('menuOverlay');
             const pageWrapper = document.getElementById('pageContentWrapper');
+            const menuFrame = document.getElementById('menuLinksFrame');
 
             overlay.classList.remove('open');
 
             setTimeout(() => {
                 pageWrapper.classList.remove('blurred');
                 document.body.style.overflow = 'auto';
+                menuFrame.src = 'about:blank';
             }, 400);
         }
 
