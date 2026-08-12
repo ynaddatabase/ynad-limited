@@ -978,11 +978,10 @@
         async function loadHeroSlides() {
             const container = document.getElementById('heroBgSlides');
 
-            // NOTE: change 'c_photo' and 'opening_date' below to match your actual Supabase column names if different.
             const { data, error } = await supabaseClient
                 .from('projects')
-                .select('c_photo, opening_date')
-                .not('c_photo', 'is', null)
+                .select('c_photo_url, opening_date')
+                .not('c_photo_url', 'is', null)
                 .order('opening_date', { ascending: false })
                 .limit(10);
 
@@ -995,7 +994,7 @@
             data.forEach((project, i) => {
                 const div = document.createElement('div');
                 div.className = 'hero-slide' + (i === 0 ? ' active' : '');
-                div.style.backgroundImage = `url('${project.c_photo}')`;
+                div.style.backgroundImage = `url('${project.c_photo_url}')`;
                 container.appendChild(div);
             });
 
