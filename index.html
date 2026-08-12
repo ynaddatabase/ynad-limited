@@ -442,16 +442,26 @@
             <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20 pointer-events-auto">
                 <div class="flex gap-12 lg:gap-16 text-left w-full md:w-auto justify-around md:justify-start">
                     <div>
-                        <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">102</span>
+                        <span id="statOngoing" class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">0</span>
                         <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Ongoing</p>
                     </div>
                     <div>
-                        <span class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">460</span>
+                        <span id="statCompleted" class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">0</span>
                         <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Completed</p>
+                    </div>
+                    <div>
+                        <span id="statUpcoming" class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">0</span>
+                        <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Upcoming</p>
                     </div>
                 </div>
                 
                 <div class="flex gap-8 lg:gap-16 text-center">
+                    <a href="all-projects.html" class="group cursor-pointer">
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-layer-group text-lg"></i>
+                        </div>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">All</span>
+                    </a>
                     <a href="#projects" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-building text-lg"></i>
@@ -790,6 +800,7 @@
             setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
             loadProjects(); // refresh homepage cards in case a new project was just added
             loadHeroSlides(); // refresh hero slideshow too in case a new project was just added
+            loadHeroStats(); // refresh Ongoing/Completed/Upcoming counters too
         }
 
         // Open Menu with Blur Effect
@@ -949,12 +960,11 @@
             const slider = document.getElementById('mainProjectSlider');
             slider.innerHTML = '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
 
-            // Ordered by opening_date (newest opening date first).
-            // NOTE: change 'opening_date' below to match your actual Supabase column name if different.
+            // Ordered by opening_date (newest opening date first). Projects with no opening_date go last.
             const { data, error } = await supabaseClient
                 .from('projects')
                 .select('*')
-                .order('opening_date', { ascending: false });
+                .order('opening_date', { ascending: false, nullsFirst: false });
 
             if (error) {
                 console.error(error);
@@ -982,7 +992,7 @@
                 .from('projects')
                 .select('c_photo_url, opening_date')
                 .not('c_photo_url', 'is', null)
-                .order('opening_date', { ascending: false })
+                .order('opening_date', { ascending: false, nullsFirst: false })
                 .limit(10);
 
             if (error || !data || data.length === 0) {
@@ -1001,10 +1011,24 @@
             currentHeroSlide = 0;
         }
 
-        // Load projects & hero slideshow on first page load
+        /* ---- Load Ongoing / Completed / Upcoming counters (real counts from Supabase) ---- */
+        async function loadHeroStats() {
+            const [ongoingRes, completedRes, upcomingRes] = await Promise.all([
+                supabaseClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'Ongoing'),
+                supabaseClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'Completed'),
+                supabaseClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'Upcoming')
+            ]);
+
+            document.getElementById('statOngoing').textContent = ongoingRes.count ?? 0;
+            document.getElementById('statCompleted').textContent = completedRes.count ?? 0;
+            document.getElementById('statUpcoming').textContent = upcomingRes.count ?? 0;
+        }
+
+        // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
             loadProjects();
             loadHeroSlides();
+            loadHeroStats();
         });
     </script>
 </body>
