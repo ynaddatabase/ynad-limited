@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YNAD Construction</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -489,210 +490,10 @@
 
                 <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
                     
-                    <!-- Project Card 1 -->
-                    <div id="project-card-1" 
-                         data-project-code="M-512" 
-                         data-ho-number="HO-100015960" 
-                         data-project-name="MASJID AL NOOR" 
-                         data-org="WAMY" 
-                         data-donor="ABDUR RAHIM" 
-                         data-country="SAUDI ARABIA" 
-                         data-location="MAGURA" 
-                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
-                        <div>
-                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                                <div id="cardImages-1" class="flex h-full transition-transform duration-300">
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 pt-2.5">
-                                <div class="flex justify-between items-center mb-0.5">
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-512</span>
-                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015960</span>
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="changeCardImage(1, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                        <button onclick="changeCardImage(1, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                                <div class="flex flex-col mt-0.5 space-y-0.5">
-                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUR RAHIM</a>
-                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">SAUDI ARABIA</a>
-                                </div>
-                                <div class="mt-0.5 pt-0">
-                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">MAGURA</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                        </div>
+                    <!-- Dynamically populated from Supabase by loadProjects() in the script below -->
+                    <div id="projectsLoadingState" class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
+                        Loading projects...
                     </div>
-
-                    <!-- Project Card 2 -->
-                    <div id="project-card-2" 
-                         data-project-code="M-513" 
-                         data-ho-number="HO-100015961" 
-                         data-project-name="MASJID AL NOOR" 
-                         data-org="AL FATAH" 
-                         data-donor="ABDUL KARIM" 
-                         data-country="KUWAIT" 
-                         data-location="BOGURA" 
-                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
-                        <div>
-                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                                <div id="cardImages-2" class="flex h-full transition-transform duration-300">
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 pt-2.5">
-                                <div class="flex justify-between items-center mb-0.5">
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-513</span>
-                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015961</span>
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="changeCardImage(2, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                        <button onclick="changeCardImage(2, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                                <div class="flex flex-col mt-0.5 space-y-0.5">
-                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">AL FATAH</a>
-                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ABDUL KARIM</a>
-                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">KUWAIT</a>
-                                </div>
-                                <div class="mt-0.5 pt-0">
-                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">BOGURA</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                        </div>
-                    </div>
-
-                    <!-- Project Card 3 -->
-                    <div id="project-card-3" 
-                         data-project-code="M-514" 
-                         data-ho-number="HO-100015962" 
-                         data-project-name="MASJID AL NOOR" 
-                         data-org="TEEBAH FOUNDATION" 
-                         data-donor="MOHAMMAD ALI" 
-                         data-country="UAE" 
-                         data-location="SYLHET" 
-                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
-                        <div>
-                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                                <div id="cardImages-3" class="flex h-full transition-transform duration-300">
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 pt-2.5">
-                                <div class="flex justify-between items-center mb-0.5">
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-514</span>
-                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015962</span>
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="changeCardImage(3, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                        <button onclick="changeCardImage(3, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                                <div class="flex flex-col mt-0.5 space-y-0.5">
-                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">TEEBAH FOUNDATION</a>
-                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: MOHAMMAD ALI</a>
-                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">UAE</a>
-                                </div>
-                                <div class="mt-0.5 pt-0">
-                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">SYLHET</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                        </div>
-                    </div>
-
-                    <!-- Project Card 4 -->
-                    <div id="project-card-4" 
-                         data-project-code="M-515" 
-                         data-ho-number="HO-100015963" 
-                         data-project-name="MASJID AL NOOR" 
-                         data-org="WAMY" 
-                         data-donor="FATIMA BEGUM" 
-                         data-country="QATAR" 
-                         data-location="SYLHET" 
-                         class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
-                        <div>
-                            <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
-                                <div id="cardImages-4" class="flex h-full transition-transform duration-300">
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                    <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
-                                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80" class="project-img-item">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 pt-2.5">
-                                <div class="flex justify-between items-center mb-0.5">
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-sm md:text-base text-amber-600 font-extrabold block">M-515</span>
-                                        <span class="text-xs text-slate-400 font-medium tracking-tight">HO-100015963</span>
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="changeCardImage(4, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
-                                        <button onclick="changeCardImage(4, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">Masjid Al Noor</h4>
-                                <div class="flex flex-col mt-0.5 space-y-0.5">
-                                    <a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">WAMY</a>
-                                    <a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: FATIMA BEGUM</a>
-                                    <a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">QATAR</a>
-                                </div>
-                                <div class="mt-0.5 pt-0">
-                                    <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">SYLHET</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
-                            <a href="#" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                            <a href="#" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
-                            <a href="#" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </section>
@@ -822,6 +623,11 @@
 
     <!-- JavaScript -->
     <script>
+        // Supabase Connection
+        const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
         // Hero Background Slideshow Script
         let currentHeroSlide = 0;
         const heroSlides = document.querySelectorAll('.hero-slide');
@@ -983,6 +789,7 @@
             overlay.classList.remove('open');
             document.body.style.overflow = 'auto';
             setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
+            loadProjects(); // refresh homepage cards in case a new project was just added
         }
 
         // Open Menu with Blur Effect
@@ -1029,12 +836,12 @@
             }
         }
 
-        // Project Card Image Slider Function
-        const cardImageIndices = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        // Project Card Image Slider Function (index is now dynamic per loaded project)
+        const cardImageIndices = {};
         function changeCardImage(cardId, direction) {
             const slider = document.getElementById('cardImages-' + cardId);
             const totalImages = slider.children.length;
-            cardImageIndices[cardId] = (cardImageIndices[cardId] + direction + totalImages) % totalImages;
+            cardImageIndices[cardId] = ((cardImageIndices[cardId] || 0) + direction + totalImages) % totalImages;
             slider.style.transform = `translateX(-${cardImageIndices[cardId] * 100}%)`;
         }
 
@@ -1048,6 +855,108 @@
                 slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
             }
         }
+
+        /* ---- Load Projects from Supabase & Render Cards ---- */
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function buildProjectCardHTML(project, index) {
+            const photos = (project.photo_urls && project.photo_urls.length > 0) ? project.photo_urls : [FALLBACK_IMAGE];
+
+            const imagesHtml = photos.map(url => `
+                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                    <img src="${escapeHtml(url)}" class="project-img-item">
+                </div>
+            `).join('');
+
+            const arrowsHtml = photos.length > 1 ? `
+                <div class="flex gap-1.5">
+                    <button onclick="changeCardImage(${index}, -1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button onclick="changeCardImage(${index}, 1)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-xs cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            ` : '';
+
+            return `
+            <div id="project-card-${index}"
+                 data-project-code="${escapeHtml(project.bd_number)}"
+                 data-ho-number="${escapeHtml(project.ho_number)}"
+                 data-project-name="${escapeHtml(project.project_name)}"
+                 data-org="${escapeHtml(project.organization)}"
+                 data-donor="${escapeHtml(project.donor_name)}"
+                 data-country="${escapeHtml(project.donated_country)}"
+                 data-location="${escapeHtml(project.district)}"
+                 class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                <div>
+                    <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
+                        <div id="cardImages-${index}" class="flex h-full transition-transform duration-300">
+                            ${imagesHtml}
+                        </div>
+                    </div>
+                    <div class="p-4 pt-2.5">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-sm md:text-base text-amber-600 font-extrabold block">${escapeHtml(project.bd_number)}</span>
+                                <span class="text-xs text-slate-400 font-medium tracking-tight">${escapeHtml(project.ho_number)}</span>
+                            </div>
+                            ${arrowsHtml}
+                        </div>
+                        <h4 class="font-bold text-base md:text-lg text-slate-900 uppercase">${escapeHtml(project.project_name)}</h4>
+                        <div class="flex flex-col mt-0.5 space-y-0.5">
+                            ${project.organization ? `<a href="#" class="text-[11px] text-slate-700 font-bold tracking-wider uppercase hover:text-amber-600 transition w-fit">${escapeHtml(project.organization)}</a>` : ''}
+                            ${project.donor_name ? `<a href="#" class="text-[11px] text-slate-700 font-normal tracking-wider uppercase hover:text-amber-600 transition w-fit">DONOR: ${escapeHtml(project.donor_name)}</a>` : ''}
+                            ${project.donated_country ? `<a href="#" class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase hover:text-amber-600 transition w-fit">${escapeHtml(project.donated_country)}</a>` : ''}
+                        </div>
+                        <div class="mt-0.5 pt-0">
+                            <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">${escapeHtml(project.district)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                    <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}" target="${project.documents_url ? '_blank' : '_self'}" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
+                    <a href="${project.video_link ? escapeHtml(project.video_link) : '#'}" target="${project.video_link ? '_blank' : '_self'}" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                    <a href="${project.location_link ? escapeHtml(project.location_link) : '#'}" target="${project.location_link ? '_blank' : '_self'}" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
+                </div>
+            </div>`;
+        }
+
+        async function loadProjects() {
+            const slider = document.getElementById('mainProjectSlider');
+            slider.innerHTML = '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
+
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                slider.innerHTML = `<div class="w-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                slider.innerHTML = '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects yet. Click the + icon to add your first project.</div>';
+                return;
+            }
+
+            slider.innerHTML = '';
+            data.forEach((project, index) => {
+                slider.insertAdjacentHTML('beforeend', buildProjectCardHTML(project, index));
+                cardImageIndices[index] = 0;
+            });
+        }
+
+        // Load projects on first page load
+        window.addEventListener('DOMContentLoaded', loadProjects);
     </script>
 </body>
 </html>
