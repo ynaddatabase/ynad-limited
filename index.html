@@ -428,11 +428,10 @@
                 </div>
             </div>
 
-            <!-- Background Slideshow Container -->
+            <!-- Background Slideshow Container (populated dynamically by loadHeroSlides() -->
+            <!-- using each project's C-Photo, ordered by opening_date, last 10 only) -->
             <div id="heroBgSlides" class="absolute inset-0 z-0 pointer-events-none">
                 <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');"></div>
-                <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80');"></div>
-                <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');"></div>
             </div>
             <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10 pointer-events-none"></div>
 
@@ -488,7 +487,7 @@
                     <i class="fa-solid fa-arrow-right text-base"></i>
                 </button>
 
-                <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6">
+                <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6 justify-center">
                     
                     <!-- Dynamically populated from Supabase by loadProjects() in the script below -->
                     <div id="projectsLoadingState" class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
@@ -628,10 +627,10 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-        // Hero Background Slideshow Script
+        // Hero Background Slideshow Script (queries slides fresh each tick since they are loaded dynamically)
         let currentHeroSlide = 0;
-        const heroSlides = document.querySelectorAll('.hero-slide');
         function nextHeroSlide() {
+            const heroSlides = document.querySelectorAll('.hero-slide');
             if(heroSlides.length === 0) return;
             heroSlides[currentHeroSlide].classList.remove('active');
             currentHeroSlide = (currentHeroSlide + 1) % heroSlides.length;
@@ -790,6 +789,7 @@
             document.body.style.overflow = 'auto';
             setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
             loadProjects(); // refresh homepage cards in case a new project was just added
+            loadHeroSlides(); // refresh hero slideshow too in case a new project was just added
         }
 
         // Open Menu with Blur Effect
@@ -869,8 +869,25 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // Handles photo_urls whether it's stored as a real array (jsonb),
+        // a stringified JSON array, or a comma-separated string.
+        function normalizePhotoUrls(raw) {
+            if (!raw) return [];
+            if (Array.isArray(raw)) return raw.filter(Boolean);
+            if (typeof raw === 'string') {
+                try {
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed.filter(Boolean) : [raw];
+                } catch (e) {
+                    return raw.includes(',') ? raw.split(',').map(s => s.trim()).filter(Boolean) : [raw];
+                }
+            }
+            return [];
+        }
+
         function buildProjectCardHTML(project, index) {
-            const photos = (project.photo_urls && project.photo_urls.length > 0) ? project.photo_urls : [FALLBACK_IMAGE];
+            const parsedPhotos = normalizePhotoUrls(project.photo_urls);
+            const photos = parsedPhotos.length > 0 ? parsedPhotos : [FALLBACK_IMAGE];
 
             const imagesHtml = photos.map(url => `
                 <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
@@ -894,7 +911,7 @@
                  data-donor="${escapeHtml(project.donor_name)}"
                  data-country="${escapeHtml(project.donated_country)}"
                  data-location="${escapeHtml(project.district)}"
-                 class="min-w-[280px] md:min-w-[270px] flex-1 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                 class="w-[280px] md:w-[270px] flex-shrink-0 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
                 <div>
                     <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                         <div id="cardImages-${index}" class="flex h-full transition-transform duration-300">
@@ -932,10 +949,12 @@
             const slider = document.getElementById('mainProjectSlider');
             slider.innerHTML = '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
 
+            // Ordered by opening_date (newest opening date first).
+            // NOTE: change 'opening_date' below to match your actual Supabase column name if different.
             const { data, error } = await supabaseClient
                 .from('projects')
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('opening_date', { ascending: false });
 
             if (error) {
                 console.error(error);
@@ -955,8 +974,39 @@
             });
         }
 
-        // Load projects on first page load
-        window.addEventListener('DOMContentLoaded', loadProjects);
+        /* ---- Load Hero Slideshow from last 10 projects (by opening_date) using C-Photo ---- */
+        async function loadHeroSlides() {
+            const container = document.getElementById('heroBgSlides');
+
+            // NOTE: change 'c_photo' and 'opening_date' below to match your actual Supabase column names if different.
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('c_photo, opening_date')
+                .not('c_photo', 'is', null)
+                .order('opening_date', { ascending: false })
+                .limit(10);
+
+            if (error || !data || data.length === 0) {
+                console.error('Hero slideshow load failed or empty, keeping fallback slide:', error);
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach((project, i) => {
+                const div = document.createElement('div');
+                div.className = 'hero-slide' + (i === 0 ? ' active' : '');
+                div.style.backgroundImage = `url('${project.c_photo}')`;
+                container.appendChild(div);
+            });
+
+            currentHeroSlide = 0;
+        }
+
+        // Load projects & hero slideshow on first page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+            loadHeroSlides();
+        });
     </script>
 </body>
 </html>
