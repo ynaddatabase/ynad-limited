@@ -291,6 +291,10 @@ const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+// NOTE: change this to match the actual Storage bucket name in your Supabase project.
+// The bucket must exist and be set to "Public" (Storage -> Buckets -> New bucket -> Public bucket ON).
+const STORAGE_BUCKET = 'project-media';
+
 document.getElementById('pUpdate').addEventListener('input', function (e) {
   this.value = this.value.replace(/[^0-9]/g, '');
 });
@@ -365,10 +369,51 @@ bdDigitsInput.addEventListener('input', function () {
 categorySelect.addEventListener('change', updateBdPrefix);
 updateBdPrefix();
 
+/* ---- File Upload Helpers (Supabase Storage) ---- */
+
+// Builds a safe, unique storage path for one file inside a folder.
+function buildStoragePath(folder, file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  return `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+}
+
+// Uploads a single file and returns its public URL.
+async function uploadFileAndGetUrl(folder, file) {
+  const path = buildStoragePath(folder, file);
+  const { error: uploadError } = await supabaseClient
+    .storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, { cacheControl: '3600', upsert: false });
+
+  if (uploadError) {
+    throw new Error(`Upload failed for "${file.name}": ${uploadError.message}`);
+  }
+
+  const { data: publicUrlData } = supabaseClient
+    .storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(path);
+
+  return publicUrlData.publicUrl;
+}
+
+// Uploads multiple files (sequentially) and returns an array of public URLs.
+async function uploadMultipleFilesAndGetUrls(folder, fileList) {
+  const urls = [];
+  for (const file of fileList) {
+    const url = await uploadFileAndGetUrl(folder, file);
+    urls.push(url);
+  }
+  return urls;
+}
+
 document.getElementById('projectForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
+  const docsInput = document.getElementById('pDocs');
+  const cPhotoInput = document.getElementById('pCPhoto');
   const photosInput = document.getElementById('pPhotos');
+
   if (photosInput.files.length > 10) {
     alert('YOU CAN UPLOAD A MAXIMUM OF 10 PHOTOS!');
     return;
@@ -384,10 +429,39 @@ document.getElementById('projectForm').addEventListener('submit', async function
   const submitBtn = document.querySelector('#projectForm button[type="submit"]');
   const originalBtnHtml = submitBtn.innerHTML;
   submitBtn.disabled = true;
+
+  let documentsUrl = null;
+  let cPhotoUrl = null;
+  let photoUrls = [];
+
+  try {
+    // 1) Upload the single document (if provided)
+    if (docsInput.files.length > 0) {
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Document...';
+      documentsUrl = await uploadFileAndGetUrl('documents', docsInput.files[0]);
+    }
+
+    // 2) Upload the C-Photo (if provided)
+    if (cPhotoInput.files.length > 0) {
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading C-Photo...';
+      cPhotoUrl = await uploadFileAndGetUrl('cphotos', cPhotoInput.files[0]);
+    }
+
+    // 3) Upload up to 10 gallery photos (if provided)
+    if (photosInput.files.length > 0) {
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Photos...';
+      photoUrls = await uploadMultipleFilesAndGetUrls('photos', photosInput.files);
+    }
+  } catch (uploadErr) {
+    console.error(uploadErr);
+    alert('FILE UPLOAD FAILED: ' + uploadErr.message + '\n\nCheck that the "' + STORAGE_BUCKET + '" bucket exists in Supabase Storage and is set to Public.');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnHtml;
+    return;
+  }
+
   submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
 
-  // NOTE: Photos / Documents / Video are not uploaded yet — Supabase Storage
-  // setup is the next step. For now we save all the text/number/date fields.
   const record = {
     project_name: document.getElementById('pName').value.trim(),
     category: document.getElementById('pCategory').value,
@@ -408,7 +482,10 @@ document.getElementById('projectForm').addEventListener('submit', async function
     engineer_name: document.getElementById('pEngineer').value.trim() || null,
     update_notes: document.getElementById('pUpdate').value.trim() || null,
     delay_reason: document.getElementById('pDelayReason').value.trim() || null,
-    video_link: document.getElementById('pVideo').value.trim() || null
+    video_link: document.getElementById('pVideo').value.trim() || null,
+    documents_url: documentsUrl,
+    c_photo_url: cPhotoUrl,
+    photo_urls: photoUrls
   };
 
   const { data, error } = await supabaseClient.from('projects').insert([record]).select();
