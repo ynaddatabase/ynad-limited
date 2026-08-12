@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Projects — YNAD Construction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+
+        .zoom-wrapper { overflow: hidden; position: relative; width: 100%; height: 100%; }
+        .zoom-wrapper img { transition: transform 0.3s ease-in-out; width: 100%; height: 100%; object-fit: cover; }
+        .zoom-wrapper:hover img { transform: scale(1.05); }
+
+        .filter-tab {
+            transition: all 0.25s ease;
+        }
+        .filter-tab.active {
+            background-color: #d97706;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800">
+
+    <!-- Header / Navigation -->
+    <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
+        <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
+            YNAD <span class="text-amber-600 font-light">Construction</span>
+        </a>
+        <a href="index.html" class="text-xs font-semibold tracking-wider uppercase text-slate-600 hover:text-amber-600 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
+        <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">All Projects</h1>
+
+        <!-- Filter Tabs -->
+        <div class="flex flex-wrap justify-center gap-3">
+            <button onclick="setFilter('all')" data-filter="all" class="filter-tab active px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">All</button>
+            <button onclick="setFilter('Ongoing')" data-filter="Ongoing" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Ongoing</button>
+            <button onclick="setFilter('Completed')" data-filter="Completed" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Completed</button>
+            <button onclick="setFilter('Upcoming')" data-filter="Upcoming" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Upcoming</button>
+        </div>
+    </section>
+
+    <!-- Projects Grid -->
+    <section class="py-12 px-6">
+        <div id="allProjectsGrid" class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-10 px-6 border-t border-slate-800 text-center">
+        <p class="text-xs text-slate-400">&copy; YNAD Construction. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
+        let currentFilter = 'all';
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function normalizePhotoUrls(raw) {
+            if (!raw) return [];
+            if (Array.isArray(raw)) return raw.filter(Boolean);
+            if (typeof raw === 'string') {
+                try {
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed.filter(Boolean) : [raw];
+                } catch (e) {
+                    return raw.includes(',') ? raw.split(',').map(s => s.trim()).filter(Boolean) : [raw];
+                }
+            }
+            return [];
+        }
+
+        function buildCardHTML(project) {
+            const photos = normalizePhotoUrls(project.photo_urls);
+            const coverImage = project.c_photo_url || photos[0] || FALLBACK_IMAGE;
+
+            return `
+            <div class="border bg-white shadow-sm hover:shadow-lg overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                <div>
+                    <div class="zoom-wrapper h-48">
+                        <img src="${escapeHtml(coverImage)}">
+                    </div>
+                    <div class="p-4 pt-2.5">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-sm text-amber-600 font-extrabold block">${escapeHtml(project.bd_number)}</span>
+                                <span class="text-xs text-slate-400 font-medium tracking-tight">${escapeHtml(project.ho_number)}</span>
+                            </div>
+                            <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${statusBadgeClass(project.status)}">${escapeHtml(project.status)}</span>
+                        </div>
+                        <h4 class="font-bold text-base text-slate-900 uppercase">${escapeHtml(project.project_name)}</h4>
+                        <div class="flex flex-col mt-0.5 space-y-0.5">
+                            ${project.organization ? `<span class="text-[11px] text-slate-700 font-bold tracking-wider uppercase w-fit">${escapeHtml(project.organization)}</span>` : ''}
+                            ${project.donor_name ? `<span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase w-fit">DONOR: ${escapeHtml(project.donor_name)}</span>` : ''}
+                        </div>
+                        <div class="mt-0.5 pt-0">
+                            <span class="text-[11px] text-slate-700 font-normal tracking-wider uppercase block text-right">${escapeHtml(project.district)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                    <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}" target="${project.documents_url ? '_blank' : '_self'}" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCS</a>
+                    <a href="${project.video_link ? escapeHtml(project.video_link) : '#'}" target="${project.video_link ? '_blank' : '_self'}" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                    <a href="${project.location_link ? escapeHtml(project.location_link) : '#'}" target="${project.location_link ? '_blank' : '_self'}" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> MAP</a>
+                </div>
+            </div>`;
+        }
+
+        function statusBadgeClass(status) {
+            if (status === 'Ongoing') return 'bg-blue-100 text-blue-700';
+            if (status === 'Completed') return 'bg-emerald-100 text-emerald-700';
+            if (status === 'Upcoming') return 'bg-amber-100 text-amber-700';
+            return 'bg-slate-100 text-slate-600';
+        }
+
+        async function loadAllProjects() {
+            const grid = document.getElementById('allProjectsGrid');
+            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
+
+            let query = supabaseClient
+                .from('projects')
+                .select('*')
+                .order('opening_date', { ascending: false, nullsFirst: false });
+
+            if (currentFilter !== 'all') {
+                query = query.eq('status', currentFilter);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error(error);
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects found.</div>';
+                return;
+            }
+
+            grid.innerHTML = data.map(buildCardHTML).join('');
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-filter') === filter);
+            });
+            loadAllProjects();
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAllProjects);
+    </script>
+</body>
+</html>
