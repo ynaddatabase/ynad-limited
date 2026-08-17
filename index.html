@@ -241,24 +241,27 @@
             opacity: 1;
             transform: scale(1);
         }
-        #projectAddCloseBtn {
-            width: 26px;
-            height: 26px;
+
+        /* Minimize / Close icon buttons — icon only, no circular background,
+           sit near the top edge, and are perfectly center-aligned with each other */
+        #projectAddCloseBtn,
+        #projectAddMinimizeBtn {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.25s ease;
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
         #projectAddCloseBtn:hover {
-            background: linear-gradient(to bottom right, #fbbf24, #d97706);
-            color: #fff;
-            border-color: transparent;
+            color: #d97706;
             transform: rotate(90deg);
         }
-        #projectAddMinimizeBtn {
-            width: 26px;
-            height: 26px;
-            transition: all 0.25s ease;
-        }
         #projectAddMinimizeBtn:hover {
-            background: #f1f5f9;
+            color: #d97706;
             transform: translateY(-2px);
         }
         #projectAddBox iframe {
@@ -657,10 +660,10 @@
     <!-- Project Add Modal (loads project_add.html inside an iframe) -->
     <div id="projectAddOverlay">
         <div id="projectAddBox">
-            <button id="projectAddMinimizeBtn" onclick="minimizeProjectAddModal()" title="Minimize" class="absolute top-3 right-11 z-10 bg-white/90 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 shadow-md cursor-pointer">
+            <button id="projectAddMinimizeBtn" onclick="minimizeProjectAddModal()" title="Minimize" class="absolute top-2 right-11 z-10 cursor-pointer">
                 <i class="fa-solid fa-window-minimize text-[10px]"></i>
             </button>
-            <button id="projectAddCloseBtn" onclick="closeProjectAddModal()" class="absolute top-3 right-3 z-10 bg-white/90 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 shadow-md cursor-pointer">
+            <button id="projectAddCloseBtn" onclick="closeProjectAddModal()" class="absolute top-2 right-3 z-10 cursor-pointer">
                 <i class="fa-solid fa-xmark text-xs"></i>
             </button>
             <iframe id="projectAddFrame" src="about:blank" title="Add Project"></iframe>
