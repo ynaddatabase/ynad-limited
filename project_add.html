@@ -101,53 +101,143 @@ tailwind.config = {
     transition: transform 0.05s linear;
   }
 
-  /* Form completion progress bar - subtle, sits inline in the header row */
+  /* Header window-control buttons — sit inline in the header row, never float outside it */
+  .win-btn {
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 140, 0, 0.25);
+    background: rgba(255, 140, 0, 0.08);
+    color: #fb923c;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .win-btn:hover { background: rgba(255, 140, 0, 0.18); color: #ffb877; }
+  #closeBtn:hover { color: #f87171; border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.12); }
+
+  /* Form completion progress bar — thick pill, inset 0.5in from each side, % centered inside */
   #formProgressTrack {
+    position: relative;
     flex: 1 1 auto;
-    height: 5px;
+    height: 22px;
+    margin-left: 0.5in;
+    margin-right: 0.5in;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 140, 0, 0.18);
     overflow: hidden;
   }
   #formProgressFill {
     height: 100%;
     width: 0%;
     border-radius: 999px;
-    background: rgba(255, 140, 0, 0.4);
+    background: linear-gradient(90deg, rgba(234, 88, 12, 0.65), rgba(255, 140, 0, 0.65));
     transition: width 0.35s ease;
   }
+  #formProgressLabel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+  }
+
+  @media (max-width: 640px) {
+    #formProgressTrack { margin-left: 0.2in; margin-right: 0.2in; height: 18px; }
+    #formProgressLabel { font-size: 9px; }
+  }
+
+  /* Toast notification — replaces native browser alert()/confirm() popups */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 80;
+    max-width: calc(100vw - 32px);
+  }
+  #toast .toast-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: rgba(18, 18, 22, 0.95);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(255, 140, 0, 0.25);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #f8fafc;
+    white-space: normal;
+  }
+  #toast.error .toast-inner { border-color: rgba(248, 113, 113, 0.4); }
 </style>
 </head>
 
 <body class="antialiased selection:bg-orange-500 selection:text-white">
+
+<!-- Restore tab: appears only when the panel has been closed via the X button -->
+<button id="restoreTab" type="button" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-[70] items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-black text-xs font-black uppercase tracking-widest shadow-neon hover:from-orange-500 hover:to-amber-400 transition">
+  <i class="fa-solid fa-plus"></i> Project Add
+</button>
+
+<!-- Toast notification -->
+<div id="toast" class="hidden">
+  <div class="toast-inner">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastMessage">Saved</span>
+  </div>
+</div>
+
 <div class="min-h-screen flex flex-col items-center p-4 sm:p-8">
 
   <main class="w-full max-w-4xl">
     <!-- Top Header -->
     <header id="topHeader" class="rounded-3xl px-6 py-4 sm:px-7 sm:py-4 mb-8 shadow-neon">
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-shrink-0">
           <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-400 text-black font-black grid place-items-center shadow-neon">
             <i class="fa-solid fa-plus text-lg animate-pulse"></i>
           </div>
           <div>
-            <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
+            <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase whitespace-nowrap">Project Add</h1>
           </div>
         </div>
-        <!-- Form completion progress: subtle bar between the title and the scroll knob -->
+
+        <!-- Form completion progress: thick pill with centered %, inset from both edges -->
         <div id="formProgressTrack">
           <div id="formProgressFill"></div>
+          <span id="formProgressLabel">0%</span>
         </div>
-        <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
-        <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
-          <svg viewBox="0 0 60 60" width="44" height="44">
-            <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,140,0,0.2)" stroke-width="3"/>
-            <circle id="knobProgress" cx="30" cy="30" r="26" fill="none" stroke="#ff8c00" stroke-width="3" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="163.36" transform="rotate(-90 30 30)"/>
-            <g id="knobPointer">
-              <line x1="30" y1="30" x2="30" y2="10" stroke="#ff8c00" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="3" fill="#ff8c00"/>
-            </g>
-          </svg>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Minimize: collapses the form body, header stays visible, data is preserved -->
+          <button id="minimizeBtn" type="button" title="Minimize" class="win-btn w-8 h-8">
+            <i class="fa-solid fa-minus text-[10px]"></i>
+          </button>
+          <!-- Close: hides the whole panel, a small tab lets you reopen it in the same state -->
+          <button id="closeBtn" type="button" title="Close" class="win-btn w-7 h-7">
+            <i class="fa-solid fa-xmark text-[10px]"></i>
+          </button>
+          <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
+          <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
+            <svg viewBox="0 0 60 60" width="44" height="44">
+              <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,140,0,0.2)" stroke-width="3"/>
+              <circle id="knobProgress" cx="30" cy="30" r="26" fill="none" stroke="#ff8c00" stroke-width="3" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="163.36" transform="rotate(-90 30 30)"/>
+              <g id="knobPointer">
+                <line x1="30" y1="30" x2="30" y2="10" stroke="#ff8c00" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="30" cy="30" r="3" fill="#ff8c00"/>
+              </g>
+            </svg>
+          </div>
         </div>
       </div>
     </header>
@@ -337,6 +427,23 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_
 // The bucket must exist and be set to "Public" (Storage -> Buckets -> New bucket -> Public bucket ON).
 const STORAGE_BUCKET = 'project-media';
 
+/* ---- Toast notifications (replaces native alert()/confirm() popups) ---- */
+const toastEl = document.getElementById('toast');
+const toastIcon = document.getElementById('toastIcon');
+const toastMessage = document.getElementById('toastMessage');
+let toastTimer = null;
+
+function showToast(message, type = 'success') {
+  clearTimeout(toastTimer);
+  toastMessage.textContent = message;
+  toastEl.classList.toggle('error', type === 'error');
+  toastIcon.className = type === 'error'
+    ? 'fa-solid fa-circle-exclamation text-red-400'
+    : 'fa-solid fa-circle-check text-emerald-400';
+  toastEl.classList.remove('hidden');
+  toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 2800);
+}
+
 document.getElementById('pUpdate').addEventListener('input', function (e) {
   this.value = this.value.replace(/[^0-9]/g, '');
 });
@@ -454,6 +561,7 @@ function updateTimelineFieldsVisibility() {
 
   calculateDelay();
   updateRawMediaVisibility();
+  updateFormProgress();
 }
 
 /* ---- Raw Media Section Visibility (only for Ongoing / Completed) ---- */
@@ -472,8 +580,9 @@ function updateRawMediaVisibility() {
 statusSelect.addEventListener('change', updateTimelineFieldsVisibility);
 updateTimelineFieldsVisibility();
 
-/* ---- Form Completion Progress Bar ---- */
+/* ---- Form Completion Progress Bar (thick pill, % centered, header-inset) ---- */
 const formProgressFill = document.getElementById('formProgressFill');
+const formProgressLabel = document.getElementById('formProgressLabel');
 const projectFormEl = document.getElementById('projectForm');
 
 function updateFormProgress() {
@@ -495,6 +604,7 @@ function updateFormProgress() {
 
   const percent = trackedFields.length ? Math.round((filledCount / trackedFields.length) * 100) : 0;
   formProgressFill.style.width = percent + '%';
+  formProgressLabel.textContent = percent + '%';
 }
 
 projectFormEl.addEventListener('input', updateFormProgress);
@@ -513,6 +623,22 @@ function syncHoHiddenValue() {
 hoDigitsInput.addEventListener('input', function () {
   this.value = this.value.replace(/[^0-9]/g, '');
   syncHoHiddenValue();
+});
+
+/* ---- Shared reset used by both Clear and post-Save ---- */
+function resetFormUI() {
+  projectFormEl.reset();
+  updateBdPrefix();
+  hoHiddenInput.value = '';
+  delayReasonContainer.classList.add('hidden');
+  updateTimelineFieldsVisibility();
+  updateFormProgress();
+}
+
+/* ---- Clear Button: acts immediately, no confirmation dialog ---- */
+document.getElementById('clearFormBtn').addEventListener('click', function () {
+  resetFormUI();
+  showToast('Form cleared');
 });
 
 /* ---- File Upload Helpers (Supabase Storage) ---- */
@@ -553,16 +679,6 @@ async function uploadMultipleFilesAndGetUrls(folder, fileList) {
   return urls;
 }
 
-document.getElementById('clearFormBtn').addEventListener('click', function () {
-  if (!confirm('CLEAR THE ENTIRE FORM? THIS CANNOT BE UNDONE.')) return;
-  projectFormEl.reset();
-  updateBdPrefix();
-  hoHiddenInput.value = '';
-  delayReasonContainer.classList.add('hidden');
-  updateTimelineFieldsVisibility();
-  updateFormProgress();
-});
-
 document.getElementById('projectForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -571,17 +687,17 @@ document.getElementById('projectForm').addEventListener('submit', async function
   const photosInput = document.getElementById('pPhotos');
 
   if (photosInput.files.length > 10) {
-    alert('YOU CAN UPLOAD A MAXIMUM OF 10 PHOTOS!');
+    showToast('Maximum 10 photos allowed', 'error');
     return;
   }
 
   // Category must be selected (this also locks the BD-Number prefix)
   if (!categorySelect.value || !bdDigitsInput.value.trim()) {
-    alert('PLEASE SELECT A PROJECT CATEGORY AND ENTER THE BD-NUMBER DIGITS!');
+    showToast('Select a category and enter the BD-Number', 'error');
     return;
   }
   if (!hoDigitsInput.value.trim()) {
-    alert('PLEASE ENTER THE HO-NUMBER DIGITS!');
+    showToast('Enter the HO-Number', 'error');
     return;
   }
   syncBdHiddenValue();
@@ -615,7 +731,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     }
   } catch (uploadErr) {
     console.error(uploadErr);
-    alert('FILE UPLOAD FAILED: ' + uploadErr.message + '\n\nCheck that the "' + STORAGE_BUCKET + '" bucket exists in Supabase Storage and is set to Public.');
+    showToast('File upload failed — check the "' + STORAGE_BUCKET + '" bucket', 'error');
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalBtnHtml;
     return;
@@ -658,17 +774,48 @@ document.getElementById('projectForm').addEventListener('submit', async function
 
   if (error) {
     console.error(error);
-    alert('SAVE FAILED: ' + error.message);
+    showToast('Save failed — ' + error.message, 'error');
     return;
   }
 
-  alert('PROJECT RECORD SUCCESSFULLY SAVED TO SUPABASE!');
-  document.getElementById('projectForm').reset();
-  updateBdPrefix();
-  hoHiddenInput.value = '';
-  delayReasonContainer.classList.add('hidden');
-  updateTimelineFieldsVisibility();
-  updateFormProgress();
+  resetFormUI();
+  showToast('Project saved');
+});
+
+/* ---- Minimize / Close (window-style) controls, integrated into the header row ---- */
+const minimizeBtn = document.getElementById('minimizeBtn');
+const closeBtn = document.getElementById('closeBtn');
+const restoreTab = document.getElementById('restoreTab');
+const mainPanel = document.querySelector('main');
+
+let isMinimized = false;
+let closedScrollY = 0;
+
+minimizeBtn.addEventListener('click', function () {
+  isMinimized = !isMinimized;
+  projectFormEl.classList.toggle('hidden', isMinimized);
+  const icon = minimizeBtn.querySelector('i');
+  if (isMinimized) {
+    icon.className = 'fa-solid fa-expand text-[10px]';
+    minimizeBtn.title = 'Expand';
+  } else {
+    icon.className = 'fa-solid fa-minus text-[10px]';
+    minimizeBtn.title = 'Minimize';
+  }
+});
+
+closeBtn.addEventListener('click', function () {
+  closedScrollY = window.scrollY;
+  mainPanel.classList.add('hidden');
+  restoreTab.classList.remove('hidden');
+  restoreTab.classList.add('flex');
+});
+
+restoreTab.addEventListener('click', function () {
+  mainPanel.classList.remove('hidden');
+  restoreTab.classList.add('hidden');
+  restoreTab.classList.remove('flex');
+  window.scrollTo({ top: closedScrollY, behavior: 'auto' });
 });
 
 /* ---- Rotating Scroll Knob ---- */
