@@ -243,7 +243,10 @@
         }
 
         /* Minimize / Close icon buttons — icon only, no circular background,
-           sit near the top edge, and are perfectly center-aligned with each other */
+           sit near the top edge, and are perfectly center-aligned with each other.
+           Default color matches the site's amber/brown accent (same family as the
+           progress-bar fill color) so the icons stay visible over both light and
+           dark headers, not just on hover. */
         #projectAddCloseBtn,
         #projectAddMinimizeBtn {
             width: 22px;
@@ -255,6 +258,7 @@
             background: transparent;
             border: none;
             box-shadow: none;
+            color: #b45309;
         }
         #projectAddCloseBtn:hover {
             color: #d97706;
@@ -263,6 +267,13 @@
         #projectAddMinimizeBtn:hover {
             color: #d97706;
             transform: translateY(-2px);
+        }
+        /* Nudge the minimize glyph up slightly so its visual center lines up
+           exactly with the X icon's center (the two fonts render with
+           different internal baselines). */
+        #projectAddMinimizeBtn i {
+            position: relative;
+            top: -1.5px;
         }
         #projectAddBox iframe {
             flex: 1;
