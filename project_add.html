@@ -80,7 +80,7 @@ tailwind.config = {
   /* Sticky header: flush to top, fully opaque so nothing can bleed through behind it */
   #topHeader {
     position: sticky;
-    top: 3px;
+    top: 0;
     z-index: 50;
     background: #0d0d10;
   }
@@ -101,28 +101,25 @@ tailwind.config = {
     transition: transform 0.05s linear;
   }
 
-  /* Form completion progress bar - subtle, sits above everything */
+  /* Form completion progress bar - subtle, sits inline in the header row */
   #formProgressTrack {
-    position: sticky;
-    top: 0;
-    z-index: 60;
-    height: 3px;
-    width: 100%;
-    background: #0d0d10;
+    flex: 1 1 auto;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
   }
   #formProgressFill {
     height: 100%;
     width: 0%;
-    background: rgba(255, 140, 0, 0.45);
+    border-radius: 999px;
+    background: rgba(255, 140, 0, 0.4);
     transition: width 0.35s ease;
   }
 </style>
 </head>
 
 <body class="antialiased selection:bg-orange-500 selection:text-white">
-<div id="formProgressTrack">
-  <div id="formProgressFill"></div>
-</div>
 <div class="min-h-screen flex flex-col items-center p-4 sm:p-8">
 
   <main class="w-full max-w-4xl">
@@ -136,6 +133,10 @@ tailwind.config = {
           <div>
             <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
           </div>
+        </div>
+        <!-- Form completion progress: subtle bar between the title and the scroll knob -->
+        <div id="formProgressTrack">
+          <div id="formProgressFill"></div>
         </div>
         <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
         <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
@@ -297,8 +298,26 @@ tailwind.config = {
         </div>
       </section>
 
+      <!-- Section 5: Raw Media (Photos & Videos) - only visible when Status is Ongoing or Completed -->
+      <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">05. Raw Media (Photos & Videos)</h3>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="label">Raw Photos Link</label>
+            <input id="pRawPhotosLink" type="url" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK">
+          </div>
+          <div>
+            <label class="label">Raw Video Link</label>
+            <input id="pRawVideoLink" type="url" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW VIDEO LINK">
+          </div>
+        </div>
+      </section>
+
       <!-- Submit Button -->
-      <div class="flex justify-end pb-8">
+      <div class="flex justify-end items-center gap-3 pb-8">
+        <button type="button" id="clearFormBtn" class="px-6 py-3.5 rounded-xl border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 font-black text-xs uppercase tracking-widest transition cursor-pointer">
+          <i class="fa-solid fa-eraser mr-2"></i> Clear
+        </button>
         <button type="submit" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest shadow-neon transition transform hover:scale-[1.02]">
           <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save
         </button>
@@ -434,6 +453,20 @@ function updateTimelineFieldsVisibility() {
   }
 
   calculateDelay();
+  updateRawMediaVisibility();
+}
+
+/* ---- Raw Media Section Visibility (only for Ongoing / Completed) ---- */
+const section5RawMedia = document.getElementById('section5RawMedia');
+
+function updateRawMediaVisibility() {
+  const status = statusSelect.value;
+  const visible = (status === 'Ongoing' || status === 'Completed');
+
+  section5RawMedia.classList.toggle('hidden', !visible);
+  if (!visible) {
+    section5RawMedia.querySelectorAll('input').forEach(input => { input.value = ''; });
+  }
 }
 
 statusSelect.addEventListener('change', updateTimelineFieldsVisibility);
@@ -520,6 +553,16 @@ async function uploadMultipleFilesAndGetUrls(folder, fileList) {
   return urls;
 }
 
+document.getElementById('clearFormBtn').addEventListener('click', function () {
+  if (!confirm('CLEAR THE ENTIRE FORM? THIS CANNOT BE UNDONE.')) return;
+  projectFormEl.reset();
+  updateBdPrefix();
+  hoHiddenInput.value = '';
+  delayReasonContainer.classList.add('hidden');
+  updateTimelineFieldsVisibility();
+  updateFormProgress();
+});
+
 document.getElementById('projectForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -603,7 +646,9 @@ document.getElementById('projectForm').addEventListener('submit', async function
     video_link: document.getElementById('pVideo').value.trim() || null,
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
-    photo_urls: photoUrls
+    photo_urls: photoUrls,
+    raw_photos_link: document.getElementById('pRawPhotosLink').value.trim() || null,
+    raw_video_link: document.getElementById('pRawVideoLink').value.trim() || null
   };
 
   const { data, error } = await supabaseClient.from('projects').insert([record]).select();
