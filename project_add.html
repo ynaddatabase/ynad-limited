@@ -103,11 +103,13 @@ tailwind.config = {
 
   /* Form completion progress bar - subtle, sits inline in the header row */
   #formProgressTrack {
+    position: relative;
     flex: 1 1 auto;
-    height: 5px;
+    height: 22px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.08);
     overflow: hidden;
+    margin: 0 0.5in;
   }
   #formProgressFill {
     height: 100%;
@@ -115,6 +117,19 @@ tailwind.config = {
     border-radius: 999px;
     background: rgba(255, 140, 0, 0.4);
     transition: width 0.35s ease;
+  }
+  #formProgressLabel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    pointer-events: none;
   }
 </style>
 </head>
@@ -137,6 +152,7 @@ tailwind.config = {
         <!-- Form completion progress: subtle bar between the title and the scroll knob -->
         <div id="formProgressTrack">
           <div id="formProgressFill"></div>
+          <span id="formProgressLabel">0%</span>
         </div>
         <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
         <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
@@ -474,6 +490,7 @@ updateTimelineFieldsVisibility();
 
 /* ---- Form Completion Progress Bar ---- */
 const formProgressFill = document.getElementById('formProgressFill');
+const formProgressLabel = document.getElementById('formProgressLabel');
 const projectFormEl = document.getElementById('projectForm');
 
 function updateFormProgress() {
@@ -495,6 +512,7 @@ function updateFormProgress() {
 
   const percent = trackedFields.length ? Math.round((filledCount / trackedFields.length) * 100) : 0;
   formProgressFill.style.width = percent + '%';
+  formProgressLabel.textContent = percent + '%';
 }
 
 projectFormEl.addEventListener('input', updateFormProgress);
@@ -554,7 +572,6 @@ async function uploadMultipleFilesAndGetUrls(folder, fileList) {
 }
 
 document.getElementById('clearFormBtn').addEventListener('click', function () {
-  if (!confirm('CLEAR THE ENTIRE FORM? THIS CANNOT BE UNDONE.')) return;
   projectFormEl.reset();
   updateBdPrefix();
   hoHiddenInput.value = '';
@@ -662,7 +679,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
     return;
   }
 
-  alert('PROJECT RECORD SUCCESSFULLY SAVED TO SUPABASE!');
   document.getElementById('projectForm').reset();
   updateBdPrefix();
   hoHiddenInput.value = '';
