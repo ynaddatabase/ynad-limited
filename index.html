@@ -242,8 +242,8 @@
             transform: scale(1);
         }
         #projectAddCloseBtn {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             transition: all 0.25s ease;
         }
         #projectAddCloseBtn:hover {
@@ -252,10 +252,44 @@
             border-color: transparent;
             transform: rotate(90deg);
         }
+        #projectAddMinimizeBtn {
+            width: 26px;
+            height: 26px;
+            transition: all 0.25s ease;
+        }
+        #projectAddMinimizeBtn:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
         #projectAddBox iframe {
             flex: 1;
             width: 100%;
             border: none;
+        }
+
+        /* Floating tab shown when Project Add modal is minimized (data stays intact) */
+        #projectAddMinimizedTab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 199;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 999px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        #projectAddMinimizedTab.show {
+            display: flex;
+        }
+        #projectAddMinimizedTab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 34px rgba(0,0,0,0.35);
         }
 
         /* Right-to-Left Smooth Slide Animation for Search Box */
@@ -623,11 +657,20 @@
     <!-- Project Add Modal (loads project_add.html inside an iframe) -->
     <div id="projectAddOverlay">
         <div id="projectAddBox">
+            <button id="projectAddMinimizeBtn" onclick="minimizeProjectAddModal()" title="Minimize" class="absolute top-3 right-11 z-10 bg-white/90 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 shadow-md cursor-pointer">
+                <i class="fa-solid fa-window-minimize text-[10px]"></i>
+            </button>
             <button id="projectAddCloseBtn" onclick="closeProjectAddModal()" class="absolute top-3 right-3 z-10 bg-white/90 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 shadow-md cursor-pointer">
                 <i class="fa-solid fa-xmark text-xs"></i>
             </button>
             <iframe id="projectAddFrame" src="about:blank" title="Add Project"></iframe>
         </div>
+    </div>
+
+    <!-- Floating tab shown when Project Add is minimized (form data stays intact in the iframe) -->
+    <div id="projectAddMinimizedTab" onclick="restoreProjectAddModal()">
+        <i class="fa-solid fa-file-circle-plus"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide">Project Add</span>
     </div>
 
     <!-- JavaScript -->
@@ -777,6 +820,7 @@
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
             const box = document.getElementById('projectAddBox');
+            const minimizedTab = document.getElementById('projectAddMinimizedTab');
 
             if (event && event.currentTarget) {
                 const btnRect = event.currentTarget.getBoundingClientRect();
@@ -786,21 +830,46 @@
                 box.style.transformOrigin = `${originX}px ${originY}px`;
             }
 
-            frame.src = 'project_add.html'; // must be in the same folder/repo as index.html
+            // If the form was already loaded (e.g. previously minimized), don't reload it — keep the data intact.
+            const alreadyLoaded = frame.src && frame.src.indexOf('project_add.html') !== -1;
+            if (!alreadyLoaded) {
+                frame.src = 'project_add.html'; // must be in the same folder/repo as index.html
+            }
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
+            minimizedTab.classList.remove('show');
         }
 
         // Close Project Add Modal — only triggered by the X button (no outside-click / no Escape key)
         function closeProjectAddModal() {
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
+            const minimizedTab = document.getElementById('projectAddMinimizedTab');
             overlay.classList.remove('open');
             document.body.style.overflow = 'auto';
+            minimizedTab.classList.remove('show');
             setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
             loadProjects(); // refresh homepage cards in case a new project was just added
             loadHeroSlides(); // refresh hero slideshow too in case a new project was just added
             loadHeroStats(); // refresh Ongoing/Completed/Upcoming counters too
+        }
+
+        // Minimize Project Add Modal — hides the box WITHOUT resetting the iframe, so form data stays intact
+        function minimizeProjectAddModal() {
+            const overlay = document.getElementById('projectAddOverlay');
+            const minimizedTab = document.getElementById('projectAddMinimizedTab');
+            overlay.classList.remove('open');
+            document.body.style.overflow = 'auto';
+            minimizedTab.classList.add('show');
+        }
+
+        // Restore Project Add Modal from the minimized floating tab — reopens exactly as it was
+        function restoreProjectAddModal() {
+            const overlay = document.getElementById('projectAddOverlay');
+            const minimizedTab = document.getElementById('projectAddMinimizedTab');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            minimizedTab.classList.remove('show');
         }
 
         // Open Menu with Blur Effect
