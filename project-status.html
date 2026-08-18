@@ -41,6 +41,79 @@
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
         }
 
+        /* Individual Image Zoom and Darken Overlay (same language as index.html) */
+        .zoom-container {
+            position: relative;
+        }
+        .zoom-wrapper {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .zoom-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .zoom-wrapper:hover::after {
+            opacity: 1;
+        }
+        .zoom-wrapper img {
+            transition: transform 0.3s ease-in-out;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .zoom-wrapper:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Animated Corner Strokes strictly on Image/Zoom-Container Hover */
+        .zoom-container::before,
+        .zoom-container::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 2px solid transparent;
+            transition: width 0.3s ease, height 0.3s ease;
+            pointer-events: none;
+            z-index: 30;
+        }
+        .zoom-container::before {
+            top: 8px;
+            left: 8px;
+        }
+        .zoom-container::after {
+            bottom: 8px;
+            right: 8px;
+        }
+        .zoom-container:hover::before {
+            width: 40px;
+            height: 40px;
+            border-top-color: #d97706;
+            border-left-color: #d97706;
+            border-bottom-color: transparent;
+            border-right-color: transparent;
+        }
+        .zoom-container:hover::after {
+            width: 40px;
+            height: 40px;
+            border-bottom-color: #d97706;
+            border-right-color: #d97706;
+            border-top-color: transparent;
+            border-left-color: transparent;
+        }
+
         /* All free-text filter inputs render in caps */
         .filter-input-caps {
             text-transform: uppercase;
@@ -327,17 +400,43 @@
 
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
 
-        function buildStatusCardHTML(project) {
-            const photos = normalizePhotoUrls(project.photo_urls);
-            const imgUrl = photos.length > 0 ? photos[0] : FALLBACK_IMAGE;
+        // Tracks which photo is currently shown per card, keyed by the card's grid position
+        // (mirrors the same pattern used for the image slider on index.html).
+        const statusCardImageIndices = {};
+        function changeStatusCardImage(cardId, direction) {
+            const slider = document.getElementById('statusCardImages-' + cardId);
+            if (!slider) return;
+            const totalImages = slider.children.length;
+            statusCardImageIndices[cardId] = ((statusCardImageIndices[cardId] || 0) + direction + totalImages) % totalImages;
+            slider.style.transform = `translateX(-${statusCardImageIndices[cardId] * 100}%)`;
+        }
+
+        function buildStatusCardHTML(project, index) {
+            const parsedPhotos = normalizePhotoUrls(project.photo_urls);
+            const photos = parsedPhotos.length > 0 ? parsedPhotos : [FALLBACK_IMAGE];
             const status = computeProjectStatus(project);
             const style = STATUS_STYLES[status] || STATUS_STYLES['Not Started'];
             const shortCode = STATUS_SHORT[status] || status;
 
+            const imagesHtml = photos.map(url => `
+                <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
+                    <img src="${escapeHtml(url)}">
+                </div>
+            `).join('');
+
+            const arrowsHtml = photos.length > 1 ? `
+                <div class="flex gap-1">
+                    <button onclick="changeStatusCardImage(${index}, -1)" class="w-5 h-5 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-[9px] cursor-pointer"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button onclick="changeStatusCardImage(${index}, 1)" class="w-5 h-5 rounded bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-600 flex items-center justify-center transition text-[9px] cursor-pointer"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            ` : '';
+
             return `
             <div class="status-project-card border bg-white shadow-sm overflow-hidden flex flex-col text-left">
-                <div class="h-44 overflow-hidden">
-                    <img src="${escapeHtml(imgUrl)}" class="w-full h-full object-cover">
+                <div class="zoom-container relative h-44 overflow-hidden">
+                    <div id="statusCardImages-${index}" class="flex h-full transition-transform duration-300">
+                        ${imagesHtml}
+                    </div>
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
                     <div class="flex justify-between items-center mb-1">
@@ -345,7 +444,10 @@
                             <span class="text-sm text-amber-600 font-extrabold">${escapeHtml(project.bd_number)}</span>
                             <span class="text-xs text-slate-400 font-medium">${escapeHtml(project.ho_number)}</span>
                         </div>
-                        <span title="${escapeHtml(status)}" class="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style="background:${style.bg}; color:${style.text};">${shortCode}</span>
+                        <div class="flex items-center gap-1.5">
+                            ${arrowsHtml}
+                            <span title="${escapeHtml(status)}" class="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style="background:${style.bg}; color:${style.text};">${shortCode}</span>
+                        </div>
                     </div>
                     <h4 class="font-bold text-sm text-slate-900 uppercase leading-snug">${escapeHtml(project.project_name)}</h4>
                     <div class="flex flex-col mt-1 space-y-0.5 flex-1">
@@ -510,6 +612,9 @@
             const grid = document.getElementById('statusProjectGrid');
             const empty = document.getElementById('statusEmptyState');
 
+            // Reset per-card image indices since card positions are being rebuilt.
+            Object.keys(statusCardImageIndices).forEach(k => delete statusCardImageIndices[k]);
+
             if (projects.length === 0) {
                 grid.innerHTML = '';
                 empty.classList.remove('hidden');
@@ -517,7 +622,7 @@
             }
 
             empty.classList.add('hidden');
-            grid.innerHTML = projects.map(buildStatusCardHTML).join('');
+            grid.innerHTML = projects.map((p, i) => buildStatusCardHTML(p, i)).join('');
         }
 
         async function loadStatusOverview() {
