@@ -10,71 +10,158 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Montserrat', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Status row left accent bar — color driven by data-status-color, matches
-           the card system's amber corner-accent language elsewhere on the site. */
-        .status-row {
-            border-left: 4px solid var(--row-color, #94a3b8);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        /* Filter panel slide-down (collapsed by default) */
+        #filterPanel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .status-row:hover {
-            transform: translateX(4px);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        #filterPanel.open {
+            grid-template-rows: 1fr;
         }
-
-        .count-pop {
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        #filterPanel > div {
+            overflow: hidden;
         }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Status tab pill active state matches the site's amber system */
+        .status-tab.active {
+            background-color: #d97706;
+            color: #fff;
         }
-        .fade-up {
-            animation: fadeUp 0.45s ease both;
+
+        /* Card hover lift, consistent with the zoom-container corner-stroke language elsewhere */
+        .status-project-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .status-project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="bg-white text-slate-800">
 
     <!-- Header / Navigation (kept consistent with index.html) -->
     <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
-                YNAD <span class="text-amber-600 font-light">Construction</span>
-            </a>
-        </div>
+        <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
+            YNAD <span class="text-amber-600 font-light">Construction</span>
+        </a>
         <a href="index.html" class="text-xs font-semibold tracking-widest uppercase text-slate-600 hover:text-amber-600 transition flex items-center gap-2">
             <i class="fa-solid fa-arrow-left"></i> Back to Home
         </a>
     </nav>
 
-    <!-- Page Header -->
-    <div class="max-w-5xl mx-auto px-6 pt-12 pb-6 text-center">
-        <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-3">Project Status Overview</h1>
-        <p class="text-sm text-slate-500 max-w-xl mx-auto">A live breakdown of every project by delivery status, pulled directly from the project records.</p>
-    </div>
+    <!-- Title + Tabs + Filter Toggle -->
+    <div class="bg-slate-50 border-b px-6 py-10 text-center">
+        <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8">Project Status Overview</h1>
 
-    <!-- Status Table Card -->
-    <div class="max-w-3xl mx-auto px-6 pb-20">
-        <div id="statusTableCard" class="bg-white border shadow-md overflow-hidden">
-
-            <div id="statusRows" class="divide-y divide-slate-100">
-                <!-- Populated by renderStatusRows() below -->
-                <div class="py-10 text-center text-slate-400 text-sm uppercase tracking-wide">Loading status data...</div>
-            </div>
-
-            <!-- Total Row -->
-            <div class="bg-slate-900 text-white px-6 py-5 flex items-center justify-between">
-                <span class="text-sm font-bold uppercase tracking-widest">Total Project</span>
-                <span id="statusTotal" class="text-2xl font-extrabold text-amber-400">0</span>
-            </div>
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            <button data-status-tab="all" onclick="setStatusTab('all')" class="status-tab active px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">All</button>
+            <button data-status-tab="On Time" onclick="setStatusTab('On Time')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">On Time</button>
+            <button data-status-tab="Opening Delay" onclick="setStatusTab('Opening Delay')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Opening Delay</button>
+            <button data-status-tab="Elapsed Delay" onclick="setStatusTab('Elapsed Delay')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Elapsed Delay</button>
+            <button data-status-tab="Opening In" onclick="setStatusTab('Opening In')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Opening In</button>
+            <button data-status-tab="Location Not Finalized" onclick="setStatusTab('Location Not Finalized')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Location Not Finalized</button>
+            <button data-status-tab="Not Started" onclick="setStatusTab('Not Started')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Not Started</button>
         </div>
 
-        <p class="text-[11px] text-slate-400 mt-4 text-center uppercase tracking-wider">
-            Counts update automatically as project records change.
-        </p>
+        <button onclick="toggleFilterPanel()" id="filterToggleBtn" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 transition cursor-pointer">
+            <i class="fa-solid fa-sliders"></i> <span id="filterToggleLabel">Show Filters</span>
+        </button>
     </div>
+
+    <!-- Filter Panel -->
+    <div id="filterPanel" class="bg-white border-b">
+        <div>
+            <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Category</label>
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 bg-white">
+                        <option value="">All Categories</option>
+                        <option value="Masjid">Masjid</option>
+                        <option value="Madrasa">Madrasa</option>
+                        <option value="Markaz">Markaz</option>
+                        <option value="Orphanage">Orphanage</option>
+                        <option value="Ablution">Ablution</option>
+                        <option value="Water Well">Water Well</option>
+                        <option value="Clinic">Clinic</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Organization</label>
+                    <input type="text" id="filterOrganization" onkeyup="applyFilters()" placeholder="e.g. WAMY" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donor Name / ID</label>
+                    <input type="text" id="filterDonor" onkeyup="applyFilters()" placeholder="Name or ID" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donated Country</label>
+                    <input type="text" id="filterCountry" onkeyup="applyFilters()" placeholder="e.g. Qatar" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Cost Range</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="filterCostMin" onchange="applyFilters()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <span class="text-slate-400 text-xs">—</span>
+                        <input type="number" id="filterCostMax" onchange="applyFilters()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">BD District</label>
+                    <input type="text" id="filterDistrict" onkeyup="applyFilters()" placeholder="e.g. Feni" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="sm:col-span-2 lg:col-span-2">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Date Range</label>
+                    <div class="flex items-center gap-2">
+                        <input type="date" id="filterDateMin" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <span class="text-slate-400 text-xs">—</span>
+                        <input type="date" id="filterDateMax" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Engineer Name / ID</label>
+                    <input type="text" id="filterEngineer" onkeyup="applyFilters()" placeholder="Name or ID" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex items-end">
+                    <button onclick="resetFilters()" class="text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-amber-600 transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Filters
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Grid -->
+    <section class="max-w-7xl mx-auto px-6 py-12">
+        <div id="statusProjectGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+        </div>
+        <div id="statusEmptyState" class="hidden col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
+            No projects match the selected filters.
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 px-6 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] tracking-wide">
+            <span id="footerDevCredit">Developed by <a href="#" class="text-amber-500 hover:text-amber-400 transition">Your Company Name</a></span>
+            <span id="footerCopyright">&copy; <span id="footerYear"></span> YNAD Construction. All rights reserved.</span>
+        </div>
+    </footer>
 
     <script>
         // Supabase Connection (same project as index.html)
@@ -82,64 +169,183 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+        // ---- Footer: customize here ----
+        // Replace the developer name/link and copyright text below to match
+        // your agency/developer branding. footerYear fills in automatically.
+        document.getElementById('footerYear').textContent = new Date().getFullYear();
+
         // ---- Status definitions ----
-        // NOTE: The actual counting logic (which column(s) determine each status)
-        // is still being finalized. For now each status is wired to a placeholder
-        // count of 0 so the UI/layout can be reviewed first. Once the source
-        // column(s) are confirmed, replace computeStatusCounts() below with the
-        // real Supabase query/logic — the row rendering does not need to change.
-        const STATUS_DEFINITIONS = [
-            { key: 'onTime',            label: 'On Time',               color: '#16a34a', icon: 'fa-solid fa-check' },
-            { key: 'openingDelay',      label: 'Opening Delay',         color: '#d97706', icon: 'fa-solid fa-hourglass-half' },
-            { key: 'elapsedDelay',      label: 'Elapsed Delay',         color: '#dc2626', icon: 'fa-solid fa-triangle-exclamation' },
-            { key: 'openingIn',         label: 'Opening In',            color: '#7c3aed', icon: 'fa-solid fa-calendar-days' },
-            { key: 'locationNotFinal',  label: 'Location Not Finalized', color: '#0891b2', icon: 'fa-solid fa-location-crosshairs' },
-            { key: 'notStarted',        label: 'Not Started',           color: '#64748b', icon: 'fa-solid fa-circle-pause' },
-        ];
+        // NOTE: the actual status-calculation logic (which column(s) in the
+        // `projects` table determine On Time / Opening Delay / Elapsed Delay /
+        // Opening In / Location Not Finalized / Not Started) is still being
+        // finalized. Each project is currently assigned a status via
+        // computeProjectStatus() below using placeholder logic — swap that
+        // function's body once the real rule is confirmed; nothing else on
+        // this page needs to change.
+        const STATUS_STYLES = {
+            'On Time':                 { bg: '#dcfce7', text: '#15803d' },
+            'Opening Delay':           { bg: '#fef3c7', text: '#b45309' },
+            'Elapsed Delay':           { bg: '#fee2e2', text: '#b91c1c' },
+            'Opening In':              { bg: '#ede9fe', text: '#6d28d9' },
+            'Location Not Finalized':  { bg: '#cffafe', text: '#0e7490' },
+            'Not Started':             { bg: '#f1f5f9', text: '#475569' },
+        };
 
-        function renderStatusRows(counts) {
-            const container = document.getElementById('statusRows');
-            container.innerHTML = '';
-
-            STATUS_DEFINITIONS.forEach((def, i) => {
-                const value = counts[def.key] ?? 0;
-                const row = document.createElement('div');
-                row.className = 'status-row fade-up flex items-center justify-between px-6 py-4 bg-white';
-                row.style.setProperty('--row-color', def.color);
-                row.style.animationDelay = `${i * 0.05}s`;
-                row.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background:${def.color}1A; color:${def.color};">
-                            <i class="${def.icon}"></i>
-                        </span>
-                        <span class="text-sm font-semibold uppercase tracking-wide text-slate-700">${def.label}</span>
-                    </div>
-                    <span class="count-pop text-xl font-extrabold" style="color:${def.color};">${value}</span>
-                `;
-                container.appendChild(row);
-            });
-
-            const total = STATUS_DEFINITIONS.reduce((sum, def) => sum + (counts[def.key] ?? 0), 0);
-            document.getElementById('statusTotal').textContent = total;
+        function computeProjectStatus(project) {
+            // Placeholder rule — replace with real logic once confirmed.
+            if (!project.location_link) return 'Location Not Finalized';
+            if (!project.status) return 'Not Started';
+            if (project.status === 'Completed') return 'On Time';
+            if (project.status === 'Upcoming') return 'Opening In';
+            if (project.status === 'Ongoing') return 'Elapsed Delay';
+            return 'Not Started';
         }
 
-        // ---- Placeholder counts ----
-        // TODO: replace with the real Supabase computation once the status
-        // logic (which column(s) to key off) is confirmed.
-        async function computeStatusCounts() {
-            return {
-                onTime: 0,
-                openingDelay: 0,
-                elapsedDelay: 0,
-                openingIn: 0,
-                locationNotFinal: 0,
-                notStarted: 0,
-            };
+        let allProjects = [];
+        let activeTab = 'all';
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function normalizePhotoUrls(raw) {
+            if (!raw) return [];
+            if (Array.isArray(raw)) return raw.filter(Boolean);
+            if (typeof raw === 'string') {
+                try {
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed.filter(Boolean) : [raw];
+                } catch (e) {
+                    return raw.includes(',') ? raw.split(',').map(s => s.trim()).filter(Boolean) : [raw];
+                }
+            }
+            return [];
+        }
+
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
+
+        function buildStatusCardHTML(project) {
+            const photos = normalizePhotoUrls(project.photo_urls);
+            const imgUrl = photos.length > 0 ? photos[0] : FALLBACK_IMAGE;
+            const status = computeProjectStatus(project);
+            const style = STATUS_STYLES[status] || STATUS_STYLES['Not Started'];
+
+            return `
+            <div class="status-project-card border bg-white shadow-sm overflow-hidden flex flex-col text-left">
+                <div class="h-44 overflow-hidden">
+                    <img src="${escapeHtml(imgUrl)}" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-sm text-amber-600 font-extrabold">${escapeHtml(project.bd_number)}</span>
+                            <span class="text-xs text-slate-400 font-medium">${escapeHtml(project.ho_number)}</span>
+                        </div>
+                        <span class="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style="background:${style.bg}; color:${style.text};">${status}</span>
+                    </div>
+                    <h4 class="font-bold text-sm text-slate-900 uppercase leading-snug">${escapeHtml(project.project_name)}</h4>
+                    <div class="flex flex-col mt-1 space-y-0.5 flex-1">
+                        ${project.organization ? `<span class="text-[11px] text-slate-700 font-bold tracking-wider uppercase">${escapeHtml(project.organization)}</span>` : ''}
+                        ${project.donor_name ? `<span class="text-[11px] text-slate-500 tracking-wider uppercase">DONOR: ${escapeHtml(project.donor_name)}</span>` : ''}
+                    </div>
+                    <span class="text-[11px] text-slate-600 font-semibold tracking-wider uppercase text-right mt-2">${escapeHtml(project.district)}</span>
+                </div>
+                <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
+                    <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}" target="${project.documents_url ? '_blank' : '_self'}" class="text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCS</a>
+                    <a href="${project.video_link ? escapeHtml(project.video_link) : '#'}" target="${project.video_link ? '_blank' : '_self'}" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                    <a href="${project.location_link ? escapeHtml(project.location_link) : '#'}" target="${project.location_link ? '_blank' : '_self'}" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> MAP</a>
+                </div>
+            </div>`;
+        }
+
+        function setStatusTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.status-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-status-tab') === tab);
+            });
+            applyFilters();
+        }
+
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            const label = document.getElementById('filterToggleLabel');
+            panel.classList.toggle('open');
+            label.textContent = panel.classList.contains('open') ? 'Hide Filters' : 'Show Filters';
+        }
+
+        function resetFilters() {
+            ['filterCategory','filterOrganization','filterDonor','filterCountry','filterCostMin','filterCostMax','filterDistrict','filterDateMin','filterDateMax','filterEngineer'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('filterCategory').value.toLowerCase();
+            const organization = document.getElementById('filterOrganization').value.toLowerCase();
+            const donor = document.getElementById('filterDonor').value.toLowerCase();
+            const country = document.getElementById('filterCountry').value.toLowerCase();
+            const costMin = parseFloat(document.getElementById('filterCostMin').value);
+            const costMax = parseFloat(document.getElementById('filterCostMax').value);
+            const district = document.getElementById('filterDistrict').value.toLowerCase();
+            const dateMin = document.getElementById('filterDateMin').value;
+            const dateMax = document.getElementById('filterDateMax').value;
+            const engineer = document.getElementById('filterEngineer').value.toLowerCase();
+
+            const filtered = allProjects.filter(p => {
+                if (activeTab !== 'all' && computeProjectStatus(p) !== activeTab) return false;
+                if (category && (p.category || '').toLowerCase() !== category) return false;
+                if (organization && !(p.organization || '').toLowerCase().includes(organization)) return false;
+                if (donor && !(`${p.donor_name || ''} ${p.donor_id || ''}`).toLowerCase().includes(donor)) return false;
+                if (country && !(p.donated_country || '').toLowerCase().includes(country)) return false;
+                if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
+                if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
+                if (district && !(p.district || '').toLowerCase().includes(district)) return false;
+                if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
+                if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
+                if (engineer && !(`${p.engineer_name || ''} ${p.engineer_id || ''}`).toLowerCase().includes(engineer)) return false;
+                return true;
+            });
+
+            renderGrid(filtered);
+        }
+
+        function renderGrid(projects) {
+            const grid = document.getElementById('statusProjectGrid');
+            const empty = document.getElementById('statusEmptyState');
+
+            if (projects.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.innerHTML = projects.map(buildStatusCardHTML).join('');
         }
 
         async function loadStatusOverview() {
-            const counts = await computeStatusCounts();
-            renderStatusRows(counts);
+            const grid = document.getElementById('statusProjectGrid');
+
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('opening_date', { ascending: false, nullsFirst: false });
+
+            if (error) {
+                console.error(error);
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                return;
+            }
+
+            allProjects = data || [];
+            applyFilters();
         }
 
         window.addEventListener('DOMContentLoaded', loadStatusOverview);
