@@ -40,6 +40,14 @@
             transform: translateY(-3px);
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
         }
+
+        /* All free-text filter inputs render in caps */
+        .filter-input-caps {
+            text-transform: uppercase;
+        }
+        .filter-input-caps::placeholder {
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -58,15 +66,10 @@
     <div class="bg-slate-50 border-b px-6 py-10 text-center">
         <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8">Project Status Overview</h1>
 
-        <div class="flex flex-wrap justify-center gap-3 mb-6">
-            <button data-status-tab="all" onclick="setStatusTab('all')" class="status-tab active px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">All</button>
-            <button data-status-tab="On Time" onclick="setStatusTab('On Time')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">On Time</button>
-            <button data-status-tab="Opening Delay" onclick="setStatusTab('Opening Delay')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Opening Delay</button>
-            <button data-status-tab="Elapsed Delay" onclick="setStatusTab('Elapsed Delay')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Elapsed Delay</button>
-            <button data-status-tab="Opening In" onclick="setStatusTab('Opening In')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Opening In</button>
-            <button data-status-tab="Location Not Finalized" onclick="setStatusTab('Location Not Finalized')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Location Not Finalized</button>
-            <button data-status-tab="Not Started" onclick="setStatusTab('Not Started')" class="status-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">Not Started</button>
-        </div>
+        <!-- Tabs are generated dynamically (see renderTabs()) so each pill can show a live count
+             and the order (Not Started before Location Not Finalized, which is always last)
+             is controlled from STATUS_TAB_DEFS in one place. -->
+        <div id="statusTabsContainer" class="flex flex-wrap justify-center gap-3 mb-6"></div>
 
         <button onclick="toggleFilterPanel()" id="filterToggleBtn" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 transition cursor-pointer">
             <i class="fa-solid fa-sliders"></i> <span id="filterToggleLabel">Show Filters</span>
@@ -94,22 +97,33 @@
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Organization</label>
-                    <input type="text" id="filterOrganization" onkeyup="applyFilters()" placeholder="e.g. WAMY" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="filterOrganization" onkeyup="applyFilters()" placeholder="e.g. WAMY" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donor Name / ID</label>
-                    <input type="text" id="filterDonor" onkeyup="applyFilters()" placeholder="Name or ID" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="filterDonor" onkeyup="applyFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donated Country</label>
-                    <input type="text" id="filterCountry" onkeyup="applyFilters()" placeholder="e.g. Qatar" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="filterCountry" list="worldCountryList" onkeyup="applyFilters()" onchange="applyFilters()" placeholder="Enter country name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <datalist id="worldCountryList"></datalist>
                 </div>
 
+                <!-- Cost: toggle between a single Exact Cost field and a Min–Max Cost Range -->
                 <div class="sm:col-span-2">
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Cost Range</label>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
+                        <select id="costMode" onchange="onCostModeChange()" class="text-[10px] font-bold uppercase tracking-wide border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-amber-500 bg-white">
+                            <option value="exact" selected>Exact Cost</option>
+                            <option value="range">Cost Range</option>
+                        </select>
+                    </div>
+                    <div id="costExactWrap">
+                        <input type="number" id="filterCostExact" onchange="applyFilters()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div id="costRangeWrap" class="hidden items-center gap-2">
                         <input type="number" id="filterCostMin" onchange="applyFilters()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         <span class="text-slate-400 text-xs">—</span>
                         <input type="number" id="filterCostMax" onchange="applyFilters()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
@@ -118,12 +132,23 @@
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">BD District</label>
-                    <input type="text" id="filterDistrict" onkeyup="applyFilters()" placeholder="e.g. Feni" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="filterDistrict" list="bdDistrictList" onkeyup="applyFilters()" onchange="applyFilters()" placeholder="Enter district name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <datalist id="bdDistrictList"></datalist>
                 </div>
 
+                <!-- Date: toggle between a single Exact Date field and a Min–Max Date Range -->
                 <div class="sm:col-span-2 lg:col-span-2">
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Date Range</label>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
+                        <select id="dateMode" onchange="onDateModeChange()" class="text-[10px] font-bold uppercase tracking-wide border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-amber-500 bg-white">
+                            <option value="exact" selected>Exact Date</option>
+                            <option value="range">Date Range</option>
+                        </select>
+                    </div>
+                    <div id="dateExactWrap">
+                        <input type="date" id="filterDateExact" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div id="dateRangeWrap" class="hidden items-center gap-2">
                         <input type="date" id="filterDateMin" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         <span class="text-slate-400 text-xs">—</span>
                         <input type="date" id="filterDateMax" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
@@ -132,7 +157,7 @@
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Engineer Name / ID</label>
-                    <input type="text" id="filterEngineer" onkeyup="applyFilters()" placeholder="Name or ID" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="filterEngineer" onkeyup="applyFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div class="flex items-end">
@@ -170,8 +195,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
         // ---- Footer: customize here ----
-        // Replace the developer name/link and copyright text below to match
-        // your agency/developer branding. footerYear fills in automatically.
         document.getElementById('footerYear').textContent = new Date().getFullYear();
 
         // ---- Status definitions ----
@@ -187,9 +210,31 @@
             'Opening Delay':           { bg: '#fef3c7', text: '#b45309' },
             'Elapsed Delay':           { bg: '#fee2e2', text: '#b91c1c' },
             'Opening In':              { bg: '#ede9fe', text: '#6d28d9' },
-            'Location Not Finalized':  { bg: '#cffafe', text: '#0e7490' },
             'Not Started':             { bg: '#f1f5f9', text: '#475569' },
+            'Location Not Finalized':  { bg: '#cffafe', text: '#0e7490' },
         };
+
+        // Short codes shown on cards (full name still shown as a tooltip via `title`)
+        const STATUS_SHORT = {
+            'On Time':                'OT',
+            'Opening Delay':          'OD',
+            'Elapsed Delay':          'ED',
+            'Opening In':             'OI',
+            'Not Started':            'NS',
+            'Location Not Finalized': 'LNF',
+        };
+
+        // Tab order: Not Started always sits right before Location Not Finalized,
+        // and Location Not Finalized is always the last tab.
+        const STATUS_TAB_DEFS = [
+            { key: 'all',                      label: 'All' },
+            { key: 'On Time',                  label: 'On Time' },
+            { key: 'Opening Delay',            label: 'Opening Delay' },
+            { key: 'Elapsed Delay',            label: 'Elapsed Delay' },
+            { key: 'Opening In',               label: 'Opening In' },
+            { key: 'Not Started',              label: 'Not Started' },
+            { key: 'Location Not Finalized',   label: 'Location Not Finalized' },
+        ];
 
         function computeProjectStatus(project) {
             // Placeholder rule — replace with real logic once confirmed.
@@ -199,6 +244,52 @@
             if (project.status === 'Upcoming') return 'Opening In';
             if (project.status === 'Ongoing') return 'Elapsed Delay';
             return 'Not Started';
+        }
+
+        // ---- Reference lists for the Donated Country / BD District datalists ----
+        const WORLD_COUNTRIES = [
+            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+            "Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium",
+            "Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria",
+            "Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad",
+            "Chile","China","Colombia","Comoros","Congo (Brazzaville)","Congo (DRC)","Costa Rica","Croatia","Cuba",
+            "Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador",
+            "Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia",
+            "Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti",
+            "Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+            "Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan",
+            "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+            "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar",
+            "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea",
+            "North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay",
+            "Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis",
+            "Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe",
+            "Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia",
+            "Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan",
+            "Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste",
+            "Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine",
+            "United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu",
+            "Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+        ];
+
+        const BD_DISTRICTS = [
+            "Bagerhat","Bandarban","Barguna","Barishal","Bhola","Bogura","Brahmanbaria","Chandpur","Chattogram",
+            "Chuadanga","Cox's Bazar","Cumilla","Dhaka","Dinajpur","Faridpur","Feni","Gaibandha","Gazipur",
+            "Gopalganj","Habiganj","Jamalpur","Jashore","Jhalokati","Jhenaidah","Joypurhat","Khagrachhari","Khulna",
+            "Kishoreganj","Kurigram","Kushtia","Lakshmipur","Lalmonirhat","Madaripur","Magura","Manikganj",
+            "Meherpur","Moulvibazar","Munshiganj","Mymensingh","Naogaon","Narail","Narayanganj","Narsingdi",
+            "Natore","Netrokona","Nilphamari","Noakhali","Pabna","Panchagarh","Patuakhali","Pirojpur","Rajbari",
+            "Rajshahi","Rangamati","Rangpur","Satkhira","Shariatpur","Sherpur","Sirajganj","Sunamganj","Sylhet",
+            "Tangail","Thakurgaon"
+        ];
+
+        function populateReferenceLists() {
+            const countryList = document.getElementById('worldCountryList');
+            countryList.innerHTML = WORLD_COUNTRIES.map(c => `<option value="${escapeHtml(c)}">`).join('');
+
+            const districtList = document.getElementById('bdDistrictList');
+            districtList.innerHTML = BD_DISTRICTS.map(d => `<option value="${escapeHtml(d)}">`).join('');
         }
 
         let allProjects = [];
@@ -235,6 +326,7 @@
             const imgUrl = photos.length > 0 ? photos[0] : FALLBACK_IMAGE;
             const status = computeProjectStatus(project);
             const style = STATUS_STYLES[status] || STATUS_STYLES['Not Started'];
+            const shortCode = STATUS_SHORT[status] || status;
 
             return `
             <div class="status-project-card border bg-white shadow-sm overflow-hidden flex flex-col text-left">
@@ -247,7 +339,7 @@
                             <span class="text-sm text-amber-600 font-extrabold">${escapeHtml(project.bd_number)}</span>
                             <span class="text-xs text-slate-400 font-medium">${escapeHtml(project.ho_number)}</span>
                         </div>
-                        <span class="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style="background:${style.bg}; color:${style.text};">${status}</span>
+                        <span title="${escapeHtml(status)}" class="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style="background:${style.bg}; color:${style.text};">${shortCode}</span>
                     </div>
                     <h4 class="font-bold text-sm text-slate-900 uppercase leading-snug">${escapeHtml(project.project_name)}</h4>
                     <div class="flex flex-col mt-1 space-y-0.5 flex-1">
@@ -266,9 +358,6 @@
 
         function setStatusTab(tab) {
             activeTab = tab;
-            document.querySelectorAll('.status-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-status-tab') === tab);
-            });
             applyFilters();
         }
 
@@ -279,41 +368,136 @@
             label.textContent = panel.classList.contains('open') ? 'Hide Filters' : 'Show Filters';
         }
 
-        function resetFilters() {
-            ['filterCategory','filterOrganization','filterDonor','filterCountry','filterCostMin','filterCostMax','filterDistrict','filterDateMin','filterDateMax','filterEngineer'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
+        function onCostModeChange() {
+            const mode = document.getElementById('costMode').value;
+            const exactWrap = document.getElementById('costExactWrap');
+            const rangeWrap = document.getElementById('costRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden');
+                rangeWrap.classList.add('hidden');
+                rangeWrap.classList.remove('flex');
+                document.getElementById('filterCostMin').value = '';
+                document.getElementById('filterCostMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden');
+                rangeWrap.classList.remove('hidden');
+                rangeWrap.classList.add('flex');
+                document.getElementById('filterCostExact').value = '';
+            }
             applyFilters();
         }
 
-        function applyFilters() {
+        function onDateModeChange() {
+            const mode = document.getElementById('dateMode').value;
+            const exactWrap = document.getElementById('dateExactWrap');
+            const rangeWrap = document.getElementById('dateRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden');
+                rangeWrap.classList.add('hidden');
+                rangeWrap.classList.remove('flex');
+                document.getElementById('filterDateMin').value = '';
+                document.getElementById('filterDateMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden');
+                rangeWrap.classList.remove('hidden');
+                rangeWrap.classList.add('flex');
+                document.getElementById('filterDateExact').value = '';
+            }
+            applyFilters();
+        }
+
+        function resetFilters() {
+            ['filterCategory','filterOrganization','filterDonor','filterCountry','filterCostExact','filterCostMin',
+             'filterCostMax','filterDistrict','filterDateExact','filterDateMin','filterDateMax','filterEngineer'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('costMode').value = 'exact';
+            document.getElementById('dateMode').value = 'exact';
+            document.getElementById('costExactWrap').classList.remove('hidden');
+            document.getElementById('costRangeWrap').classList.add('hidden');
+            document.getElementById('costRangeWrap').classList.remove('flex');
+            document.getElementById('dateExactWrap').classList.remove('hidden');
+            document.getElementById('dateRangeWrap').classList.add('hidden');
+            document.getElementById('dateRangeWrap').classList.remove('flex');
+            applyFilters();
+        }
+
+        // Applies every filter EXCEPT the status tab — used to compute the live
+        // count shown on each tab pill (so "On Time (12)" reflects the other
+        // active filters, not the tab selection itself).
+        function getNonStatusFilteredProjects() {
             const category = document.getElementById('filterCategory').value.toLowerCase();
             const organization = document.getElementById('filterOrganization').value.toLowerCase();
             const donor = document.getElementById('filterDonor').value.toLowerCase();
             const country = document.getElementById('filterCountry').value.toLowerCase();
-            const costMin = parseFloat(document.getElementById('filterCostMin').value);
-            const costMax = parseFloat(document.getElementById('filterCostMax').value);
             const district = document.getElementById('filterDistrict').value.toLowerCase();
-            const dateMin = document.getElementById('filterDateMin').value;
-            const dateMax = document.getElementById('filterDateMax').value;
             const engineer = document.getElementById('filterEngineer').value.toLowerCase();
 
-            const filtered = allProjects.filter(p => {
-                if (activeTab !== 'all' && computeProjectStatus(p) !== activeTab) return false;
+            const costMode = document.getElementById('costMode').value;
+            const costExact = parseFloat(document.getElementById('filterCostExact').value);
+            const costMin = parseFloat(document.getElementById('filterCostMin').value);
+            const costMax = parseFloat(document.getElementById('filterCostMax').value);
+
+            const dateMode = document.getElementById('dateMode').value;
+            const dateExact = document.getElementById('filterDateExact').value;
+            const dateMin = document.getElementById('filterDateMin').value;
+            const dateMax = document.getElementById('filterDateMax').value;
+
+            return allProjects.filter(p => {
                 if (category && (p.category || '').toLowerCase() !== category) return false;
                 if (organization && !(p.organization || '').toLowerCase().includes(organization)) return false;
                 if (donor && !(`${p.donor_name || ''} ${p.donor_id || ''}`).toLowerCase().includes(donor)) return false;
                 if (country && !(p.donated_country || '').toLowerCase().includes(country)) return false;
-                if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
-                if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
                 if (district && !(p.district || '').toLowerCase().includes(district)) return false;
-                if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
-                if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
                 if (engineer && !(`${p.engineer_name || ''} ${p.engineer_id || ''}`).toLowerCase().includes(engineer)) return false;
+
+                if (costMode === 'exact') {
+                    if (!isNaN(costExact) && (p.cost === null || p.cost === undefined || Number(p.cost) !== costExact)) return false;
+                } else {
+                    if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
+                    if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
+                }
+
+                if (dateMode === 'exact') {
+                    if (dateExact && p.opening_date !== dateExact) return false;
+                } else {
+                    if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
+                    if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
+                }
+
                 return true;
             });
+        }
 
-            renderGrid(filtered);
+        function renderTabs(nonStatusFiltered) {
+            const counts = { all: nonStatusFiltered.length };
+            STATUS_TAB_DEFS.forEach(t => { if (t.key !== 'all') counts[t.key] = 0; });
+            nonStatusFiltered.forEach(p => {
+                const s = computeProjectStatus(p);
+                if (counts[s] !== undefined) counts[s]++;
+            });
+
+            const container = document.getElementById('statusTabsContainer');
+            container.innerHTML = STATUS_TAB_DEFS.map(t => {
+                const count = counts[t.key] !== undefined ? counts[t.key] : 0;
+                const isActive = activeTab === t.key;
+                return `<button data-status-tab="${escapeHtml(t.key)}" class="status-tab ${isActive ? 'active' : ''} px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">${escapeHtml(t.label)} (${count})</button>`;
+            }).join('');
+
+            container.querySelectorAll('.status-tab').forEach(btn => {
+                btn.addEventListener('click', () => setStatusTab(btn.getAttribute('data-status-tab')));
+            });
+        }
+
+        function applyFilters() {
+            const nonStatusFiltered = getNonStatusFilteredProjects();
+            renderTabs(nonStatusFiltered);
+
+            const finalFiltered = activeTab === 'all'
+                ? nonStatusFiltered
+                : nonStatusFiltered.filter(p => computeProjectStatus(p) === activeTab);
+
+            renderGrid(finalFiltered);
         }
 
         function renderGrid(projects) {
@@ -332,6 +516,9 @@
 
         async function loadStatusOverview() {
             const grid = document.getElementById('statusProjectGrid');
+
+            populateReferenceLists();
+            renderTabs([]);
 
             const { data, error } = await supabaseClient
                 .from('projects')
