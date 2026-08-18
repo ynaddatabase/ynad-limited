@@ -26,11 +26,8 @@
             overflow: hidden;
         }
 
-        /* Status tab pill active state matches the site's amber system */
-        .status-tab.active {
-            background-color: #d97706;
-            color: #fff;
-        }
+        /* Status tab active state is now driven by the sliding #statusTabIndicator
+           (see moveTabIndicator() in the script) rather than a per-button class. */
 
         /* Card hover lift, consistent with the zoom-container corner-stroke language elsewhere */
         .status-project-card {
@@ -120,6 +117,19 @@
         }
         .filter-input-caps::placeholder {
             text-transform: uppercase;
+        }
+
+        /* Full-page load/navigate transition: page fades+lifts in on load, and
+           fades out before an internal link navigates away, so moving between
+           pages never feels like a hard cut. */
+        body {
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        body.page-ready {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -251,11 +261,14 @@
 
     <!-- Project Grid -->
     <section class="max-w-7xl mx-auto px-6 py-12">
-        <div id="statusProjectGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
-        </div>
-        <div id="statusEmptyState" class="hidden col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
-            No projects match the selected filters.
+        <!-- statusResultsWrapper fades + slides when the tab or filters change (see renderGrid()) -->
+        <div id="statusResultsWrapper" class="transition-all duration-300 ease-out">
+            <div id="statusProjectGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+            </div>
+            <div id="statusEmptyState" class="hidden col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
+                No projects match the selected filters.
+            </div>
         </div>
     </section>
 
@@ -577,7 +590,69 @@
             });
         }
 
+        let tabButtonsBuilt = false;
+
+        // Buttons are built ONCE and kept in the DOM afterwards — only their
+        // count text and active state are updated on every filter change. This
+        // is what lets the amber indicator behind them actually slide instead
+        // of just popping into a new spot every time (which happens if the
+        // buttons get torn down and rebuilt on each render).
+        function ensureTabButtonsBuilt() {
+            if (tabButtonsBuilt) return;
+            const container = document.getElementById('statusTabsContainer');
+            container.classList.add('relative');
+
+            const indicatorHtml = `<div id="statusTabIndicator" class="absolute top-0 left-0 rounded-full bg-amber-600 transition-all duration-300 ease-out" style="width:0;height:0;"></div>`;
+            const buttonsHtml = STATUS_TAB_DEFS.map(t => `
+                <button data-status-tab="${escapeHtml(t.key)}" class="status-tab relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-slate-700 transition-colors duration-300 cursor-pointer">
+                    <span class="tab-label">${escapeHtml(t.label)}</span> <span class="tab-count">(0)</span>
+                </button>`).join('');
+
+            container.innerHTML = indicatorHtml + buttonsHtml;
+
+            container.querySelectorAll('.status-tab').forEach(btn => {
+                btn.addEventListener('click', () => setStatusTab(btn.getAttribute('data-status-tab')));
+            });
+
+            window.addEventListener('resize', moveTabIndicator);
+            tabButtonsBuilt = true;
+        }
+
+        // Matches the CSS transition duration on #statusTabIndicator (duration-300).
+        const TAB_INDICATOR_TRANSITION_MS = 300;
+        let pendingActiveTextTimeout = null;
+
+        // Slides the amber pill behind whichever tab is currently active,
+        // matching its exact width/height/position — this is the actual
+        // sliding animation (driven by the CSS transition on #statusTabIndicator).
+        // The active tab's text only turns white AFTER the pill finishes
+        // arriving, so it's never shown white while there's no fill under it yet.
+        function moveTabIndicator() {
+            const container = document.getElementById('statusTabsContainer');
+            const indicator = document.getElementById('statusTabIndicator');
+            if (!container || !indicator) return;
+
+            const buttons = Array.from(container.querySelectorAll('.status-tab'));
+            const activeBtn = buttons.find(b => b.getAttribute('data-status-tab') === activeTab);
+            if (!activeBtn) return;
+
+            // Any tab that isn't active anymore loses its white text right away —
+            // the fill has already left it, so there's nothing to wait for there.
+            buttons.forEach(b => { if (b !== activeBtn) b.classList.remove('text-white'); });
+
+            indicator.style.width = activeBtn.offsetWidth + 'px';
+            indicator.style.height = activeBtn.offsetHeight + 'px';
+            indicator.style.transform = `translate(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px)`;
+
+            clearTimeout(pendingActiveTextTimeout);
+            pendingActiveTextTimeout = setTimeout(() => {
+                activeBtn.classList.add('text-white');
+            }, TAB_INDICATOR_TRANSITION_MS);
+        }
+
         function renderTabs(nonStatusFiltered) {
+            ensureTabButtonsBuilt();
+
             const counts = { all: nonStatusFiltered.length };
             STATUS_TAB_DEFS.forEach(t => { if (t.key !== 'all') counts[t.key] = 0; });
             nonStatusFiltered.forEach(p => {
@@ -586,15 +661,13 @@
             });
 
             const container = document.getElementById('statusTabsContainer');
-            container.innerHTML = STATUS_TAB_DEFS.map(t => {
-                const count = counts[t.key] !== undefined ? counts[t.key] : 0;
-                const isActive = activeTab === t.key;
-                return `<button data-status-tab="${escapeHtml(t.key)}" class="status-tab ${isActive ? 'active' : ''} px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-slate-200 text-slate-700 transition cursor-pointer">${escapeHtml(t.label)} (${count})</button>`;
-            }).join('');
-
             container.querySelectorAll('.status-tab').forEach(btn => {
-                btn.addEventListener('click', () => setStatusTab(btn.getAttribute('data-status-tab')));
+                const key = btn.getAttribute('data-status-tab');
+                const count = counts[key] !== undefined ? counts[key] : 0;
+                btn.querySelector('.tab-count').textContent = `(${count})`;
             });
+
+            moveTabIndicator();
         }
 
         function applyFilters() {
@@ -609,20 +682,30 @@
         }
 
         function renderGrid(projects) {
+            const wrapper = document.getElementById('statusResultsWrapper');
             const grid = document.getElementById('statusProjectGrid');
             const empty = document.getElementById('statusEmptyState');
 
-            // Reset per-card image indices since card positions are being rebuilt.
-            Object.keys(statusCardImageIndices).forEach(k => delete statusCardImageIndices[k]);
+            // Fade + slide the current results out, swap the content while invisible,
+            // then fade + slide the new results back in — so switching tabs/filters
+            // never feels like a hard cut.
+            wrapper.classList.add('opacity-0', 'translate-y-2');
 
-            if (projects.length === 0) {
-                grid.innerHTML = '';
-                empty.classList.remove('hidden');
-                return;
-            }
+            setTimeout(() => {
+                Object.keys(statusCardImageIndices).forEach(k => delete statusCardImageIndices[k]);
 
-            empty.classList.add('hidden');
-            grid.innerHTML = projects.map((p, i) => buildStatusCardHTML(p, i)).join('');
+                if (projects.length === 0) {
+                    grid.innerHTML = '';
+                    empty.classList.remove('hidden');
+                } else {
+                    empty.classList.add('hidden');
+                    grid.innerHTML = projects.map((p, i) => buildStatusCardHTML(p, i)).join('');
+                }
+
+                requestAnimationFrame(() => {
+                    wrapper.classList.remove('opacity-0', 'translate-y-2');
+                });
+            }, 180);
         }
 
         async function loadStatusOverview() {
@@ -646,7 +729,35 @@
             applyFilters();
         }
 
+        // Full-page fade-in on load, and fade-out before navigating to another
+        // internal page (e.g. "Back to Home"), so the whole page transitions
+        // smoothly instead of hard-cutting between pages.
+        function initPageTransitions() {
+            // Double rAF: the first frame just lets the browser register the
+            // starting (invisible) state; the class is added on the *next*
+            // frame so the opacity/transform change is actually animated
+            // instead of jumping straight to visible with no transition.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => document.body.classList.add('page-ready'));
+            });
+
+            document.querySelectorAll('a[href]').forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('http') || link.target === '_blank') return;
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.body.classList.remove('page-ready');
+                    setTimeout(() => { window.location.href = href; }, 400);
+                });
+            });
+        }
+
+        // Wait for the full page load (fonts, the Tailwind CDN's generated
+        // styles, images) rather than just DOMContentLoaded, so the fade-in
+        // reveals an already fully-styled page instead of flashing unstyled
+        // content first.
         window.addEventListener('DOMContentLoaded', loadStatusOverview);
+        window.addEventListener('load', initPageTransitions);
     </script>
 </body>
 </html>
