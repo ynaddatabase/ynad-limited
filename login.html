@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In — YNAD Construction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --amber-700: #b45309;
+            --amber-50: #fffbeb;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            --white: #ffffff;
+            --font-primary: 'Montserrat', sans-serif;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+            --bg-page: var(--slate-900);
+            --panel-bg: var(--white);
+            --panel-text: var(--slate-900);
+            --panel-text-secondary: var(--slate-500);
+            --panel-border: var(--slate-200);
+            --input-bg: var(--white);
+            --input-border: var(--slate-200);
+            --card-shadow: 0 40px 100px rgba(0, 0, 0, .5), 0 0 0 1px rgba(217, 119, 6, .05);
+        }
+
+        html[data-theme="light"] {
+            --bg-page: #eef1f6;
+            --panel-bg: #ffffff;
+            --panel-text: var(--slate-900);
+            --panel-text-secondary: var(--slate-500);
+            --panel-border: var(--slate-200);
+            --input-bg: #ffffff;
+            --input-border: var(--slate-200);
+            --card-shadow: 0 30px 70px rgba(15, 23, 42, .14), 0 0 0 1px rgba(15, 23, 42, .04);
+        }
+
+        html[data-theme="dark"] {
+            --bg-page: #05070c;
+            --panel-bg: #121826;
+            --panel-text: #f1f5f9;
+            --panel-text-secondary: #93a0b8;
+            --panel-border: #26304a;
+            --input-bg: #1a2233;
+            --input-border: #2b3654;
+            --card-shadow: 0 40px 100px rgba(0, 0, 0, .6), 0 0 0 1px rgba(217, 119, 6, .06);
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--bg-page);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: var(--slate-800);
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow-x: hidden;
+            transition: background .4s var(--ease);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(ellipse 900px 600px at 15% 10%, rgba(217, 119, 6, .14), transparent 60%),
+                radial-gradient(ellipse 700px 500px at 88% 92%, rgba(51, 65, 85, .45), transparent 60%);
+            transition: opacity .4s var(--ease);
+        }
+        html[data-theme="light"] body::before { opacity: .35; }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: .5;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+            background-size: 56px 56px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 40%, transparent 100%);
+        }
+        html[data-theme="light"] body::after {
+            background-image:
+                linear-gradient(rgba(15, 23, 42, .035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 23, 42, .035) 1px, transparent 1px);
+        }
+
+        .theme-switch-wrap {
+            position: fixed;
+            top: 22px;
+            right: 24px;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .theme-switch-label {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--slate-400);
+        }
+        html[data-theme="light"] .theme-switch-label { color: var(--slate-500); }
+
+        .theme-switch {
+            position: relative;
+            width: 84px;
+            height: 34px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .14);
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: background .3s var(--ease), border-color .3s var(--ease);
+        }
+        html[data-theme="light"] .theme-switch {
+            background: rgba(15, 23, 42, .05);
+            border: 1px solid rgba(15, 23, 42, .1);
+        }
+
+        .theme-switch-track {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 9px;
+        }
+        .theme-switch-track span {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--slate-400);
+            z-index: 2;
+            transition: color .25s var(--ease);
+            width: 16px;
+            text-align: center;
+        }
+        html[data-theme="light"] .theme-switch-track span { color: var(--slate-500); }
+        .theme-switch-track span.on { color: var(--slate-900); }
+        html[data-theme="dark"] .theme-switch-track span.on { color: var(--slate-900); }
+
+        .theme-switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, var(--amber-400), var(--amber-600));
+            box-shadow: 0 3px 8px rgba(217, 119, 6, .4);
+            transition: transform .32s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateX(27px);
+        }
+        .theme-switch[data-pos="dark"] .theme-switch-thumb { transform: translateX(0); }
+        .theme-switch[data-pos="dynamic"] .theme-switch-thumb { transform: translateX(27px); }
+        .theme-switch[data-pos="light"] .theme-switch-thumb { transform: translateX(54px); }
+
+        .portal-card {
+            display: flex;
+            width: 100%;
+            max-width: 1040px;
+            min-height: 600px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255,255,255,.08);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+            animation: cardAppear 0.55s var(--ease) forwards;
+            transition: background .4s var(--ease), box-shadow .4s var(--ease);
+        }
+        html[data-theme="light"] .portal-card { border: 1px solid rgba(15,23,42,.06); }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-panel {
+            flex: 0 0 40%;
+            padding: 52px 44px;
+            background: var(--slate-900);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-skyline {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 130px;
+            pointer-events: none;
+            opacity: .9;
+        }
+        .brand-skyline svg { width: 100%; height: 100%; display: block; }
+
+        .brand-inner { display: flex; flex-direction: column; height: 100%; position: relative; z-index: 2; }
+
+        .brand-logo .wordmark {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--white);
+            line-height: 1.3;
+        }
+        .brand-logo .wordmark span {
+            color: var(--amber-500);
+            font-weight: 300;
+        }
+        .brand-logo .eyebrow {
+            margin-top: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+            color: var(--slate-400);
+        }
+
+        .role-section { margin-top: 46px; }
+
+        .role-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .role-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            border: 1px solid rgba(255,255,255,.06);
+            border-left: 2.5px solid var(--role-color, var(--amber-500));
+            background: rgba(255,255,255,.025);
+            border-radius: 8px;
+            transition: transform .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
+        }
+        .role-item:hover {
+            transform: translateX(6px);
+            background: rgba(255,255,255,.05);
+            border-left-color: var(--role-color-hover, var(--amber-400));
+        }
+
+        .role-icon {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: color-mix(in srgb, var(--role-color, var(--amber-500)) 16%, transparent);
+            color: var(--role-color, var(--amber-500));
+            transition: all .25s var(--ease);
+        }
+        .role-item:hover .role-icon {
+            background: color-mix(in srgb, var(--role-color, var(--amber-500)) 26%, transparent);
+        }
+        .role-icon svg { width: 15px; height: 15px; fill: currentColor; }
+
+        .role-item .role-badge {
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--white);
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .brand-footer {
+            margin-top: 40px;
+            padding-top: 18px;
+            font-size: 11px;
+            color: var(--slate-500);
+            border-top: 1px solid rgba(255,255,255,.07);
+            text-align: center;
+        }
+        .brand-footer .copyright { margin-bottom: 4px; }
+        .brand-footer .developed-by {
+            color: var(--slate-500);
+            font-weight: 500;
+            font-size: 10px;
+        }
+        .brand-footer .developed-by span {
+            color: var(--amber-500);
+            font-weight: 700;
+        }
+
+        .form-panel {
+            flex: 0 0 60%;
+            padding: 52px 64px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--panel-bg);
+            transition: background .4s var(--ease);
+        }
+
+        .panel-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 34px;
+            gap: 16px;
+        }
+
+        .view-switcher {
+            display: inline-flex;
+            padding: 3px;
+            background: var(--slate-100);
+            border-radius: 9px;
+            width: fit-content;
+        }
+        html[data-theme="dark"] .view-switcher { background: rgba(255,255,255,.06); }
+
+        .view-switcher button {
+            appearance: none;
+            border: none;
+            background: transparent;
+            padding: 8px 20px;
+            font-family: var(--font-primary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--slate-500);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .25s var(--ease);
+        }
+        .view-switcher button.active {
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .1);
+        }
+        .view-switcher button:not(.active):hover { color: var(--amber-600); }
+
+        .forgot-inline {
+            font-size: 11.5px;
+            color: var(--amber-600);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color .2s var(--ease);
+            white-space: nowrap;
+        }
+        .forgot-inline:hover { color: var(--amber-700); }
+
+        .view-stage {
+            position: relative;
+            overflow: hidden;
+            transition: height .4s var(--ease);
+        }
+
+        .view {
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            transition: opacity .3s var(--ease), transform .3s var(--ease);
+            position: absolute;
+            top: 0; left: 0; right: 0;
+        }
+        .view.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            position: relative;
+        }
+
+        .view-heading { margin-bottom: 26px; }
+        .view-heading h2 {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--panel-text);
+            letter-spacing: -.2px;
+        }
+        .view-heading p {
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--panel-text-secondary);
+            line-height: 1.5;
+        }
+
+        .field { margin-bottom: 18px; }
+        .field label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--slate-600);
+            margin-bottom: 7px;
+        }
+        html[data-theme="dark"] .field label { color: var(--panel-text-secondary); }
+        .field-input-wrap { position: relative; }
+
+        .field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 7px;
+            font-family: var(--font-primary);
+            font-size: 13px;
+            color: var(--panel-text);
+            outline: none;
+            transition: all .2s var(--ease);
+        }
+        .field input::placeholder { color: var(--slate-400); font-weight: 400; }
+        .field input:focus {
+            border-color: var(--amber-500);
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, .1);
+        }
+        .field.has-toggle input { padding-right: 44px; }
+
+        .password-toggle {
+            position: absolute;
+            right: 6px; top: 6px;
+            width: 32px; height: 32px;
+            background: none; border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--slate-400);
+            border-radius: 6px;
+            transition: all .2s var(--ease);
+        }
+        .password-toggle:hover { color: var(--amber-600); background: var(--slate-50); }
+        html[data-theme="dark"] .password-toggle:hover { background: rgba(255,255,255,.06); }
+        .password-toggle svg { width: 17px; height: 17px; fill: currentColor; }
+
+        .form-options {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin: 4px 0 24px;
+            font-size: 11.5px;
+        }
+        .remember-me {
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer;
+            color: var(--panel-text-secondary);
+            user-select: none;
+        }
+        .remember-me input {
+            accent-color: var(--amber-600);
+            width: 15px; height: 15px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 200px;
+            height: 42px;
+            padding: 0 20px;
+            background: linear-gradient(to bottom right, var(--amber-400), var(--amber-600));
+            border: none;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--white);
+            cursor: pointer;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            transition: all .2s var(--ease);
+            box-shadow: 0 6px 16px rgba(217, 119, 6, .22);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(217, 119, 6, .3);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        .pw-hint {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 9px 2px 0;
+            font-size: 10.5px;
+            color: var(--panel-text-secondary);
+        }
+        .pw-hint .hint-item { display: flex; align-items: center; gap: 5px; }
+        .pw-hint .hint-item .dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--slate-300);
+            transition: all .2s var(--ease);
+        }
+        .pw-hint .hint-item .dot.valid {
+            background: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, .14);
+        }
+        .pw-hint .hint-item .dot.invalid-dot {
+            background: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, .14);
+        }
+
+        .request-note {
+            font-size: 11.5px;
+            color: var(--panel-text-secondary);
+            background: var(--slate-50);
+            border: 1px solid var(--panel-border);
+            border-left: 2px solid var(--amber-500);
+            border-radius: 6px;
+            padding: 11px 14px;
+            margin-bottom: 22px;
+            line-height: 1.55;
+        }
+        html[data-theme="dark"] .request-note { background: rgba(255,255,255,.03); }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--panel-text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .back-link:hover { color: var(--amber-600); }
+
+        .submit-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, .35);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s var(--ease);
+        }
+        .submit-overlay.show { opacity: 1; pointer-events: auto; }
+        .submit-overlay-card {
+            max-width: 380px;
+            text-align: center;
+            padding: 40px 36px;
+            background: var(--panel-bg);
+            border-radius: 14px;
+            box-shadow: 0 30px 80px rgba(0,0,0,.35);
+            transform: translateY(14px) scale(.97);
+            transition: transform .45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .submit-overlay.show .submit-overlay-card { transform: translateY(0) scale(1); }
+        .submit-overlay-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: rgba(217, 119, 6, .12);
+            color: var(--amber-600);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+        }
+        .submit-overlay-icon svg { width: 24px; height: 24px; fill: currentColor; }
+        .submit-overlay-card h3 {
+            font-size: 16px; font-weight: 700; color: var(--panel-text); margin-bottom: 8px;
+        }
+        .submit-overlay-card p {
+            font-size: 12.5px; color: var(--panel-text-secondary); line-height: 1.6;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-left: 3px solid var(--amber-600);
+            border-radius: 9px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 18px 44px rgba(15, 23, 42, .18);
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 1000;
+            max-width: 340px;
+        }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast .toast-icon {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .toast .toast-icon.success { background: rgba(21, 128, 61, .1); }
+        .toast .toast-icon.error { background: rgba(220, 38, 38, .1); }
+        .toast .toast-icon.info { background: rgba(217, 119, 6, .1); }
+        .toast .toast-icon svg { width: 14px; height: 14px; fill: currentColor; }
+        .toast .toast-icon.success svg { fill: #15803d; }
+        .toast .toast-icon.error svg { fill: #dc2626; }
+        .toast .toast-icon.info svg { fill: #d97706; }
+        .toast .toast-content h4 { font-size: 12.5px; font-weight: 700; margin-bottom: 1px; color: var(--panel-text); }
+        .toast .toast-content p { font-size: 11px; color: var(--panel-text-secondary); }
+
+        @media (max-width: 900px) {
+            .portal-card { flex-direction: column; max-width: 480px; min-height: auto; }
+            .brand-panel { padding: 34px 30px; }
+            .role-section { margin-top: 30px; }
+            .brand-footer { margin-top: 26px; }
+            .form-panel { padding: 38px 32px; }
+            .theme-switch-wrap { top: 14px; right: 14px; }
+        }
+        @media (max-width: 480px) {
+            .form-panel { padding: 30px 22px; }
+            .brand-panel { padding: 26px 22px; }
+            .panel-top-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch-wrap">
+        <span class="theme-switch-label" id="theme-switch-label">Dynamic</span>
+        <div class="theme-switch" id="theme-switch" data-pos="dynamic">
+            <div class="theme-switch-track">
+                <span id="lbl-dark">D</span>
+                <span id="lbl-dynamic">Dy</span>
+                <span id="lbl-light">L</span>
+            </div>
+            <div class="theme-switch-thumb"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <div class="toast-icon" id="toast-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <div class="toast-content">
+            <h4 id="toast-title">Success</h4>
+            <p id="toast-message">Action completed</p>
+        </div>
+    </div>
+
+    <div class="submit-overlay" id="submit-overlay">
+        <div class="submit-overlay-card">
+            <div class="submit-overlay-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            </div>
+            <h3>Your request has been sent</h3>
+            <p>An administrator is reviewing it now. Once approved, you'll be able to sign in shortly.</p>
+        </div>
+    </div>
+
+    <div class="portal-card">
+
+        <div class="brand-panel">
+            <div class="brand-inner">
+                <div class="brand-logo">
+                    <div class="wordmark">YNAD <span>Construction</span></div>
+                    <div class="eyebrow">Authorized Personnel Only</div>
+                </div>
+
+                <div class="role-section">
+                    <div class="role-list">
+                        <div class="role-item" style="--role-color:#f59e0b; --role-color-hover:#fbbf24;">
+                            <span class="role-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                            </span>
+                            <span class="role-badge">Admin</span>
+                        </div>
+                        <div class="role-item" style="--role-color:#38bdf8; --role-color-hover:#7dd3fc;">
+                            <span class="role-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 3L2 9v2h1v9h6v-6h6v6h6v-9h1V9L12 3zm-3 9H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
+                            </span>
+                            <span class="role-badge">Manager</span>
+                        </div>
+                        <div class="role-item" style="--role-color:#4ade80; --role-color-hover:#86efac;">
+                            <span class="role-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            </span>
+                            <span class="role-badge">Viewer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="brand-footer">
+                    <div class="copyright">&copy; <span id="footerYear"></span> YNAD Construction. All rights reserved.</div>
+                    <div class="developed-by">Developed by <span>[Your Company Name]</span></div>
+                </div>
+            </div>
+
+            <div class="brand-skyline">
+                <svg viewBox="0 0 400 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="70" width="46" height="60" fill="#1e293b" />
+                    <rect x="52" y="40" width="34" height="90" fill="#243247" />
+                    <rect x="92" y="58" width="28" height="72" fill="#1e293b" />
+                    <rect x="126" y="20" width="40" height="110" fill="#2b3a52" />
+                    <rect x="172" y="50" width="30" height="80" fill="#1e293b" />
+                    <rect x="208" y="66" width="24" height="64" fill="#243247" />
+                    <rect x="238" y="34" width="36" height="96" fill="#2b3a52" />
+                    <rect x="280" y="58" width="30" height="72" fill="#1e293b" />
+                    <rect x="316" y="16" width="42" height="114" fill="#334155" />
+                    <rect x="364" y="52" width="36" height="78" fill="#1e293b" />
+                    <g stroke="#d97706" stroke-width="2" opacity=".55">
+                        <line x1="146" y1="20" x2="146" y2="2" />
+                        <line x1="138" y1="8" x2="154" y2="8" />
+                        <line x1="337" y1="16" x2="337" y2="0" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="form-panel">
+
+            <div class="panel-top-row">
+                <div class="view-switcher">
+                    <button type="button" id="tab-signin" class="active" onclick="setView('signin')">Sign In</button>
+                    <button type="button" id="tab-request" onclick="setView('request')">Request Access</button>
+                </div>
+                <a href="#" class="forgot-inline" id="forgot-link">Forgot password?</a>
+            </div>
+
+            <div class="view-stage" id="view-stage">
+
+                <div class="view active" id="view-signin">
+
+                    <form class="signin-form" id="signin-form" autocomplete="off">
+                        <div class="view-heading">
+                            <h2>Sign In</h2>
+                            <p>Enter your credentials to access your workspace.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Email Address</label>
+                            <div class="field-input-wrap">
+                                <input type="email" id="email" placeholder="example@gmail.com" required />
+                            </div>
+                        </div>
+
+                        <div class="field has-toggle">
+                            <label for="password">Password</label>
+                            <div class="field-input-wrap">
+                                <input type="password" id="password" placeholder="Enter your password" required />
+                                <button type="button" class="password-toggle" id="toggle-password" aria-label="Toggle password">
+                                    <svg id="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" id="remember" /> Remember me
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Sign In</button>
+                    </form>
+
+                </div>
+
+                <div class="view" id="view-forgot">
+                    <div class="view-heading">
+                        <h2>Reset Password</h2>
+                        <p>Enter your email and we'll send you a reset link.</p>
+                    </div>
+                    <div class="field">
+                        <label for="reset-email">Email Address</label>
+                        <div class="field-input-wrap">
+                            <input type="email" id="reset-email" placeholder="example@gmail.com" required />
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="reset-btn">Send Reset Link</button>
+                    <div style="margin-top: 16px;">
+                        <a href="#" class="back-link" id="back-to-signin"><i class="fa-solid fa-arrow-left"></i> Back to sign in</a>
+                    </div>
+                </div>
+
+                <div class="view" id="view-request">
+                    <div class="view-heading">
+                        <h2>Request Sign-In Access</h2>
+                        <p>Submit your details for administrator review.</p>
+                    </div>
+
+                    <div class="request-note">
+                        New accounts are provisioned by an authorized administrator. You'll be notified by email once your access is approved.
+                    </div>
+
+                    <div class="field">
+                        <label for="request-name">Full Name</label>
+                        <div class="field-input-wrap">
+                            <input type="text" id="request-name" placeholder="YOUR FULL NAME" required />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="request-email">Email Address</label>
+                        <div class="field-input-wrap">
+                            <input type="email" id="request-email" placeholder="example@gmail.com" required />
+                        </div>
+                    </div>
+
+                    <div class="field has-toggle">
+                        <label for="request-password">Create Password</label>
+                        <div class="field-input-wrap">
+                            <input type="password" id="request-password" placeholder="Create a password" required />
+                            <button type="button" class="password-toggle" id="toggle-req-pw" aria-label="Toggle password">
+                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            </button>
+                        </div>
+                        <div class="pw-hint" id="pw-hints">
+                            <span class="hint-item"><span class="dot" id="hint-upper"></span> Uppercase</span>
+                            <span class="hint-item"><span class="dot" id="hint-lower"></span> Lowercase</span>
+                            <span class="hint-item"><span class="dot" id="hint-number"></span> Number</span>
+                            <span class="hint-item"><span class="dot" id="hint-length"></span> 8+ characters</span>
+                        </div>
+                    </div>
+
+                    <div class="field has-toggle">
+                        <label for="request-password-confirm">Confirm Password</label>
+                        <div class="field-input-wrap">
+                            <input type="password" id="request-password-confirm" placeholder="Re-enter your password" required />
+                            <button type="button" class="password-toggle" id="toggle-req-pw-confirm" aria-label="Toggle password">
+                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            </button>
+                        </div>
+                        <div class="pw-hint" id="pw-match-hint">
+                            <span class="hint-item"><span class="dot" id="hint-match"></span> <span id="hint-match-label">Passwords match</span></span>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" id="send-request-btn" style="margin-top: 6px;">Submit Request</button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+            const root = document.documentElement;
+            const themeSwitch = document.getElementById('theme-switch');
+            const themeLabel = document.getElementById('theme-switch-label');
+            const mq = window.matchMedia('(prefers-color-scheme: light)');
+            let currentMode = 'dynamic';
+
+            function applyTheme(mode) {
+                if (mode === 'dynamic') {
+                    root.setAttribute('data-theme', mq.matches ? 'light' : 'dark');
+                } else {
+                    root.setAttribute('data-theme', mode);
+                }
+                themeSwitch.setAttribute('data-pos', mode);
+                document.querySelectorAll('.theme-switch-track span').forEach(function(s) { s.classList.remove('on'); });
+                const labelMap = { dark: 'Dark', dynamic: 'Dynamic', light: 'Light' };
+                themeLabel.textContent = labelMap[mode];
+                const idMap = { dark: 'lbl-dark', dynamic: 'lbl-dynamic', light: 'lbl-light' };
+                document.getElementById(idMap[mode]).classList.add('on');
+                currentMode = mode;
+            }
+
+            themeSwitch.addEventListener('click', function(e) {
+                const rect = themeSwitch.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const third = rect.width / 3;
+                let mode;
+                if (clickX < third) mode = 'dark';
+                else if (clickX < third * 2) mode = 'dynamic';
+                else mode = 'light';
+                applyTheme(mode);
+            });
+
+            mq.addEventListener('change', function() {
+                if (currentMode === 'dynamic') applyTheme('dynamic');
+            });
+
+            applyTheme('dynamic');
+
+            const toast = document.getElementById('toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            let toastTimeout;
+
+            function showToast(type, title, message) {
+                toastTitle.textContent = title;
+                toastMessage.textContent = message;
+                const iconMap = {
+                    success: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+                    error: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
+                    info: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'
+                };
+                toastIcon.innerHTML = iconMap[type] || iconMap.info;
+                toastIcon.className = 'toast-icon ' + type;
+                toast.classList.add('show');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 4200);
+            }
+
+            const tabSignin = document.getElementById('tab-signin');
+            const tabRequest = document.getElementById('tab-request');
+            const stage = document.getElementById('view-stage');
+            const views = {
+                signin: document.getElementById('view-signin'),
+                forgot: document.getElementById('view-forgot'),
+                request: document.getElementById('view-request')
+            };
+            let currentView = 'signin';
+
+            function measure(el) {
+                const clone = el.cloneNode(true);
+                clone.style.position = 'absolute';
+                clone.style.visibility = 'hidden';
+                clone.style.opacity = '0';
+                clone.style.pointerEvents = 'none';
+                clone.style.top = '0';
+                clone.style.left = '0';
+                clone.style.right = '0';
+                clone.classList.add('active');
+                stage.appendChild(clone);
+                const h = clone.offsetHeight;
+                stage.removeChild(clone);
+                return h;
+            }
+
+            function goTo(name) {
+                if (name === currentView) return;
+                const nextEl = views[name];
+                const targetH = measure(nextEl);
+
+                stage.style.height = stage.offsetHeight + 'px';
+                void stage.offsetHeight;
+                stage.style.height = targetH + 'px';
+
+                views[currentView].classList.remove('active');
+                nextEl.classList.add('active');
+
+                if (name === 'request') {
+                    tabSignin.classList.remove('active');
+                    tabRequest.classList.add('active');
+                } else {
+                    tabSignin.classList.add('active');
+                    tabRequest.classList.remove('active');
+                }
+                currentView = name;
+            }
+
+            window.setView = function(which) {
+                goTo(which === 'signin' ? 'signin' : 'request');
+            };
+
+            document.getElementById('forgot-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                goTo('forgot');
+            });
+            document.getElementById('back-to-signin').addEventListener('click', function(e) {
+                e.preventDefault();
+                goTo('signin');
+            });
+
+            window.addEventListener('load', function() {
+                stage.style.height = views.signin.offsetHeight + 'px';
+            });
+            requestAnimationFrame(function() {
+                stage.style.height = views.signin.offsetHeight + 'px';
+            });
+
+            const toggleBtn = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+            let passwordVisible = false;
+
+            toggleBtn.addEventListener('click', function() {
+                passwordVisible = !passwordVisible;
+                passwordInput.type = passwordVisible ? 'text' : 'password';
+                eyeIcon.innerHTML = passwordVisible ?
+                    '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>' :
+                    '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            });
+
+            const toggleReqPw = document.getElementById('toggle-req-pw');
+            const reqPwInput = document.getElementById('request-password');
+            let reqPwVisible = false;
+
+            toggleReqPw.addEventListener('click', function() {
+                reqPwVisible = !reqPwVisible;
+                reqPwInput.type = reqPwVisible ? 'text' : 'password';
+                toggleReqPw.querySelector('svg').innerHTML = reqPwVisible ?
+                    '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>' :
+                    '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            });
+
+            const requestName = document.getElementById('request-name');
+            requestName.addEventListener('input', function() {
+                const cleaned = this.value.replace(/[0-9]/g, '').toUpperCase();
+                if (cleaned !== this.value) this.value = cleaned;
+            });
+            requestName.addEventListener('keypress', function(e) {
+                if (/[0-9]/.test(e.key)) e.preventDefault();
+            });
+
+            const hintUpper = document.getElementById('hint-upper');
+            const hintLower = document.getElementById('hint-lower');
+            const hintNumber = document.getElementById('hint-number');
+            const hintLength = document.getElementById('hint-length');
+
+            function validatePassword(pw) {
+                const hasUpper = /[A-Z]/.test(pw);
+                const hasLower = /[a-z]/.test(pw);
+                const hasNumber = /\d/.test(pw);
+                const hasLength = pw.length >= 8;
+
+                hintUpper.className = 'dot' + (hasUpper ? ' valid' : '');
+                hintLower.className = 'dot' + (hasLower ? ' valid' : '');
+                hintNumber.className = 'dot' + (hasNumber ? ' valid' : '');
+                hintLength.className = 'dot' + (hasLength ? ' valid' : '');
+
+                return hasUpper && hasLower && hasNumber && hasLength;
+            }
+
+            reqPwInput.addEventListener('input', function() {
+                validatePassword(this.value);
+                checkPasswordsMatch();
+            });
+
+            const toggleReqPwConfirm = document.getElementById('toggle-req-pw-confirm');
+            const reqPwConfirmInput = document.getElementById('request-password-confirm');
+            let reqPwConfirmVisible = false;
+
+            toggleReqPwConfirm.addEventListener('click', function() {
+                reqPwConfirmVisible = !reqPwConfirmVisible;
+                reqPwConfirmInput.type = reqPwConfirmVisible ? 'text' : 'password';
+                toggleReqPwConfirm.querySelector('svg').innerHTML = reqPwConfirmVisible ?
+                    '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>' :
+                    '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            });
+
+            const hintMatch = document.getElementById('hint-match');
+            const hintMatchLabel = document.getElementById('hint-match-label');
+
+            function checkPasswordsMatch() {
+                const pw = reqPwInput.value;
+                const confirm = reqPwConfirmInput.value;
+                if (confirm.length === 0) {
+                    hintMatch.className = 'dot';
+                    hintMatchLabel.textContent = 'Passwords match';
+                    return null;
+                }
+                const matches = pw === confirm;
+                hintMatch.className = 'dot' + (matches ? ' valid' : ' invalid-dot');
+                hintMatchLabel.textContent = matches ? 'Passwords match' : 'Passwords do not match';
+                return matches;
+            }
+
+            reqPwConfirmInput.addEventListener('input', checkPasswordsMatch);
+
+            const accounts = {
+                'admin@ynad.com': { password: 'ynad2026', role: 'Admin' },
+                'manager@ynad.com': { password: 'ynad2026', role: 'Manager' },
+                'viewer@ynad.com': { password: 'ynad2026', role: 'Viewer' }
+            };
+
+            document.getElementById('signin-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                if (!email || !password) {
+                    showToast('error', 'Error', 'Please fill in all fields.');
+                    return;
+                }
+                const account = accounts[email.toLowerCase()];
+                if (account && account.password === password) {
+                    showToast('success', 'Sign in successful', 'Welcome back — you have ' + account.role + ' access. Redirecting…');
+                    setTimeout(function() { window.location.href = 'index.html'; }, 1400);
+                } else {
+                    showToast('error', 'Login Failed', 'The email address or password is incorrect. Please try again.');
+                }
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                const email = document.getElementById('reset-email').value.trim();
+                if (!email) {
+                    showToast('error', 'Error', 'Please enter your email address.');
+                    return;
+                }
+                showToast('info', 'Reset Email Sent', 'Instructions sent to ' + email + '. Check your inbox.');
+            });
+
+            const submitOverlay = document.getElementById('submit-overlay');
+
+            document.getElementById('send-request-btn').addEventListener('click', function() {
+                const name = document.getElementById('request-name').value.trim();
+                const email = document.getElementById('request-email').value.trim();
+                const password = document.getElementById('request-password').value;
+                const passwordConfirm = document.getElementById('request-password-confirm').value;
+
+                if (!name || !email || !password || !passwordConfirm) {
+                    showToast('error', 'Error', 'Please fill in all fields.');
+                    return;
+                }
+
+                if (!validatePassword(password)) {
+                    showToast('error', 'Weak Password', 'Password must contain uppercase, lowercase, a number, and be at least 8 characters.');
+                    return;
+                }
+
+                if (password !== passwordConfirm) {
+                    showToast('error', 'Password Mismatch', 'Your password and confirmation do not match.');
+                    return;
+                }
+
+                submitOverlay.classList.add('show');
+                setTimeout(function() {
+                    submitOverlay.classList.remove('show');
+                    document.getElementById('request-name').value = '';
+                    document.getElementById('request-email').value = '';
+                    document.getElementById('request-password').value = '';
+                    document.getElementById('request-password-confirm').value = '';
+                    document.querySelectorAll('#pw-hints .dot').forEach(function(d) { d.className = 'dot'; });
+                    hintMatch.className = 'dot';
+                    hintMatchLabel.textContent = 'Passwords match';
+                    goTo('signin');
+                }, 2600);
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
