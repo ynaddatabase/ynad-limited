@@ -712,7 +712,11 @@
             const grid = document.getElementById('statusProjectGrid');
 
             populateReferenceLists();
-            renderTabs([]);
+            // NOTE: tabs are intentionally NOT built here with placeholder (0)
+            // counts — building them once real data is in (see applyFilters()
+            // below) avoids a one-time width jump/snap the first time counts
+            // go from 0 to their real numbers, which was throwing the row's
+            // centering off until the next click.
 
             const { data, error } = await supabaseClient
                 .from('projects')
