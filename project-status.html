@@ -113,12 +113,15 @@
 
                 <!-- Cost: toggle between a single Exact Cost field and a Min–Max Cost Range -->
                 <div class="sm:col-span-2">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
-                        <select id="costMode" onchange="onCostModeChange()" class="text-[10px] font-bold uppercase tracking-wide border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-amber-500 bg-white">
-                            <option value="exact" selected>Exact Cost</option>
-                            <option value="range">Cost Range</option>
-                        </select>
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
+                        <div class="relative inline-flex items-center">
+                            <select id="costMode" onchange="onCostModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                <option value="exact" selected>Exact Cost</option>
+                                <option value="range">Cost Range</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                        </div>
                     </div>
                     <div id="costExactWrap">
                         <input type="number" id="filterCostExact" onchange="applyFilters()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
@@ -138,12 +141,15 @@
 
                 <!-- Date: toggle between a single Exact Date field and a Min–Max Date Range -->
                 <div class="sm:col-span-2 lg:col-span-2">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
-                        <select id="dateMode" onchange="onDateModeChange()" class="text-[10px] font-bold uppercase tracking-wide border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-amber-500 bg-white">
-                            <option value="exact" selected>Exact Date</option>
-                            <option value="range">Date Range</option>
-                        </select>
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
+                        <div class="relative inline-flex items-center">
+                            <select id="dateMode" onchange="onDateModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                <option value="exact" selected>Exact Date</option>
+                                <option value="range">Date Range</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                        </div>
                     </div>
                     <div id="dateExactWrap">
                         <input type="date" id="filterDateExact" onchange="applyFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
