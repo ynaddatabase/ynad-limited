@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Status Overview — YNAD Construction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+
+        /* Status row left accent bar — color driven by data-status-color, matches
+           the card system's amber corner-accent language elsewhere on the site. */
+        .status-row {
+            border-left: 4px solid var(--row-color, #94a3b8);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .status-row:hover {
+            transform: translateX(4px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        .count-pop {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+            animation: fadeUp 0.45s ease both;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <!-- Header / Navigation (kept consistent with index.html) -->
+    <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
+                YNAD <span class="text-amber-600 font-light">Construction</span>
+            </a>
+        </div>
+        <a href="index.html" class="text-xs font-semibold tracking-widest uppercase text-slate-600 hover:text-amber-600 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="max-w-5xl mx-auto px-6 pt-12 pb-6 text-center">
+        <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-3">Project Status Overview</h1>
+        <p class="text-sm text-slate-500 max-w-xl mx-auto">A live breakdown of every project by delivery status, pulled directly from the project records.</p>
+    </div>
+
+    <!-- Status Table Card -->
+    <div class="max-w-3xl mx-auto px-6 pb-20">
+        <div id="statusTableCard" class="bg-white border shadow-md overflow-hidden">
+
+            <div id="statusRows" class="divide-y divide-slate-100">
+                <!-- Populated by renderStatusRows() below -->
+                <div class="py-10 text-center text-slate-400 text-sm uppercase tracking-wide">Loading status data...</div>
+            </div>
+
+            <!-- Total Row -->
+            <div class="bg-slate-900 text-white px-6 py-5 flex items-center justify-between">
+                <span class="text-sm font-bold uppercase tracking-widest">Total Project</span>
+                <span id="statusTotal" class="text-2xl font-extrabold text-amber-400">0</span>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-slate-400 mt-4 text-center uppercase tracking-wider">
+            Counts update automatically as project records change.
+        </p>
+    </div>
+
+    <script>
+        // Supabase Connection (same project as index.html)
+        const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        // ---- Status definitions ----
+        // NOTE: The actual counting logic (which column(s) determine each status)
+        // is still being finalized. For now each status is wired to a placeholder
+        // count of 0 so the UI/layout can be reviewed first. Once the source
+        // column(s) are confirmed, replace computeStatusCounts() below with the
+        // real Supabase query/logic — the row rendering does not need to change.
+        const STATUS_DEFINITIONS = [
+            { key: 'onTime',            label: 'On Time',               color: '#16a34a', icon: 'fa-solid fa-check' },
+            { key: 'openingDelay',      label: 'Opening Delay',         color: '#d97706', icon: 'fa-solid fa-hourglass-half' },
+            { key: 'elapsedDelay',      label: 'Elapsed Delay',         color: '#dc2626', icon: 'fa-solid fa-triangle-exclamation' },
+            { key: 'openingIn',         label: 'Opening In',            color: '#7c3aed', icon: 'fa-solid fa-calendar-days' },
+            { key: 'locationNotFinal',  label: 'Location Not Finalized', color: '#0891b2', icon: 'fa-solid fa-location-crosshairs' },
+            { key: 'notStarted',        label: 'Not Started',           color: '#64748b', icon: 'fa-solid fa-circle-pause' },
+        ];
+
+        function renderStatusRows(counts) {
+            const container = document.getElementById('statusRows');
+            container.innerHTML = '';
+
+            STATUS_DEFINITIONS.forEach((def, i) => {
+                const value = counts[def.key] ?? 0;
+                const row = document.createElement('div');
+                row.className = 'status-row fade-up flex items-center justify-between px-6 py-4 bg-white';
+                row.style.setProperty('--row-color', def.color);
+                row.style.animationDelay = `${i * 0.05}s`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background:${def.color}1A; color:${def.color};">
+                            <i class="${def.icon}"></i>
+                        </span>
+                        <span class="text-sm font-semibold uppercase tracking-wide text-slate-700">${def.label}</span>
+                    </div>
+                    <span class="count-pop text-xl font-extrabold" style="color:${def.color};">${value}</span>
+                `;
+                container.appendChild(row);
+            });
+
+            const total = STATUS_DEFINITIONS.reduce((sum, def) => sum + (counts[def.key] ?? 0), 0);
+            document.getElementById('statusTotal').textContent = total;
+        }
+
+        // ---- Placeholder counts ----
+        // TODO: replace with the real Supabase computation once the status
+        // logic (which column(s) to key off) is confirmed.
+        async function computeStatusCounts() {
+            return {
+                onTime: 0,
+                openingDelay: 0,
+                elapsedDelay: 0,
+                openingIn: 0,
+                locationNotFinal: 0,
+                notStarted: 0,
+            };
+        }
+
+        async function loadStatusOverview() {
+            const counts = await computeStatusCounts();
+            renderStatusRows(counts);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadStatusOverview);
+    </script>
+</body>
+</html>
