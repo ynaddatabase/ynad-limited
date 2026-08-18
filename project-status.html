@@ -13,7 +13,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Filter panel slide-down (collapsed by default) */
         #filterPanel {
             display: grid;
             grid-template-rows: 0fr;
@@ -26,10 +25,16 @@
             overflow: hidden;
         }
 
-        /* Status tab active state is now driven by the sliding #statusTabIndicator
-           (see moveTabIndicator() in the script) rather than a per-button class. */
+        /* FIX: explicit stacking order so tab label text always renders
+           above the sliding indicator, even if the indicator is ever
+           mis-measured or mid-transition. */
+        #statusTabIndicator {
+            z-index: 10;
+        }
+        .status-tab {
+            z-index: 20;
+        }
 
-        /* Card hover lift, consistent with the zoom-container corner-stroke language elsewhere */
         .status-project-card {
             transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
@@ -38,7 +43,6 @@
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
         }
 
-        /* Individual Image Zoom and Darken Overlay (same language as index.html) */
         .zoom-container {
             position: relative;
         }
@@ -74,7 +78,6 @@
             transform: scale(1.05);
         }
 
-        /* Animated Corner Strokes strictly on Image/Zoom-Container Hover */
         .zoom-container::before,
         .zoom-container::after {
             content: "";
@@ -111,7 +114,6 @@
             border-left-color: transparent;
         }
 
-        /* All free-text filter inputs render in caps */
         .filter-input-caps {
             text-transform: uppercase;
         }
@@ -119,9 +121,6 @@
             text-transform: uppercase;
         }
 
-        /* Full-page load/navigate transition: page fades+lifts in on load, and
-           fades out before an internal link navigates away, so moving between
-           pages never feels like a hard cut. */
         body {
             opacity: 0;
             transform: translateY(6px);
@@ -135,7 +134,6 @@
 </head>
 <body class="bg-white text-slate-800">
 
-    <!-- Header / Navigation (kept consistent with index.html) -->
     <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
         <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
             YNAD <span class="text-amber-600 font-light">Construction</span>
@@ -145,13 +143,9 @@
         </a>
     </nav>
 
-    <!-- Title + Tabs + Filter Toggle -->
     <div class="bg-slate-50 border-b px-6 py-10 text-center">
         <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8">Project Status Overview</h1>
 
-        <!-- Tabs are generated dynamically (see renderTabs()) so each pill can show a live count
-             and the order (Not Started before Location Not Finalized, which is always last)
-             is controlled from STATUS_TAB_DEFS in one place. -->
         <div id="statusTabsContainer" class="flex flex-wrap justify-center gap-3 mb-6"></div>
 
         <button onclick="toggleFilterPanel()" id="filterToggleBtn" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 transition cursor-pointer">
@@ -159,7 +153,6 @@
         </button>
     </div>
 
-    <!-- Filter Panel -->
     <div id="filterPanel" class="bg-white border-b">
         <div>
             <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -194,7 +187,6 @@
                     <datalist id="worldCountryList"></datalist>
                 </div>
 
-                <!-- Cost: toggle between a single Exact Cost field and a Min–Max Cost Range -->
                 <div class="sm:col-span-2">
                     <div class="flex items-center gap-1.5 mb-1.5">
                         <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
@@ -222,7 +214,6 @@
                     <datalist id="bdDistrictList"></datalist>
                 </div>
 
-                <!-- Date: toggle between a single Exact Date field and a Min–Max Date Range -->
                 <div class="sm:col-span-2 lg:col-span-2">
                     <div class="flex items-center gap-1.5 mb-1.5">
                         <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
@@ -259,9 +250,7 @@
         </div>
     </div>
 
-    <!-- Project Grid -->
     <section class="max-w-7xl mx-auto px-6 py-12">
-        <!-- statusResultsWrapper fades + slides when the tab or filters change (see renderGrid()) -->
         <div id="statusResultsWrapper" class="transition-all duration-300 ease-out">
             <div id="statusProjectGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
@@ -272,7 +261,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-6 px-6 border-t border-slate-800">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] tracking-wide">
             <span id="footerDevCredit">Developed by <a href="#" class="text-amber-500 hover:text-amber-400 transition">Your Company Name</a></span>
@@ -281,22 +269,12 @@
     </footer>
 
     <script>
-        // Supabase Connection (same project as index.html)
         const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-        // ---- Footer: customize here ----
         document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-        // ---- Status definitions ----
-        // NOTE: the actual status-calculation logic (which column(s) in the
-        // `projects` table determine On Time / Opening Delay / Elapsed Delay /
-        // Opening In / Location Not Finalized / Not Started) is still being
-        // finalized. Each project is currently assigned a status via
-        // computeProjectStatus() below using placeholder logic — swap that
-        // function's body once the real rule is confirmed; nothing else on
-        // this page needs to change.
         const STATUS_STYLES = {
             'On Time':                 { bg: '#dcfce7', text: '#15803d' },
             'Opening Delay':           { bg: '#fef3c7', text: '#b45309' },
@@ -306,7 +284,6 @@
             'Location Not Finalized':  { bg: '#cffafe', text: '#0e7490' },
         };
 
-        // Short codes shown on cards (full name still shown as a tooltip via `title`)
         const STATUS_SHORT = {
             'On Time':                'OT',
             'Opening Delay':          'OD',
@@ -316,8 +293,6 @@
             'Location Not Finalized': 'LNF',
         };
 
-        // Tab order: Not Started always sits right before Location Not Finalized,
-        // and Location Not Finalized is always the last tab.
         const STATUS_TAB_DEFS = [
             { key: 'all',                      label: 'All' },
             { key: 'On Time',                  label: 'On Time' },
@@ -329,7 +304,6 @@
         ];
 
         function computeProjectStatus(project) {
-            // Placeholder rule — replace with real logic once confirmed.
             if (!project.location_link) return 'Location Not Finalized';
             if (!project.status) return 'Not Started';
             if (project.status === 'Completed') return 'On Time';
@@ -338,7 +312,6 @@
             return 'Not Started';
         }
 
-        // ---- Reference lists for the Donated Country / BD District datalists ----
         const WORLD_COUNTRIES = [
             "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
             "Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium",
@@ -413,8 +386,6 @@
 
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
 
-        // Tracks which photo is currently shown per card, keyed by the card's grid position
-        // (mirrors the same pattern used for the image slider on index.html).
         const statusCardImageIndices = {};
         function changeStatusCardImage(cardId, direction) {
             const slider = document.getElementById('statusCardImages-' + cardId);
@@ -543,9 +514,6 @@
             applyFilters();
         }
 
-        // Applies every filter EXCEPT the status tab — used to compute the live
-        // count shown on each tab pill (so "On Time (12)" reflects the other
-        // active filters, not the tab selection itself).
         function getNonStatusFilteredProjects() {
             const category = document.getElementById('filterCategory').value.toLowerCase();
             const organization = document.getElementById('filterOrganization').value.toLowerCase();
@@ -592,11 +560,13 @@
 
         let tabButtonsBuilt = false;
 
-        // Buttons are built ONCE and kept in the DOM afterwards — only their
-        // count text and active state are updated on every filter change. This
-        // is what lets the amber indicator behind them actually slide instead
-        // of just popping into a new spot every time (which happens if the
-        // buttons get torn down and rebuilt on each render).
+        // FIX (bug 1): each tab button now carries "relative z-20" so its
+        // label text always renders ABOVE #statusTabIndicator (z-index 10,
+        // set in the <style> block). Previously neither element had an
+        // explicit stacking order, so a stale/mis-measured indicator
+        // position could visually sit on top of a tab's own text and make
+        // it look invisible — this is what happened to "All" in the
+        // reported bug.
         function ensureTabButtonsBuilt() {
             if (tabButtonsBuilt) return;
             const container = document.getElementById('statusTabsContainer');
@@ -604,7 +574,7 @@
 
             const indicatorHtml = `<div id="statusTabIndicator" class="absolute top-0 left-0 rounded-full bg-amber-600 transition-all duration-300 ease-out" style="width:0;height:0;"></div>`;
             const buttonsHtml = STATUS_TAB_DEFS.map(t => `
-                <button data-status-tab="${escapeHtml(t.key)}" class="status-tab relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-slate-700 transition-colors duration-300 cursor-pointer">
+                <button data-status-tab="${escapeHtml(t.key)}" class="status-tab relative z-20 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-slate-700 transition-colors duration-300 cursor-pointer">
                     <span class="tab-label">${escapeHtml(t.label)}</span> <span class="tab-count">(0)</span>
                 </button>`).join('');
 
@@ -618,15 +588,9 @@
             tabButtonsBuilt = true;
         }
 
-        // Matches the CSS transition duration on #statusTabIndicator (duration-300).
         const TAB_INDICATOR_TRANSITION_MS = 300;
         let pendingActiveTextTimeout = null;
 
-        // Slides the amber pill behind whichever tab is currently active,
-        // matching its exact width/height/position — this is the actual
-        // sliding animation (driven by the CSS transition on #statusTabIndicator).
-        // The active tab's text only turns white AFTER the pill finishes
-        // arriving, so it's never shown white while there's no fill under it yet.
         function moveTabIndicator() {
             const container = document.getElementById('statusTabsContainer');
             const indicator = document.getElementById('statusTabIndicator');
@@ -636,8 +600,6 @@
             const activeBtn = buttons.find(b => b.getAttribute('data-status-tab') === activeTab);
             if (!activeBtn) return;
 
-            // Any tab that isn't active anymore loses its white text right away —
-            // the fill has already left it, so there's nothing to wait for there.
             buttons.forEach(b => { if (b !== activeBtn) b.classList.remove('text-white'); });
 
             indicator.style.width = activeBtn.offsetWidth + 'px';
@@ -686,9 +648,6 @@
             const grid = document.getElementById('statusProjectGrid');
             const empty = document.getElementById('statusEmptyState');
 
-            // Fade + slide the current results out, swap the content while invisible,
-            // then fade + slide the new results back in — so switching tabs/filters
-            // never feels like a hard cut.
             wrapper.classList.add('opacity-0', 'translate-y-2');
 
             setTimeout(() => {
@@ -712,11 +671,6 @@
             const grid = document.getElementById('statusProjectGrid');
 
             populateReferenceLists();
-            // NOTE: tabs are intentionally NOT built here with placeholder (0)
-            // counts — building them once real data is in (see applyFilters()
-            // below) avoids a one-time width jump/snap the first time counts
-            // go from 0 to their real numbers, which was throwing the row's
-            // centering off until the next click.
 
             const { data, error } = await supabaseClient
                 .from('projects')
@@ -733,14 +687,7 @@
             applyFilters();
         }
 
-        // Full-page fade-in on load, and fade-out before navigating to another
-        // internal page (e.g. "Back to Home"), so the whole page transitions
-        // smoothly instead of hard-cutting between pages.
         function initPageTransitions() {
-            // Double rAF: the first frame just lets the browser register the
-            // starting (invisible) state; the class is added on the *next*
-            // frame so the opacity/transform change is actually animated
-            // instead of jumping straight to visible with no transition.
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => document.body.classList.add('page-ready'));
             });
@@ -756,12 +703,26 @@
             });
         }
 
-        // Wait for the full page load (fonts, the Tailwind CDN's generated
-        // styles, images) rather than just DOMContentLoaded, so the fade-in
-        // reveals an already fully-styled page instead of flashing unstyled
-        // content first.
         window.addEventListener('DOMContentLoaded', loadStatusOverview);
         window.addEventListener('load', initPageTransitions);
+
+        // FIX (bug 2): re-sync the sliding indicator once web fonts have
+        // actually swapped in. Montserrat loads via a separate Google Fonts
+        // <link>, and Tailwind loads via CDN <script> — both can finish
+        // applying AFTER moveTabIndicator() first measures button
+        // widths/positions (which happens as soon as Supabase data arrives).
+        // If that first measurement runs before fonts swap in, the tab
+        // row's layout shifts afterward and the indicator is left
+        // sized/positioned for the OLD layout — which is what caused the
+        // pill to appear under the wrong tab on first load / hard reload.
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                requestAnimationFrame(moveTabIndicator);
+            });
+        }
+        window.addEventListener('load', () => {
+            setTimeout(moveTabIndicator, 350);
+        });
     </script>
 </body>
 </html>
