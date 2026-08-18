@@ -332,6 +332,23 @@
                 width: 270px;
             }
         }
+
+        /* Status Overview Icon Button (spiral/eye mark) — spins forward on hover-in,
+           reverses back to neutral on hover-out. Uses the exact SVG mark from the brief. */
+        #statusOverviewBtn {
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        #statusOverviewBtn:hover {
+            box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+        }
+        #statusOverviewBtn .status-icon-mark {
+            transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+            transform: rotate(0deg);
+            transform-origin: 50% 50%;
+        }
+        #statusOverviewBtn:hover .status-icon-mark {
+            transform: rotate(360deg);
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -348,6 +365,18 @@
                 <button type="button" title="Add New Project" onclick="openProjectAddModal(event)" style="margin-left: 0.4in;" class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md hover:scale-105 hover:shadow-lg transition transform duration-200 cursor-pointer flex-shrink-0">
                     <i class="fa-solid fa-plus text-sm"></i>
                 </button>
+                <!-- Status Overview Button: navigates to project-status.html.
+                     Icon mark spins 360° on hover-in and unwinds back to 0° on hover-out
+                     (handled purely in CSS via .status-icon-mark transform + transition above). -->
+                <a href="project-status.html" id="statusOverviewBtn" title="Project Status Overview" class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-md hover:scale-105 transition transform duration-200 cursor-pointer flex-shrink-0">
+                    <svg class="status-icon-mark" width="18" height="18" viewBox="0 0 410 374" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M205 40 C 215 70, 260 90, 300 100 C 270 120, 250 150, 245 190 C 250 230, 270 260, 300 280 C 260 290, 215 310, 205 340 C 195 310, 150 290, 110 280 C 140 260, 160 230, 165 190 C 160 150, 140 120, 110 100 C 150 90, 195 70, 205 40 Z" fill="currentColor"/>
+                        <circle cx="205" cy="190" r="52" fill="#0f172a"/>
+                        <circle cx="205" cy="190" r="52" stroke="currentColor" stroke-width="9" fill="none"/>
+                        <circle cx="205" cy="190" r="28" fill="none" stroke="currentColor" stroke-width="8"/>
+                        <circle cx="205" cy="190" r="9" fill="currentColor"/>
+                    </svg>
+                </a>
             </div>
             
             <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider">
