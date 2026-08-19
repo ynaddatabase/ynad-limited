@@ -95,6 +95,7 @@
             height: 100%;
             background-size: cover;
             background-position: center;
+            background-color: #0f172a;
             opacity: 0;
             transition: opacity 1s ease-in-out;
             z-index: 0;
@@ -130,7 +131,8 @@
             top: 20px;
             left: 20px;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 20;
+            z-index: 46;
+            pointer-events: auto;
         }
         #sidebarToggleBtn.shifted {
             left: 285px;
@@ -491,6 +493,13 @@
         .media-menu-item.open .media-submenu {
             display: flex;
         }
+        /* If the submenu would run off the right edge of the viewport, this
+           class (applied by JS at open-time) flips it to fly out to the
+           LEFT of the row instead, so it's never cut off. */
+        .media-submenu.flip-left {
+            left: auto;
+            right: calc(100% + 6px);
+        }
         .media-submenu a {
             display: block;
             padding: 6px 9px;
@@ -539,8 +548,8 @@
                 <a href="#" class="hover:text-amber-600">HOME</a>
                 <a href="project-graph.html" class="nav-graph-link hover:text-amber-600" title="Project Graph">
                     <i class="fa-solid fa-chart-line nav-graph-icon"></i>
+                    <span>PROJECT GRAPH</span>
                 </a>
-                <a href="#projects" class="hover:text-amber-600">PROJECTS</a>
                 <a href="#about" class="hover:text-amber-600">ABOUT</a>
                 <a href="#contact" class="hover:text-amber-600">CONTACT</a>
             </div>
@@ -601,7 +610,7 @@
         <header id="heroSection" class="relative min-h-[92vh] bg-slate-900 text-white flex flex-col justify-between overflow-hidden">
             
             <!-- Left Side Fixed Toggle Arrow Button -->
-            <button id="sidebarToggleBtn" onclick="toggleMatSidebar()" class="w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
+            <button id="sidebarToggleBtn" onclick="toggleMatSidebar(event)" class="w-10 h-10 bg-black/70 hover:bg-amber-600 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition duration-300 cursor-pointer" title="Toggle Statistics">
                 <i id="toggleIcon" class="fa-solid fa-chevron-right text-xs"></i>
             </button>
 
@@ -667,7 +676,7 @@
             <!-- Background Slideshow Container (populated dynamically by loadHeroSlides() -->
             <!-- using each project's C-Photo, ordered by opening_date, last 10 only) -->
             <div id="heroBgSlides" class="absolute inset-0 z-0 pointer-events-none">
-                <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="hero-slide active"></div>
             </div>
             <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10 pointer-events-none"></div>
 
@@ -894,12 +903,16 @@
         setInterval(nextHeroSlide, 5000);
 
         // Toggle Sidebar Function
-        function toggleMatSidebar() {
+        function toggleMatSidebar(event) {
+            if (event) event.stopPropagation();
             const wrapper = document.getElementById('categorySidebarWrapper');
             const icon = document.getElementById('toggleIcon');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
-            
-            if (wrapper.classList.contains('open')) {
+            if (!wrapper || !icon || !toggleBtn) return;
+
+            const isOpen = wrapper.classList.contains('open');
+
+            if (isOpen) {
                 wrapper.classList.remove('open');
                 wrapper.classList.add('closed');
                 icon.className = "fa-solid fa-chevron-right text-xs";
@@ -976,6 +989,18 @@
 
             if (isOpen) {
                 menu.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
+            } else {
+                // Menu just opened — check each row's submenu against the viewport's
+                // right edge and flip it to open leftward instead if it would be cut off.
+                requestAnimationFrame(function() {
+                    menu.querySelectorAll('.media-submenu').forEach(function(sub) {
+                        sub.classList.remove('flip-left');
+                        const rect = sub.getBoundingClientRect();
+                        if (rect.right > window.innerWidth - 8) {
+                            sub.classList.add('flip-left');
+                        }
+                    });
+                });
             }
         }
 
@@ -992,6 +1017,34 @@
                 if (i !== item) i.classList.remove('open');
             });
             item.classList.toggle('open');
+
+            // Re-check overflow for this row's submenu right after toggling open.
+            const sub = item.querySelector('.media-submenu');
+            if (sub && item.classList.contains('open')) {
+                requestAnimationFrame(function() {
+                    sub.classList.remove('flip-left');
+                    const rect = sub.getBoundingClientRect();
+                    if (rect.right > window.innerWidth - 8) {
+                        sub.classList.add('flip-left');
+                    }
+                });
+            }
+        });
+
+        // Also flip on hover, for mouse users who never click (CSS opens the
+        // submenu on :hover directly, so JS needs to check on mouseenter too).
+        document.addEventListener('mouseover', function(e) {
+            const item = e.target.closest('.media-menu-item');
+            if (!item) return;
+            const sub = item.querySelector('.media-submenu');
+            if (!sub) return;
+            requestAnimationFrame(function() {
+                sub.classList.remove('flip-left');
+                const rect = sub.getBoundingClientRect();
+                if (rect.right > window.innerWidth - 8) {
+                    sub.classList.add('flip-left');
+                }
+            });
         });
 
         // Search Projects Functionality with 3 seconds auto-close delay
@@ -1175,15 +1228,44 @@
             slider.style.transform = `translateX(-${cardImageIndices[cardId] * 100}%)`;
         }
 
-        // Main Project Horizontal Slider
+        /* Main Project Horizontal Slider — custom eased "push and settle"
+           animation (spring-like ease-out-back) instead of the plain native
+           smooth-scroll, so it visibly reacts and settles like something
+           physically nudged rather than sliding at a flat linear speed. */
+        let sliderAnimId = null;
+        function easeOutBack(t) {
+            const c1 = 1.4;
+            const c3 = c1 + 1;
+            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        }
         function scrollMainSlider(direction) {
             const slider = document.getElementById('mainProjectSlider');
+            if (!slider) return;
             const scrollAmount = 300;
-            if (direction === 'left') {
-                slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            } else {
-                slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            const startScroll = slider.scrollLeft;
+            const maxScroll = slider.scrollWidth - slider.clientWidth;
+            let targetScroll = direction === 'left' ? startScroll - scrollAmount : startScroll + scrollAmount;
+            targetScroll = Math.max(0, Math.min(maxScroll, targetScroll));
+
+            const distance = targetScroll - startScroll;
+            const duration = 550;
+            const startTime = performance.now();
+
+            if (sliderAnimId) cancelAnimationFrame(sliderAnimId);
+
+            function step(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const eased = easeOutBack(t);
+                slider.scrollLeft = startScroll + distance * eased;
+                if (t < 1) {
+                    sliderAnimId = requestAnimationFrame(step);
+                } else {
+                    slider.scrollLeft = targetScroll;
+                    sliderAnimId = null;
+                }
             }
+            sliderAnimId = requestAnimationFrame(step);
         }
 
         /* ---- Load Projects from Supabase & Render Cards ---- */
@@ -1241,7 +1323,7 @@
                  data-donor="${escapeHtml(project.donor_name)}"
                  data-country="${escapeHtml(project.donated_country)}"
                  data-location="${escapeHtml(project.district)}"
-                 class="w-[280px] md:w-[270px] flex-shrink-0 snap-start border bg-white shadow-md hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                 class="w-[280px] md:w-[270px] flex-shrink-0 snap-start border bg-white shadow-md hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between text-left transition duration-300">
                 <div>
                     <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                         <div id="cardImages-${index}" class="flex h-full transition-transform duration-300">
