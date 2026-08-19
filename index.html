@@ -130,10 +130,19 @@
             top: 20px;
             left: 20px;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 50;
+            z-index: 20;
         }
         #sidebarToggleBtn.shifted {
             left: 285px;
+        }
+
+        /* Hero section owns its own stacking context and clips overflow, so
+           absolutely positioned children — like the sidebar toggle arrow —
+           can never paint above the sticky header once the page scrolls and
+           the hero moves out of view. */
+        #heroSection {
+            isolation: isolate;
+            overflow: hidden;
         }
 
         /* 3-Line Hamburger Icon Click Animation */
@@ -353,7 +362,7 @@
             font-weight: 500;
             letter-spacing: 0.01em;
             white-space: nowrap;
-            overflow: visible;
+            overflow: hidden;
             cursor: pointer;
             background: transparent;
             transition: color 0.4s ease;
@@ -376,6 +385,40 @@
         }
         .pill-nav-btn:hover {
             color: #fff;
+        }
+
+        /* Project Graph nav link — icon bounces/pulses and draws a small
+           underline sweep on hover, click routes to project-graph.html
+           (separate page, not handled in this file). */
+        .nav-graph-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            color: inherit;
+        }
+        .nav-graph-icon {
+            font-size: 0.85rem;
+            color: #d97706;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .nav-graph-link:hover .nav-graph-icon {
+            transform: translateY(-3px) scale(1.15);
+        }
+        .nav-graph-link::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 100%;
+            height: 1.5px;
+            background: #d97706;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        .nav-graph-link:hover::after {
+            transform: scaleX(1);
         }
     </style>
 </head>
@@ -405,8 +448,12 @@
                 </a>
             </div>
             
-            <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider">
+            <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider items-center">
                 <a href="#" class="hover:text-amber-600">HOME</a>
+                <a href="project-graph.html" class="nav-graph-link hover:text-amber-600" title="Project Graph">
+                    <i class="fa-solid fa-chart-line nav-graph-icon"></i>
+                    <span>PROJECT GRAPH</span>
+                </a>
                 <a href="#projects" class="hover:text-amber-600">PROJECTS</a>
                 <a href="#about" class="hover:text-amber-600">ABOUT</a>
                 <a href="#contact" class="hover:text-amber-600">CONTACT</a>
@@ -543,7 +590,7 @@
 
             <!-- Bottom Total Statistics & Navigation Bar -->
             <div class="relative bg-black/40 backdrop-blur-[4px] p-6 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/10 z-20 pointer-events-auto">
-                <div class="flex gap-12 lg:gap-16 text-left w-full md:w-auto justify-around md:justify-start">
+                <div class="flex gap-12 lg:gap-16 text-center w-full md:w-auto justify-around md:justify-start">
                     <div>
                         <span id="statOngoing" class="text-2xl lg:text-4xl font-extrabold text-amber-500 block">0</span>
                         <p class="text-xs uppercase tracking-widest text-gray-200 mt-1">Total Ongoing</p>
