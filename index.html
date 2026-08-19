@@ -136,13 +136,13 @@
             left: 285px;
         }
 
-        /* Hero section owns its own stacking context and clips overflow, so
-           absolutely positioned children — like the sidebar toggle arrow —
-           can never paint above the sticky header once the page scrolls and
-           the hero moves out of view. */
+        /* Hero section owns its own stacking context so absolutely positioned
+           children — like the sidebar toggle arrow — can never paint above
+           the sticky header once the page scrolls and the hero moves out of
+           view. (isolation alone is enough; no overflow clipping needed,
+           which also avoids interfering with the toggle button's clicks.) */
         #heroSection {
             isolation: isolate;
-            overflow: hidden;
         }
 
         /* 3-Line Hamburger Icon Click Animation */
@@ -420,6 +420,93 @@
         .nav-graph-link:hover::after {
             transform: scaleX(1);
         }
+
+        /* MEDIA dropdown (card bottom bar): click opens OPENING / ONGOING /
+           PROPOSAL list; hovering (or clicking, for touch devices) any of
+           those rows flies out its VIDEO/RAW PHOTO/RAW VIDEO submenu to the
+           right. */
+        .media-menu-wrap { position: relative; }
+
+        .media-menu {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .18);
+            min-width: 140px;
+            padding: 6px;
+            z-index: 60;
+            text-align: left;
+        }
+        .media-menu.hidden { display: none; }
+
+        .media-menu-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 9px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: #334155;
+            border-radius: 5px;
+            cursor: default;
+            transition: background .15s ease, color .15s ease;
+        }
+        .media-menu-item:hover,
+        .media-menu-item.open {
+            background: #fffbeb;
+            color: #b45309;
+        }
+        .media-menu-item i {
+            font-size: 8px;
+            color: #94a3b8;
+        }
+        .media-menu-item:hover i,
+        .media-menu-item.open i {
+            color: #d97706;
+        }
+
+        .media-submenu {
+            position: absolute;
+            left: calc(100% + 6px);
+            top: -6px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .18);
+            min-width: 120px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 1px;
+            z-index: 61;
+        }
+        .media-menu-item:hover .media-submenu,
+        .media-menu-item.open .media-submenu {
+            display: flex;
+        }
+        .media-submenu a {
+            display: block;
+            padding: 6px 9px;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: .03em;
+            color: #475569;
+            border-radius: 5px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background .15s ease, color .15s ease;
+        }
+        .media-submenu a:hover {
+            background: #d97706;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -452,7 +539,6 @@
                 <a href="#" class="hover:text-amber-600">HOME</a>
                 <a href="project-graph.html" class="nav-graph-link hover:text-amber-600" title="Project Graph">
                     <i class="fa-solid fa-chart-line nav-graph-icon"></i>
-                    <span>PROJECT GRAPH</span>
                 </a>
                 <a href="#projects" class="hover:text-amber-600">PROJECTS</a>
                 <a href="#about" class="hover:text-amber-600">ABOUT</a>
@@ -610,7 +696,7 @@
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-layer-group text-lg"></i>
                         </div>
-                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">All</span>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">All Project</span>
                     </a>
                     <a href="#projects" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
@@ -647,7 +733,7 @@
                     <i class="fa-solid fa-arrow-right text-base"></i>
                 </button>
 
-                <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6 justify-center">
+                <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6 justify-start px-2 md:px-4 scroll-pl-2">
                     
                     <!-- Dynamically populated from Supabase by loadProjects() in the script below -->
                     <div id="projectsLoadingState" class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">
@@ -858,6 +944,54 @@
                     userDropdown.classList.remove('open');
                 }
             }
+
+            // Close any open MEDIA dropdown menus when clicking outside them
+            document.querySelectorAll('.media-menu:not(.hidden)').forEach(function(menu) {
+                const wrap = menu.closest('.media-menu-wrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    menu.classList.add('hidden');
+                    menu.querySelectorAll('.media-menu-item.open').forEach(function(item) {
+                        item.classList.remove('open');
+                    });
+                }
+            });
+        });
+
+        // Toggle a project card's MEDIA dropdown (OPENING / ONGOING / PROPOSAL)
+        function toggleMediaMenu(event, index) {
+            event.stopPropagation();
+            const menu = document.getElementById('mediaMenu-' + index);
+            if (!menu) return;
+            const isOpen = !menu.classList.contains('hidden');
+
+            // Close all other open media menus first
+            document.querySelectorAll('.media-menu').forEach(function(m) {
+                if (m !== menu) {
+                    m.classList.add('hidden');
+                    m.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
+                }
+            });
+
+            menu.classList.toggle('hidden', isOpen);
+
+            if (isOpen) {
+                menu.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
+            }
+        }
+
+        // Tap-to-open for OPENING / ONGOING / PROPOSAL rows (submenu also
+        // opens on hover via CSS for pointer devices; this makes it work on
+        // touch too, and lets only one submenu be open at a time).
+        document.addEventListener('click', function(e) {
+            const item = e.target.closest('.media-menu-item');
+            if (!item) return;
+            if (e.target.closest('.media-submenu')) return; // let submenu links behave normally
+            e.stopPropagation();
+            const menu = item.closest('.media-menu');
+            menu.querySelectorAll('.media-menu-item').forEach(function(i) {
+                if (i !== item) i.classList.remove('open');
+            });
+            item.classList.toggle('open');
         });
 
         // Search Projects Functionality with 3 seconds auto-close delay
@@ -1107,7 +1241,7 @@
                  data-donor="${escapeHtml(project.donor_name)}"
                  data-country="${escapeHtml(project.donated_country)}"
                  data-location="${escapeHtml(project.district)}"
-                 class="w-[280px] md:w-[270px] flex-shrink-0 snap-start border bg-white shadow-md overflow-hidden flex flex-col justify-between text-left transition duration-300">
+                 class="w-[280px] md:w-[270px] flex-shrink-0 snap-start border bg-white shadow-md hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between text-left transition duration-300">
                 <div>
                     <div class="zoom-container relative h-56 md:h-60 overflow-hidden">
                         <div id="cardImages-${index}" class="flex h-full transition-transform duration-300">
@@ -1135,7 +1269,37 @@
                 </div>
                 <div class="px-2 pb-2.5 grid grid-cols-3 gap-1 text-center text-[10px] font-semibold pt-1.5 border-t border-gray-100">
                     <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}" target="${project.documents_url ? '_blank' : '_self'}" class="text-[9px] text-blue-600/70 hover:text-white hover:bg-blue-600 py-1 px-2 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-file-lines"></i> DOCUMENTS</a>
-                    <a href="${project.video_link ? escapeHtml(project.video_link) : '#'}" target="${project.video_link ? '_blank' : '_self'}" class="text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-video"></i> VIDEO</a>
+                    <div class="media-menu-wrap relative">
+                        <button type="button" onclick="toggleMediaMenu(event, ${index})" class="media-menu-btn w-full text-amber-600/70 hover:text-white hover:bg-amber-600 py-1 px-1 rounded transition flex items-center justify-center gap-1 cursor-pointer"><i class="fa-solid fa-photo-film"></i> MEDIA</button>
+                        <div id="mediaMenu-${index}" class="media-menu hidden">
+                            <div class="media-menu-item" data-sub="opening-${index}">
+                                <span>OPENING</span><i class="fa-solid fa-chevron-right"></i>
+                                <div class="media-submenu">
+                                    <a href="#" onclick="return false;">VIDEO</a>
+                                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                                </div>
+                            </div>
+                            <div class="media-menu-item" data-sub="ongoing-${index}">
+                                <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
+                                <div class="media-submenu">
+                                    <a href="#" onclick="return false;">3 VIDEO</a>
+                                    <a href="#" onclick="return false;">2 VIDEO</a>
+                                    <a href="#" onclick="return false;">1 VIDEO</a>
+                                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                                </div>
+                            </div>
+                            <div class="media-menu-item" data-sub="proposal-${index}">
+                                <span>PROPOSAL</span><i class="fa-solid fa-chevron-right"></i>
+                                <div class="media-submenu">
+                                    <a href="#" onclick="return false;">VIDEO</a>
+                                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <a href="${project.location_link ? escapeHtml(project.location_link) : '#'}" target="${project.location_link ? '_blank' : '_self'}" class="text-slate-700/70 hover:text-white hover:bg-slate-800 py-1 px-1 rounded transition flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot"></i> LOCATION</a>
                 </div>
             </div>`;
