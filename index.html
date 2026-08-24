@@ -278,16 +278,60 @@
         }
 
         .recent-project-nav.left {
-            left: -42px;
+            left: -28.8px;
         }
 
         .recent-project-nav.right {
-            right: -42px;
+            right: -28.8px;
         }
 
-        .recent-project-nav i {
-            font-size: 13px;
-            font-weight: 300;
+        .recent-project-nav svg {
+            width: 22px;
+            height: 15px;
+            display: block;
+        }
+
+        /* Dots: tightened to sit directly under the heading, matching the
+           reference mock (small gap under "OUR RECENT PROJECTS...", not the
+           large gap that used to separate them from the carousel below). */
+        .recent-project-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 6px auto 0;
+        }
+
+        .recent-project-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #d1d5db;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.25s ease;
+        }
+
+        .recent-project-dot:hover {
+            background: #a5a5a5;
+        }
+
+        .recent-project-dot.active {
+            background: #4b5563;
+            transform: scale(1.15);
+        }
+
+        /* Scroll-triggered fade-in, sliding left -> right into place */
+        .reveal-fade-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .reveal-fade-left.revealed {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         @media (max-width: 1200px) {
@@ -304,9 +348,6 @@
                 min-width: calc(50% - 12px);
                 flex-basis: calc(50% - 12px);
             }
-
-            .recent-project-nav.left { left: -30px; }
-            .recent-project-nav.right { right: -30px; }
         }
 
         @media (max-width: 560px) {
@@ -315,9 +356,6 @@
                 min-width: 100%;
                 flex-basis: 100%;
             }
-
-            .recent-project-nav.left { left: -8px; }
-            .recent-project-nav.right { right: -8px; }
         }
 
         /* Hero Slideshow Transition Effects */
@@ -965,15 +1003,19 @@
 
         <!-- Recent Projects Section -->
         <section id="projects" class="py-12 md:py-16 text-center bg-white relative">
-            <h2 class="text-xl md:text-2xl font-light tracking-widest uppercase mb-8 md:mb-10" style="color: rgba(0,0,0,0.7);">OUR RECENT PROJECTS</h2>
-            
-            <div class="recent-projects-carousel px-6">
+            <h2 class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">OUR RECENT PROJECTS</h2>
+
+            <div class="recent-projects-carousel px-6" style="padding-left: 36px; padding-right: 36px;">
                 <button onclick="scrollMainSlider('left')" aria-label="Previous projects" class="recent-project-nav left">
-                    <i class="fa-solid fa-chevron-left"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16" style="transform: scaleX(-1);">
+                        <path d="M23.962,82.508a.448.448,0,0,0-.109-.153l-8-7.529a.523.523,0,0,0-.707,0,.452.452,0,0,0,0,.665l7.146,6.726H.5a.471.471,0,1,0,0,.941H22.293l-7.146,6.726a.452.452,0,0,0,0,.665.525.525,0,0,0,.708,0l8-7.529a.5.5,0,0,0,.108-.153A.442.442,0,0,0,23.962,82.508Z" transform="translate(0 -74.688)" fill="currentColor"/>
+                    </svg>
                 </button>
 
                 <button onclick="scrollMainSlider('right')" aria-label="Next projects" class="recent-project-nav right">
-                    <i class="fa-solid fa-chevron-right"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16">
+                        <path d="M23.962,82.508a.448.448,0,0,0-.109-.153l-8-7.529a.523.523,0,0,0-.707,0,.452.452,0,0,0,0,.665l7.146,6.726H.5a.471.471,0,1,0,0,.941H22.293l-7.146,6.726a.452.452,0,0,0,0,.665.525.525,0,0,0,.708,0l8-7.529a.5.5,0,0,0,.108-.153A.442.442,0,0,0,23.962,82.508Z" transform="translate(0 -74.688)" fill="currentColor"/>
+                    </svg>
                 </button>
 
                 <div id="mainProjectSlider" class="flex gap-6 overflow-x-auto no-scrollbar scroll-snap-x snap-mandatory pb-6 justify-start scroll-pl-0">
@@ -983,6 +1025,8 @@
                     </div>
                 </div>
             </div>
+
+            <div id="projectsDots" class="recent-project-dots mt-2"></div>
         </section>
 
         <!-- About Section -->
@@ -1474,7 +1518,10 @@
         function scrollMainSlider(direction) {
             const slider = document.getElementById('mainProjectSlider');
             if (!slider) return;
-            const scrollAmount = Math.max(300, Math.round(slider.clientWidth / 4));
+            const firstCard = slider.querySelector('.recent-project-card');
+            const gap = parseFloat(getComputedStyle(slider).columnGap || getComputedStyle(slider).gap || '24') || 24;
+            const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : slider.clientWidth / 4;
+            const scrollAmount = Math.round(cardWidth + gap);
             const startScroll = slider.scrollLeft;
             const maxScroll = slider.scrollWidth - slider.clientWidth;
             let targetScroll = direction === 'left' ? startScroll - scrollAmount : startScroll + scrollAmount;
@@ -1501,7 +1548,30 @@
             sliderAnimId = requestAnimationFrame(step);
         }
 
-        /* ---- Load Projects from Supabase & Render Cards ---- */
+        /* ---- Scroll-triggered fade-in (left -> right) for heading & project cards ---- */
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                } else {
+                    entry.target.classList.remove('revealed');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        function observeRevealTargets(root) {
+            root.querySelectorAll('.reveal-fade-left').forEach(el => revealObserver.observe(el));
+        }
+
+        /* ---- Auto-close the statistics sidebar once the hero is scrolled out of view ---- */
+        window.addEventListener('scroll', () => {
+            const wrapper = document.getElementById('categorySidebarWrapper');
+            if (wrapper && wrapper.classList.contains('open') && window.scrollY > 80) {
+                toggleMatSidebar();
+            }
+        }, { passive: true });
+
+
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
 
         function escapeHtml(str) {
@@ -1549,7 +1619,8 @@
                  data-donor="${escapeHtml(project.donor_name)}"
                  data-country="${escapeHtml(project.donated_country)}"
                  data-location="${escapeHtml(project.district)}"
-                 class="recent-project-card">
+                 class="recent-project-card reveal-fade-left"
+                 style="transition-delay: ${Math.min(index, 3) * 0.12}s;">
 
                 <div class="recent-project-image zoom-container">
                     <div id="cardImages-${index}" class="recent-project-image-track">
@@ -1646,6 +1717,42 @@
                 slider.insertAdjacentHTML('beforeend', buildProjectCardHTML(project, index));
                 cardImageIndices[index] = 0;
             });
+
+            setupProjectDots();
+            observeRevealTargets(slider);
+        }
+
+        /* ---- 3-dot pagination for the recent projects carousel ---- */
+        function setupProjectDots() {
+            const slider = document.getElementById('mainProjectSlider');
+            const dotsWrap = document.getElementById('projectsDots');
+            if (!slider || !dotsWrap) return;
+
+            const dotCount = 3;
+            dotsWrap.innerHTML = '';
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'recent-project-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('aria-label', 'Go to project group ' + (i + 1));
+                dot.addEventListener('click', () => {
+                    const maxScroll = slider.scrollWidth - slider.clientWidth;
+                    const target = maxScroll * (i / (dotCount - 1));
+                    slider.scrollTo({ left: target, behavior: 'smooth' });
+                });
+                dotsWrap.appendChild(dot);
+            }
+
+            const updateActiveDot = () => {
+                const maxScroll = slider.scrollWidth - slider.clientWidth;
+                const progress = maxScroll > 0 ? slider.scrollLeft / maxScroll : 0;
+                const activeIndex = Math.min(dotCount - 1, Math.round(progress * (dotCount - 1)));
+                dotsWrap.querySelectorAll('.recent-project-dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === activeIndex);
+                });
+            };
+
+            slider.addEventListener('scroll', updateActiveDot, { passive: true });
+            updateActiveDot();
         }
 
         /* ---- Load Hero Slideshow from last 10 projects (by opening_date) using C-Photo ---- */
@@ -1693,6 +1800,7 @@
             loadProjects();
             loadHeroSlides();
             loadHeroStats();
+            observeRevealTargets(document);
         });
     </script>
 </body>
