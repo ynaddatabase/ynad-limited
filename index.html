@@ -156,6 +156,7 @@
             min-height: 118.7298px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             box-sizing: border-box;
             background: #fff;
         }
@@ -163,15 +164,25 @@
         .recent-project-info {
             height: 72px;
             min-height: 72px;
-            padding: 10px 19px 0;
+            padding: 10px 19px 8px;
             box-sizing: border-box;
             display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .recent-project-info-left {
+            min-width: 0;
+            flex: 1 1 auto;
+            display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-end;
         }
 
         .recent-project-title {
-            margin: 0;
+            margin: 0 0 2px;
             font-size: 15px;
             line-height: 20px;
             font-weight: 500;
@@ -184,7 +195,7 @@
         }
 
         .recent-project-location {
-            margin-top: 2px;
+            margin-top: 0;
             font-size: 11px;
             line-height: 16px;
             font-weight: 400;
@@ -194,6 +205,26 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .recent-project-code {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: rgba(0, 0, 0, 0.4);
+            white-space: nowrap;
+        }
+
+        .recent-project-code .code-divider {
+            width: 1px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            flex: 0 0 auto;
         }
 
         .recent-project-actions {
@@ -1584,6 +1615,34 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // Turns a number into its ordinal form: 1 -> "1st", 2 -> "2nd",
+        // 3 -> "3rd", 4 -> "4th", 11/12/13 -> "11th/12th/13th", etc.
+        function ordinalSuffix(n) {
+            const rem100 = n % 100;
+            if (rem100 >= 11 && rem100 <= 13) return n + 'th';
+            switch (n % 10) {
+                case 1: return n + 'st';
+                case 2: return n + 'nd';
+                case 3: return n + 'rd';
+                default: return n + 'th';
+            }
+        }
+
+        // Builds the ONGOING submenu's video links: given a total count of
+        // uploaded ongoing videos, lists them newest-first — i.e. if 7 videos
+        // are uploaded, shows "7TH VIDEO, 6TH VIDEO, 5TH VIDEO, ... 1ST VIDEO".
+        // The most recently uploaded video is always the highest number and
+        // always appears at the top of the list.
+        function buildOngoingVideoLinksHtml(totalOngoingVideos) {
+            const count = Number(totalOngoingVideos) || 0;
+            if (count <= 0) return '';
+            let html = '';
+            for (let n = count; n >= 1; n--) {
+                html += `<a href="#" onclick="return false;">${ordinalSuffix(n)} video</a>\n`;
+            }
+            return html;
+        }
+
         // Handles photo_urls whether it's stored as a real array (jsonb),
         // a stringified JSON array, or a comma-separated string.
         function normalizePhotoUrls(raw) {
@@ -1630,8 +1689,16 @@
 
                 <div class="recent-project-bottom">
                     <div class="recent-project-info">
-                        <h4 class="recent-project-title">${escapeHtml(project.project_name || '')}</h4>
-                        <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
+                        <div class="recent-project-info-left">
+                            <h4 class="recent-project-title">${escapeHtml(project.project_name || '')}</h4>
+                            <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
+                        </div>
+                        ${(project.bd_number || project.ho_number) ? `
+                        <div class="recent-project-code">
+                            ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
+                            ${(project.bd_number && project.ho_number) ? `<span class="code-divider"></span>` : ''}
+                            ${project.ho_number ? `<span>HO-${escapeHtml(project.ho_number)}</span>` : ''}
+                        </div>` : ''}
                     </div>
 
                     <div class="recent-project-actions">
@@ -1661,9 +1728,7 @@
                                 <div class="media-menu-item" data-sub="ongoing-${index}">
                                     <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        <a href="#" onclick="return false;">3 VIDEO</a>
-                                        <a href="#" onclick="return false;">2 VIDEO</a>
-                                        <a href="#" onclick="return false;">1 VIDEO</a>
+                                        ${buildOngoingVideoLinksHtml(project.ongoing_video_count ?? 3)}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
