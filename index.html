@@ -496,6 +496,136 @@
             background: #f1f5f9;
             border-color: #e2e8f0;
         }
+
+        /* Actual color-mode application. Layout, spacing, imagery and
+           interactions remain unchanged. */
+        body.theme-effective-dark {
+            background-color: #0f172a !important;
+            color: #e2e8f0;
+        }
+
+        body.theme-effective-dark #projects,
+        body.theme-effective-dark .recent-project-bottom {
+            background-color: #0f172a !important;
+        }
+
+        body.theme-effective-dark #about {
+            background-color: #111827 !important;
+            border-color: #334155 !important;
+        }
+
+        body.theme-effective-dark .recent-project-card,
+        body.theme-effective-dark #settingsDropdownMenu,
+        body.theme-effective-dark #userDropdownMenu,
+        body.theme-effective-dark #searchDropdownMenu,
+        body.theme-effective-dark #menuBox {
+            background-color: #111827 !important;
+            border-color: #334155 !important;
+        }
+
+        body.theme-effective-dark .recent-project-title,
+        body.theme-effective-dark .text-slate-900,
+        body.theme-effective-dark .text-slate-800 {
+            color: #f8fafc !important;
+        }
+
+        body.theme-effective-dark .recent-project-location,
+        body.theme-effective-dark .text-slate-600,
+        body.theme-effective-dark .text-slate-500,
+        body.theme-effective-dark .text-slate-400 {
+            color: #cbd5e1 !important;
+        }
+
+        /* Dark-mode contrast for the recent-project header, metadata and actions. */
+        body.theme-effective-dark #projects h2 {
+            color: #f8fafc !important;
+        }
+        body.theme-effective-dark .recent-project-code {
+            color: #94a3b8 !important;
+        }
+        body.theme-effective-dark .recent-project-code .code-divider {
+            background: #475569 !important;
+        }
+        body.theme-effective-dark .recent-project-action.docs {
+            color: #60a5fa !important;
+        }
+        body.theme-effective-dark .recent-project-action.media {
+            color: #f59e0b !important;
+        }
+        body.theme-effective-dark .recent-project-action.location {
+            color: #94a3b8 !important;
+        }
+        body.theme-effective-dark #projects .recent-project-card {
+            border-color: #334155 !important;
+        }
+
+        body.theme-effective-dark #searchDropdownMenu input {
+            color: #f8fafc !important;
+        }
+
+        body.theme-effective-dark #searchDropdownMenu input::placeholder {
+            color: #94a3b8;
+        }
+
+        body.theme-effective-dark .border-slate-100,
+        body.theme-effective-dark .border-slate-200,
+        body.theme-effective-dark .border-slate-300 {
+            border-color: #334155 !important;
+        }
+
+        body.theme-effective-dark .bg-slate-50 {
+            background-color: #111827 !important;
+        }
+
+        body.theme-effective-dark .bg-white {
+            background-color: #111827 !important;
+        }
+
+        body.theme-effective-dark .hover\\:bg-slate-100:hover {
+            background-color: #1e293b !important;
+        }
+
+        body.theme-effective-dark #mainNav.nav-solid {
+            background-color: #0f172a;
+            border-bottom-color: #334155;
+        }
+
+        body.theme-effective-dark #mainNav.nav-solid .nav-icon-btn,
+        body.theme-effective-dark #mainNav.nav-solid .theme-mode-switch {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+
+        body.theme-effective-dark #mainNav.nav-solid .nav-adaptive {
+            color: #f8fafc;
+        }
+
+        body.theme-effective-dark #mainNav.nav-solid .nav-adaptive-muted {
+            color: #cbd5e1;
+        }
+
+        body.theme-effective-dark .theme-mode-btn.active {
+            color: #ffffff !important;
+        }
+
+        /* In dark mode, all standard black/dark utility text becomes white. */
+        body.theme-effective-dark .text-black,
+        body.theme-effective-dark .text-slate-700,
+        body.theme-effective-dark .text-slate-800,
+        body.theme-effective-dark .text-slate-900,
+        body.theme-effective-dark .text-gray-900,
+        body.theme-effective-dark .text-gray-800,
+        body.theme-effective-dark .text-gray-700 {
+            color: #f8fafc !important;
+        }
+
+        /* Temporary transition class used while changing between light/dark. */
+        body.theme-transition,
+        body.theme-transition * {
+            transition-property: color, background-color, border-color, fill, stroke !important;
+            transition-duration: 0.45s !important;
+            transition-timing-function: ease !important;
+        }
         #mainNav .nav-icon-btn:hover {
             background-color: #d97706;
             border-color: #d97706;
@@ -712,6 +842,11 @@
             height: 40px;
             padding-right: 2px;
         }
+
+        /* Keep the search button visually inset from the search field's right edge. */
+        #searchDropdownMenu.open {
+            right: 0;
+        }
         /* When the search box is open, the Home/Contact/Login icon group
            slides left — clear of the search box, which expands leftward
            from the search icon and would otherwise cover it — so the
@@ -720,6 +855,8 @@
         #homeContactLoginGroup {
             position: relative;
             z-index: 5;
+            will-change: transform;
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #homeContactLoginGroup.icons-pushed {
             transform: translateX(-270px);
@@ -770,11 +907,12 @@
             background-color: #d97706 !important;
             color: #ffffff !important;
             border-color: #d97706 !important;
-            transform: translateX(2px);
+            transform: translateX(-5px);
         }
         #searchBoxWrap.search-open #searchIconBtn:hover {
             background-color: #b45309 !important;
             border-color: #b45309 !important;
+            transform: translateX(-5px) scale(1.05);
         }
 
         /* Header pill buttons (Project Add / Overview) — outline pill, amber
@@ -955,6 +1093,8 @@
            header icon buttons (adaptive color, rounded) but as a compact
            segmented control rather than a single round button. */
         .theme-mode-switch {
+            --theme-index: 1;
+            position: relative;
             display: flex;
             align-items: center;
             gap: 2px;
@@ -962,13 +1102,29 @@
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid transparent;
-            transition: background-color 0.25s ease, border-color 0.25s ease;
+            transition: background-color 0.45s ease, border-color 0.45s ease;
+        }
+        .theme-mode-switch::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: #d97706;
+            transform: translateX(calc(var(--theme-index) * 30px));
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s ease;
+            z-index: 0;
+            pointer-events: none;
         }
         #mainNav.nav-solid .theme-mode-switch {
             background: #f1f5f9;
             border-color: #e2e8f0;
         }
         .theme-mode-btn {
+            position: relative;
+            z-index: 1;
             width: 28px;
             height: 28px;
             display: flex;
@@ -981,14 +1137,13 @@
             opacity: 0.7;
             cursor: pointer;
             font-size: 0.72rem;
-            transition: background-color 0.25s ease, color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+            transition: color 0.35s ease, opacity 0.25s ease, transform 0.25s ease;
         }
         .theme-mode-btn:hover {
             opacity: 1;
             transform: scale(1.08);
         }
         .theme-mode-btn.active {
-            background: #d97706;
             color: #ffffff !important;
             opacity: 1;
         }
@@ -1014,10 +1169,7 @@
                         <i class="fa-solid fa-house text-sm"></i>
                     </a>
                     <a href="#contact" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-                        <i class="fa-solid fa-envelope text-sm"></i>
-                    </a>
-                    <a href="login.html" id="loginIconBtn" title="Log In" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full items-center justify-center cursor-pointer" style="display:none;">
-                        <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                        <i class="fa-solid fa-phone text-sm"></i>
                     </a>
                 </div>
 
@@ -1076,23 +1228,21 @@
 
                 <!-- User Profile Image with Animated Dropdown Box -->
                 <div class="relative">
-                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)" class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500 cursor-pointer shadow-sm transition transform duration-300 hover:scale-110 hover:shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Hasanur Rahman" class="w-full h-full object-cover">
+                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)" class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500 cursor-pointer shadow-sm transition transform duration-300 hover:scale-110 hover:shadow-lg bg-white flex items-center justify-center">
+                        <img src="user-profile-icon.png" alt="User" class="w-full h-full object-cover">
                     </div>
 
                     <!-- User Dropdown Box -->
                     <div id="userDropdownMenu" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 p-4 z-50">
-                        <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Hasanur Rahman" class="w-12 h-12 rounded-full object-cover border border-amber-600">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-900">HASANUR RAHMAN</h4>
-                                <p class="text-[11px] text-slate-500 truncate">hasanur.rahman@ynad.com</p>
+                        <div class="flex items-center justify-center pb-3 border-b border-slate-100">
+                            <div class="w-16 h-16 rounded-full overflow-hidden border border-amber-600 bg-white flex items-center justify-center">
+                                <img src="user-profile-icon.png" alt="User" class="w-full h-full object-cover">
                             </div>
                         </div>
 
                         <div class="pt-3">
-                            <a href="#" onclick="handleLogout(event)" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white py-2 px-3 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 transition duration-200 cursor-pointer">
-                                <i class="fa-solid fa-right-from-bracket"></i> LOG OUT
+                            <a href="login.html" class="w-full bg-slate-50 hover:bg-amber-600 text-slate-600 hover:text-white py-2 px-3 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 transition duration-200 cursor-pointer">
+                                <i class="fa-solid fa-user"></i> LOG IN
                             </a>
                         </div>
                     </div>
@@ -1443,23 +1593,14 @@
             handleNavScroll();
         })();
 
-        // ---- Login icon visibility: only shown when NOT logged in ----
-        // Wired directly to Supabase Auth so it needs no rework once real
-        // sign-in/sign-up flows are added — it already reflects the true
-        // session state via getSession() and stays in sync via onAuthStateChange().
-        function updateLoginIconVisibility(session) {
-            const loginBtn = document.getElementById('loginIconBtn');
-            if (!loginBtn) return;
-            const isLoggedIn = !!session;
-            loginBtn.style.display = isLoggedIn ? 'none' : 'flex';
-        }
-
         async function initAuthState() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            updateLoginIconVisibility(session);
+            // Keep Supabase session tracking available for the page without
+            // showing a separate login icon in the header.
+            await supabaseClient.auth.getSession();
 
-            supabaseClient.auth.onAuthStateChange((_event, session) => {
-                updateLoginIconVisibility(session);
+            supabaseClient.auth.onAuthStateChange(() => {
+                // Session changes are intentionally not reflected in a
+                // separate header login button.
             });
         }
 
@@ -1744,29 +1885,73 @@
             }
         }
 
-        // Handle Logout Action
+        // Legacy logout handler retained for compatibility with any existing
+        // page references; the profile menu now exposes LOG IN instead.
         function handleLogout(event) {
             event.preventDefault();
-            alert('Successfully logged out!');
+            window.location.href = 'login.html';
         }
 
-        // Light / Dynamic / Dark theme mode switch — sets the active pill
-        // and stores the choice. "Dynamic" tracks the system preference;
-        // Light/Dark force a fixed mode. Visual application of the mode to
-        // the rest of the site is left as-is for now — this wires up the
-        // control itself.
+        // Light / Dynamic / Dark theme mode switch.
+        // The selected mode now changes the page theme instead of only
+        // highlighting the active control. Dynamic follows the OS theme.
         function setThemeMode(mode) {
-            document.querySelectorAll('.theme-mode-btn').forEach(function(btn) {
+            const validModes = ['light', 'dynamic', 'dark'];
+            if (!validModes.includes(mode)) mode = 'dynamic';
+
+            const switcher = document.getElementById('themeModeSwitch');
+            const buttons = document.querySelectorAll('.theme-mode-btn');
+            const indexMap = { light: 0, dynamic: 1, dark: 2 };
+
+            buttons.forEach(function(btn) {
                 btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
             });
+
+            if (switcher) {
+                switcher.style.setProperty('--theme-index', indexMap[mode]);
+            }
+
+            const body = document.body;
+            body.classList.add('theme-transition');
+            body.classList.remove('theme-light', 'theme-dynamic', 'theme-dark', 'theme-effective-dark');
+            body.classList.add('theme-' + mode);
+
+            const prefersDark = window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (mode === 'dark' || (mode === 'dynamic' && prefersDark)) {
+                body.classList.add('theme-effective-dark');
+            }
+
+            window.clearTimeout(window.__ynadThemeTransitionTimer);
+            window.__ynadThemeTransitionTimer = window.setTimeout(function() {
+                body.classList.remove('theme-transition');
+            }, 500);
+
             try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
         }
 
         (function initThemeMode() {
             let saved = 'dynamic';
             try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+
             document.addEventListener('DOMContentLoaded', function() {
                 setThemeMode(saved);
+
+                if (window.matchMedia) {
+                    const media = window.matchMedia('(prefers-color-scheme: dark)');
+                    const syncDynamicTheme = function() {
+                        if (document.body.classList.contains('theme-dynamic')) {
+                            setThemeMode('dynamic');
+                        }
+                    };
+
+                    if (media.addEventListener) {
+                        media.addEventListener('change', syncDynamicTheme);
+                    } else if (media.addListener) {
+                        media.addListener(syncDynamicTheme);
+                    }
+                }
             });
         })();
 
