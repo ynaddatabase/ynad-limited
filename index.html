@@ -410,7 +410,7 @@
         /* Smooth Slide Animation for Left Sidebar & Toggle Button */
         #categorySidebarWrapper {
             position: absolute;
-            top: 108px;
+            top: 179px;
             left: 20px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 45;
@@ -431,7 +431,7 @@
         /* Fixed Toggle Arrow Button Style */
         #sidebarToggleBtn {
             position: absolute;
-            top: 108px;
+            top: 179px;
             left: 20px;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 46;
@@ -454,7 +454,7 @@
             left: 0;
             right: 0;
             z-index: 50;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.48);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
                         background-color 0.35s ease,
@@ -502,6 +502,13 @@
             color: #ffffff !important;
             transform: translateY(-3px) scale(1.08);
             box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
+        }
+        /* Search icon hover: no upward lift, just a small centered scale. */
+        #mainNav #searchIconBtn:hover {
+            transform: scale(1.05);
+        }
+        #searchBoxWrap.search-open #searchIconBtn:hover {
+            transform: translateX(2px) scale(1.05);
         }
         /* Push page content below the now-fixed nav (nav height ~72px incl. padding) */
         #heroSection {
@@ -703,6 +710,19 @@
              closes the box AND (if there's a query) runs the search. */
         #searchBoxWrap {
             height: 40px;
+            padding-right: 2px;
+        }
+        /* When the search box is open, the Home/Contact/Login icon group
+           slides left — clear of the search box, which expands leftward
+           from the search icon and would otherwise cover it — so the
+           icons stay visible after the box opens. Elevated z-index so it
+           renders above the (now-open) search box while sliding over it. */
+        #homeContactLoginGroup {
+            position: relative;
+            z-index: 5;
+        }
+        #homeContactLoginGroup.icons-pushed {
+            transform: translateX(-270px);
         }
         #searchDropdownMenu {
             position: absolute;
@@ -750,6 +770,7 @@
             background-color: #d97706 !important;
             color: #ffffff !important;
             border-color: #d97706 !important;
+            transform: translateX(2px);
         }
         #searchBoxWrap.search-open #searchIconBtn:hover {
             background-color: #b45309 !important;
@@ -928,6 +949,49 @@
             background: #d97706;
             color: #fff;
         }
+
+        /* Light / Dynamic / Dark theme mode switch — three-way pill toggle
+           placed just after Settings. Sits close in style to the other
+           header icon buttons (adaptive color, rounded) but as a compact
+           segmented control rather than a single round button. */
+        .theme-mode-switch {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid transparent;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
+        }
+        #mainNav.nav-solid .theme-mode-switch {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        .theme-mode-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
+            color: inherit;
+            opacity: 0.7;
+            cursor: pointer;
+            font-size: 0.72rem;
+            transition: background-color 0.25s ease, color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+        }
+        .theme-mode-btn:hover {
+            opacity: 1;
+            transform: scale(1.08);
+        }
+        .theme-mode-btn.active {
+            background: #d97706;
+            color: #ffffff !important;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -943,9 +1007,9 @@
                 </div>
             </div>
 
-            <!-- Right Nav Section: Home/Contact/Login, Search, Settings, User Profile & Hamburger Menu -->
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex gap-3 font-medium text-sm tracking-wider items-center">
+            <!-- Right Nav Section: Home/Contact/Login, Search, Settings, Theme Switch, User Profile & Hamburger Menu -->
+            <div class="flex items-center gap-8">
+                <div id="homeContactLoginGroup" class="hidden md:flex gap-3 font-medium text-sm tracking-wider items-center transition-transform duration-400" style="transition-timing-function: cubic-bezier(0.4,0,0.2,1);">
                     <a href="#" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-house text-sm"></i>
                     </a>
@@ -957,41 +1021,57 @@
                     </a>
                 </div>
 
-                <!-- Unified Search Box: the magnifying-glass icon is the sole
-                     trigger. Closed, it's a standalone round icon button.
-                     Clicking it opens the sliding search box and the SAME
-                     icon shrinks/docks to sit inside the box as its
-                     search-execute button — no separate arrow key. -->
-                <div id="searchBoxWrap" class="relative flex items-center">
-                    <div id="searchDropdownMenu" class="bg-white shadow-lg border border-slate-200 flex items-center z-0">
-                        <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none pl-4 pr-1 py-1.5 text-xs text-slate-800 focus:outline-none">
-                    </div>
+                <!-- Search + Settings group: same spacing between these two -->
+                <div class="flex items-center gap-3">
+                    <!-- Unified Search Box: the magnifying-glass icon is the sole
+                         trigger. Closed, it's a standalone round icon button.
+                         Clicking it opens the sliding search box and the SAME
+                         icon shrinks/docks to sit inside the box as its
+                         search-execute button — no separate arrow key. -->
+                    <div id="searchBoxWrap" class="relative flex items-center">
+                        <div id="searchDropdownMenu" class="bg-white shadow-lg border border-slate-200 flex items-center z-0">
+                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none pl-4 pr-1 py-1.5 text-xs text-slate-800 focus:outline-none">
+                        </div>
 
-                    <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
-                            class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 relative z-10">
-                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </button>
+                        <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
+                                class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 relative z-10">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                    </div>
+                    <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
+
+                    <!-- Settings Icon -->
+                    <div class="relative">
+                        <div id="settingsIconBtn" onclick="toggleSettingsDropdown(event)" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Settings">
+                            <i class="fa-solid fa-gear text-sm"></i>
+                        </div>
+
+                        <!-- Settings Dropdown Box -->
+                        <div id="settingsDropdownMenu" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2 z-50">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                                <i class="fa-solid fa-sliders w-4 text-center"></i> Preferences
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                                <i class="fa-solid fa-shield-halved w-4 text-center"></i> Account &amp; Security
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                                <i class="fa-solid fa-bell w-4 text-center"></i> Notifications
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
 
-                <!-- Settings Icon -->
-                <div class="relative">
-                    <div id="settingsIconBtn" onclick="toggleSettingsDropdown(event)" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Settings">
-                        <i class="fa-solid fa-gear text-sm"></i>
-                    </div>
-
-                    <!-- Settings Dropdown Box -->
-                    <div id="settingsDropdownMenu" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2 z-50">
-                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                            <i class="fa-solid fa-sliders w-4 text-center"></i> Preferences
-                        </a>
-                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                            <i class="fa-solid fa-shield-halved w-4 text-center"></i> Account &amp; Security
-                        </a>
-                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                            <i class="fa-solid fa-bell w-4 text-center"></i> Notifications
-                        </a>
-                    </div>
+                <!-- Light / Dynamic / Dark theme mode switch -->
+                <div id="themeModeSwitch" class="theme-mode-switch nav-adaptive" role="group" aria-label="Theme mode">
+                    <button type="button" class="theme-mode-btn" data-mode="light" onclick="setThemeMode('light')" title="Light mode">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
+                    <button type="button" class="theme-mode-btn active" data-mode="dynamic" onclick="setThemeMode('dynamic')" title="Dynamic mode">
+                        <i class="fa-solid fa-circle-half-stroke"></i>
+                    </button>
+                    <button type="button" class="theme-mode-btn" data-mode="dark" onclick="setThemeMode('dark')" title="Dark mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
                 </div>
 
                 <!-- User Profile Image with Animated Dropdown Box -->
@@ -1455,6 +1535,7 @@
             const searchDropdown = document.getElementById('searchDropdownMenu');
             const userDropdown = document.getElementById('userDropdownMenu');
             const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
             if(userDropdown) userDropdown.classList.remove('open');
             if(settingsDropdown) settingsDropdown.classList.remove('open');
 
@@ -1463,6 +1544,7 @@
             if (!isOpen) {
                 searchDropdown.classList.add('open');
                 wrap.classList.add('search-open');
+                if(iconGroup) iconGroup.classList.add('icons-pushed');
                 document.getElementById('projectSearchInput').focus();
             } else {
                 const query = document.getElementById('projectSearchInput').value.trim();
@@ -1471,6 +1553,7 @@
                 } else {
                     searchDropdown.classList.remove('open');
                     wrap.classList.remove('search-open');
+                    if(iconGroup) iconGroup.classList.remove('icons-pushed');
                 }
             }
         }
@@ -1500,6 +1583,8 @@
                 if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
                     searchDropdown.classList.remove('open');
                     searchBoxWrap.classList.remove('search-open');
+                    const iconGroup = document.getElementById('homeContactLoginGroup');
+                    if(iconGroup) iconGroup.classList.remove('icons-pushed');
                 }
             }
 
@@ -1643,6 +1728,8 @@
                 setTimeout(() => {
                     document.getElementById('searchDropdownMenu').classList.remove('open');
                     document.getElementById('searchBoxWrap').classList.remove('search-open');
+                    const iconGroup = document.getElementById('homeContactLoginGroup');
+                    if(iconGroup) iconGroup.classList.remove('icons-pushed');
                     feedback.classList.add('hidden');
                 }, 3000);
             } else {
@@ -1662,6 +1749,26 @@
             event.preventDefault();
             alert('Successfully logged out!');
         }
+
+        // Light / Dynamic / Dark theme mode switch — sets the active pill
+        // and stores the choice. "Dynamic" tracks the system preference;
+        // Light/Dark force a fixed mode. Visual application of the mode to
+        // the rest of the site is left as-is for now — this wires up the
+        // control itself.
+        function setThemeMode(mode) {
+            document.querySelectorAll('.theme-mode-btn').forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+            });
+            try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
+        }
+
+        (function initThemeMode() {
+            let saved = 'dynamic';
+            try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+            document.addEventListener('DOMContentLoaded', function() {
+                setThemeMode(saved);
+            });
+        })();
 
         // Open Project Add Modal (loads project_add.html into the iframe on open)
         // The box visually "emerges" from the plus icon's position by computing a dynamic transform-origin.
