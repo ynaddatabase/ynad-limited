@@ -624,6 +624,19 @@
             background-color: #1e293b !important;
         }
 
+        /* Settings dropdown: readable text and orange hover fill in dark mode. */
+        #settingsDropdownMenu a {
+            transition: background-color 0.22s ease, color 0.22s ease;
+        }
+        body.theme-effective-dark #settingsDropdownMenu a {
+            color: #e2e8f0 !important;
+        }
+        body.theme-effective-dark #settingsDropdownMenu a:hover,
+        body.theme-light #settingsDropdownMenu a:hover {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+        }
+
         body.theme-effective-dark #mainNav.nav-solid {
             background-color: #0f172a;
             border-bottom-color: #334155;
@@ -1903,9 +1916,11 @@
             const userDropdown = document.getElementById('userDropdownMenu');
             const searchDropdown = document.getElementById('searchDropdownMenu');
             const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
             if(userDropdown) userDropdown.classList.remove('open');
             if(searchDropdown) searchDropdown.classList.remove('open');
             if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+            if(iconGroup) iconGroup.classList.remove('icons-pushed');
             dropdown.classList.toggle('open');
         }
 
@@ -1916,9 +1931,11 @@
             const searchDropdown = document.getElementById('searchDropdownMenu');
             const searchBoxWrap = document.getElementById('searchBoxWrap');
             const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
             if(searchDropdown) searchDropdown.classList.remove('open');
             if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
             if(settingsDropdown) settingsDropdown.classList.remove('open');
+            if(iconGroup) iconGroup.classList.remove('icons-pushed');
             dropdown.classList.toggle('open');
         }
 
