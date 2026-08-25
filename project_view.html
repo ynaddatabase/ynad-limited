@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project View | YNAD Construction</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#d97706;
+      --accent-dark:#b45309;
+      --ink:#111827;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --surface:#ffffff;
+      --gallery:#2d2d2d;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:'Poppins',sans-serif;
+      background:#fff;
+      color:var(--ink);
+      overflow-x:hidden;
+    }
+
+    .project-page{
+      opacity:0;
+      transform:translateY(18px);
+      animation:pageIn .75s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    @keyframes pageIn{
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .topbar{
+      position:fixed;
+      top:0;left:0;right:0;
+      height:72px;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 28px;
+      color:#fff;
+      background:linear-gradient(to bottom,rgba(0,0,0,.52),rgba(0,0,0,.18));
+      border-bottom:1px solid rgba(255,255,255,.12);
+      transition:background .35s ease,box-shadow .35s ease,transform .35s ease;
+    }
+
+    .topbar.solid{
+      background:rgba(255,255,255,.97);
+      color:#0f172a;
+      border-bottom-color:#e5e7eb;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);
+      backdrop-filter:blur(14px);
+    }
+
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      font-size:14px;font-weight:600;letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    .brand-mark{
+      width:30px;height:30px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid currentColor;
+      font-size:11px;
+    }
+
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .top-btn{
+      width:40px;height:40px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(255,255,255,.10);
+      color:inherit;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      transition:all .25s ease;
+    }
+    .topbar.solid .top-btn{
+      background:#f8fafc;border-color:#e2e8f0;color:#0f172a;
+    }
+    .top-btn:hover{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+      transform:translateY(-2px) scale(1.04);
+    }
+
+    .hero{
+      position:relative;
+      width:100%;
+      min-height:92vh;
+      height:min(940px,92vh);
+      background:#111827;
+      overflow:hidden;
+    }
+
+    .hero-image{
+      position:absolute;inset:0;
+      width:100%;height:100%;
+      object-fit:cover;
+      object-position:center;
+      transform:scale(1.035);
+      opacity:0;
+      animation:heroImageIn 1.15s ease .05s forwards;
+    }
+
+    @keyframes heroImageIn{
+      from{opacity:0;transform:scale(1.07)}
+      to{opacity:1;transform:scale(1)}
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;inset:0;
+      background:linear-gradient(to bottom,rgba(0,0,0,.24) 0%,rgba(0,0,0,.05) 42%,rgba(0,0,0,.62) 100%);
+      pointer-events:none;
+    }
+
+    .hero-content{
+      position:absolute;
+      left:5.5vw;
+      right:5.5vw;
+      bottom:8vh;
+      z-index:2;
+      display:flex;
+      justify-content:flex-end;
+      align-items:flex-end;
+    }
+
+    .hero-copy{
+      width:min(760px,78vw);
+      text-align:right;
+      color:#fff;
+    }
+
+    .hero-kicker{
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+      opacity:.9;
+    }
+
+    .hero-title{
+      margin:0;
+      font-size:clamp(34px,5vw,74px);
+      line-height:1.02;
+      font-weight:300;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      text-shadow:0 3px 18px rgba(0,0,0,.25);
+    }
+
+    .hero-location{
+      margin-top:14px;
+      font-size:14px;
+      letter-spacing:.07em;
+      text-transform:uppercase;
+      opacity:.95;
+    }
+
+    .hero-scroll{
+      position:absolute;
+      left:50%;bottom:18px;
+      transform:translateX(-50%);
+      z-index:3;
+      width:28px;height:28px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.7);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      animation:floatY 1.8s ease-in-out infinite;
+      cursor:pointer;
+    }
+
+    @keyframes floatY{
+      0%,100%{transform:translate(-50%,0)}
+      50%{transform:translate(-50%,5px)}
+    }
+
+    .section{
+      width:100%;
+      padding:88px 6vw;
+    }
+
+    .summary-section{
+      background:#fff;
+      text-align:center;
+    }
+
+    .summary-copy{
+      max-width:1060px;
+      margin:0 auto;
+      color:#475569;
+      font-size:14px;
+      line-height:2;
+    }
+
+    .section-heading{
+      margin:0 0 42px;
+      font-size:clamp(28px,3.2vw,44px);
+      font-weight:300;
+      letter-spacing:.04em;
+      text-align:center;
+      text-transform:uppercase;
+      color:#374151;
+    }
+
+    .features-section{
+      padding-top:30px;
+      padding-bottom:96px;
+    }
+
+    .feature-grid{
+      max-width:1120px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:28px 58px;
+    }
+
+    .feature-item{
+      position:relative;
+      padding-left:28px;
+      color:#334155;
+      font-size:13px;
+      line-height:1.75;
+    }
+
+    .feature-item::before{
+      content:"";
+      position:absolute;
+      left:0;top:.68em;
+      width:15px;height:1px;
+      background:#64748b;
+      transition:width .3s ease,background .3s ease;
+    }
+
+    .feature-item:hover::before{
+      width:21px;
+      background:var(--accent);
+    }
+
+    .feature-item.reveal{
+      opacity:0;
+      transform:translateY(18px);
+      transition:opacity .65s ease,transform .65s ease;
+    }
+
+    .feature-item.reveal.visible{
+      opacity:1;transform:translateY(0);
+    }
+
+    .overview-section{
+      padding:0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      min-height:620px;
+      background:#fff;
+    }
+
+    .overview-copy{
+      padding:82px 6vw 74px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .overview-heading{
+      margin:0 0 42px;
+      font-size:clamp(28px,3.1vw,44px);
+      font-weight:300;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:#475569;
+    }
+
+    .overview-list{
+      max-width:650px;
+      display:grid;
+      gap:24px;
+    }
+
+    .overview-row{
+      display:grid;
+      grid-template-columns:180px 1fr;
+      gap:24px;
+      padding-bottom:18px;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .overview-label{
+      color:#334155;
+      font-size:13px;
+    }
+
+    .overview-value{
+      color:#64748b;
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .overview-image-wrap{
+      position:relative;
+      min-height:620px;
+      overflow:hidden;
+      background:#dbe3ea;
+    }
+
+    .overview-image{
+      width:100%;height:100%;
+      object-fit:cover;
+      display:block;
+      transition:transform .75s cubic-bezier(.16,1,.3,1);
+    }
+
+    .overview-image-wrap:hover .overview-image{
+      transform:scale(1.035);
+    }
+
+    .gallery-section{
+      background:var(--gallery);
+      color:#fff;
+      padding:86px 0 0;
+    }
+
+    .gallery-title{
+      margin:0;
+      padding:0 6vw 46px;
+      text-align:center;
+      font-size:32px;
+      line-height:1;
+      font-weight:300;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:2px;
+      background:#202020;
+    }
+
+    .gallery-item{
+      position:relative;
+      min-height:300px;
+      overflow:hidden;
+      background:#222;
+      cursor:pointer;
+      opacity:0;
+      transform:translateY(18px);
+      transition:opacity .65s ease,transform .65s ease;
+    }
+
+    .gallery-item.visible{
+      opacity:1;transform:translateY(0);
+    }
+
+    .gallery-item img{
+      width:100%;height:100%;
+      min-height:300px;
+      object-fit:cover;
+      display:block;
+      transition:transform .6s cubic-bezier(.16,1,.3,1),filter .35s ease;
+    }
+
+    .gallery-item::after{
+      content:"";
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(0,0,0,.42),transparent 48%);
+      opacity:0;
+      transition:opacity .35s ease;
+    }
+
+    .gallery-item:hover img{
+      transform:scale(1.055);
+      filter:brightness(.92);
+    }
+
+    .gallery-item:hover::after{opacity:1}
+
+    .map-card{
+      grid-column:span 2;
+      min-height:300px;
+      background:#1f1f1f;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .map-card iframe{
+      width:100%;height:100%;
+      min-height:300px;
+      border:0;
+      display:block;
+      filter:grayscale(.08) contrast(1.03);
+    }
+
+    .map-label{
+      position:absolute;
+      top:18px;left:18px;
+      z-index:2;
+      padding:8px 12px;
+      border-radius:4px;
+      background:rgba(0,0,0,.68);
+      color:#fff;
+      font-size:10px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      backdrop-filter:blur(8px);
+    }
+
+    .lightbox{
+      position:fixed;inset:0;
+      z-index:100;
+      background:rgba(0,0,0,.92);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;visibility:hidden;
+      transition:opacity .3s ease,visibility .3s ease;
+      padding:36px;
+    }
+    .lightbox.open{opacity:1;visibility:visible}
+    .lightbox img{
+      max-width:min(92vw,1500px);
+      max-height:88vh;
+      object-fit:contain;
+      box-shadow:0 25px 70px rgba(0,0,0,.45);
+      transform:scale(.97);
+      transition:transform .35s ease;
+    }
+    .lightbox.open img{transform:scale(1)}
+    .lightbox-close{
+      position:absolute;
+      right:24px;top:18px;
+      width:42px;height:42px;border-radius:50%;
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.22);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+    }
+
+    footer{
+      background:#101010;
+      color:#aab2bd;
+      padding:46px 6vw;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      flex-wrap:wrap;
+    }
+
+    .footer-brand{
+      color:#fff;
+      font-size:13px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    .footer-meta{
+      font-size:11px;
+      letter-spacing:.05em;
+      opacity:.82;
+    }
+
+    .loading,
+    .error-state{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px;
+      text-align:center;
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+    }
+
+    @media (max-width: 980px){
+      .feature-grid{grid-template-columns:repeat(2,1fr);gap:24px 30px}
+      .overview-section{grid-template-columns:1fr}
+      .overview-image-wrap{min-height:420px}
+      .gallery-grid{grid-template-columns:repeat(2,1fr)}
+      .map-card{grid-column:span 2}
+    }
+
+    @media (max-width: 620px){
+      .topbar{height:62px;padding:0 14px}
+      .brand{font-size:11px}
+      .top-btn{width:36px;height:36px}
+      .hero{min-height:80vh;height:80vh}
+      .hero-content{left:18px;right:18px;bottom:52px}
+      .hero-copy{width:100%;text-align:left}
+      .hero-title{font-size:38px}
+      .hero-location{font-size:11px}
+      .section{padding:64px 20px}
+      .feature-grid{grid-template-columns:1fr}
+      .section-heading{margin-bottom:30px}
+      .overview-copy{padding:58px 20px}
+      .overview-row{grid-template-columns:1fr;gap:6px}
+      .overview-image-wrap{min-height:330px}
+      .gallery-title{padding:68px 20px 30px;font-size:28px}
+      .gallery-grid{grid-template-columns:1fr}
+      .gallery-item{min-height:270px}
+      .gallery-item img{min-height:270px}
+      .map-card{grid-column:span 1;min-height:320px}
+      .map-card iframe{min-height:320px}
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="loading">Loading project...</div>
+  </div>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lightbox-close" type="button" aria-label="Close image" onclick="closeLightbox()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img id="lightboxImage" src="" alt="Project gallery preview">
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const FALLBACK_IMAGES = [
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=86',
+      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1497366858526-0766cadbe8fa?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=84',
+      'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1200&q=84'
+    ];
+
+    const SAMPLE_FEATURES = [
+      'Premium architectural planning with efficient functional spaces',
+      'Contemporary facade with carefully detailed entrance and drop-off',
+      '24/7 security surveillance and controlled access',
+      'High-quality utility, fire safety and emergency systems',
+      'Thoughtfully planned parking and service circulation',
+      'Modern building management and optional automation',
+      'Landscaped outdoor areas and comfortable common spaces',
+      'High-speed vertical circulation with premium passenger lifts',
+      'Energy-conscious glazing and durable exterior materials',
+      'Dedicated management and support facilities',
+      'Reliable backup power for essential building services',
+      'Well-planned natural light and ventilation'
+    ];
+
+    function normalizePhotoUrls(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw.filter(Boolean);
+      if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch (_) {}
+        return raw.includes(',')
+          ? raw.split(',').map(v => v.trim()).filter(Boolean)
+          : [raw];
+      }
+      return [];
+    }
+
+    function safe(value) {
+      if (value === null || value === undefined) return '';
+      return String(value);
+    }
+
+    function getQueryParam(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    function firstValue(obj, keys, fallback='') {
+      for (const key of keys) {
+        if (obj && obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== '') {
+          return obj[key];
+        }
+      }
+      return fallback;
+    }
+
+    function escapeHtml(value) {
+      return safe(value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    function projectLocation(project) {
+      const direct = firstValue(project, ['location','address','project_address','district']);
+      const district = firstValue(project, ['district']);
+      const country = firstValue(project, ['donated_country','country'], 'Bangladesh');
+      if (direct && district && !String(direct).toLowerCase().includes(String(district).toLowerCase())) {
+        return `${direct}, ${district}, ${country}`;
+      }
+      return direct || district || country;
+    }
+
+    function mapQuery(project) {
+      return encodeURIComponent(projectLocation(project));
+    }
+
+    function buildOverviewRows(project) {
+      const rows = [
+        ['Address', projectLocation(project)],
+        ['Size', firstValue(project, ['size','project_size','apartment_size','unit_size'], 'Project size not added')],
+        ['Land Size', firstValue(project, ['land_size','landsize'], '—')],
+        ['Property Orientation', firstValue(project, ['property_orientation','orientation'], '—')],
+        ['Number of Apartments', firstValue(project, ['number_of_apartments','apartments','total_units'], '—')],
+        ['Number of Basements', firstValue(project, ['number_of_basements','basements'], '—')],
+        ['Road Width', firstValue(project, ['road_width'], '—')],
+        ['Architectural Consultant', firstValue(project, ['architectural_consultant','architect'], '—')],
+        ['Structural Consultant', firstValue(project, ['structural_consultant'], '—')],
+        ['RAJUK Approval No', firstValue(project, ['rajuk_approval_no','approval_no'], '—')]
+      ];
+
+      return rows.filter(row => row[1] !== '—' || row[0] === 'Address');
+    }
+
+    function buildFeatures(project) {
+      const raw = firstValue(project, ['features','feature_list','amenities','project_features'], '');
+      let list = [];
+
+      if (Array.isArray(raw)) list = raw;
+      else if (typeof raw === 'string' && raw.trim()) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) list = parsed;
+        } catch (_) {
+          list = raw.split(/\r?\n|•|\|/).map(v => v.trim()).filter(Boolean);
+        }
+      }
+
+      list = list.map(v => safe(v).trim()).filter(Boolean);
+      return list.length ? list : SAMPLE_FEATURES;
+    }
+
+    function buildSummary(project) {
+      return firstValue(
+        project,
+        ['summary','project_summary','description','details','project_description'],
+        `A carefully planned ${firstValue(project,['project_type','category'],'project')} by YNAD Construction, designed around functionality, quality and a refined user experience. This section is ready for your final project summary and can be replaced directly from the project database.`
+      );
+    }
+
+    function chooseImages(project) {
+      const existing = normalizePhotoUrls(project.photo_urls);
+      const all = [];
+      if (existing.length) all.push(...existing);
+      for (const img of FALLBACK_IMAGES) {
+        if (all.length >= 14) break;
+        if (!all.includes(img)) all.push(img);
+      }
+      return all.slice(0,14);
+    }
+
+    function renderProject(project) {
+      const images = chooseImages(project);
+      const heroImage = images[0];
+      const features = buildFeatures(project);
+      const overviewRows = buildOverviewRows(project);
+      const summary = buildSummary(project);
+      const name = firstValue(project, ['project_name','name'], 'Project Details');
+      const location = projectLocation(project);
+
+      document.title = `${name} | YNAD Construction`;
+
+      const featureHtml = features.map((feature, idx) => `
+        <div class="feature-item reveal" style="transition-delay:${Math.min(idx,11)*.055}s">
+          ${escapeHtml(feature)}
+        </div>
+      `).join('');
+
+      const overviewHtml = overviewRows.map(row => `
+        <div class="overview-row">
+          <div class="overview-label">${escapeHtml(row[0])}</div>
+          <div class="overview-value">${escapeHtml(row[1])}</div>
+        </div>
+      `).join('');
+
+      const galleryHtml = images.slice(0,13).map((img, idx) => `
+        <div class="gallery-item reveal" style="transition-delay:${Math.min(idx,12)*.035}s"
+             onclick="openLightbox('${escapeAttr(img)}')">
+          <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${idx+1}" loading="${idx<4?'eager':'lazy'}">
+        </div>
+      `).join('');
+
+      const lastImage = images[13] || images[0];
+
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="project-page">
+          <header id="topbar" class="topbar">
+            <div class="brand">
+              <div class="brand-mark">YN</div>
+              <span>YNAD Construction</span>
+            </div>
+            <div class="top-actions">
+              <button class="top-btn" type="button" title="Back to projects" onclick="goBack()">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+            </div>
+          </header>
+
+          <section class="hero" id="heroSection">
+            <img class="hero-image" src="${escapeAttr(heroImage)}" alt="${escapeAttr(name)}">
+            <div class="hero-content">
+              <div class="hero-copy">
+                <div class="hero-kicker">${escapeHtml(firstValue(project,['project_type','category'],'Project'))}</div>
+                <h1 class="hero-title">${escapeHtml(name)}</h1>
+                <div class="hero-location">${escapeHtml(location)}</div>
+              </div>
+            </div>
+            <a href="#summary" class="hero-scroll" aria-label="Scroll to project summary">
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
+            </a>
+          </section>
+
+          <section id="summary" class="section summary-section">
+            <p class="summary-copy">${escapeHtml(summary)}</p>
+          </section>
+
+          <section class="section features-section">
+            <h2 class="section-heading">Features</h2>
+            <div class="feature-grid">${featureHtml}</div>
+          </section>
+
+          <section class="overview-section">
+            <div class="overview-copy">
+              <h2 class="overview-heading">Overview</h2>
+              <div class="overview-list">${overviewHtml}</div>
+            </div>
+            <div class="overview-image-wrap">
+              <img class="overview-image" src="${escapeAttr(images[1] || heroImage)}" alt="${escapeAttr(name)} overview image" loading="lazy">
+            </div>
+          </section>
+
+          <section class="gallery-section">
+            <h2 class="gallery-title">Gallery</h2>
+
+            <div class="gallery-grid">
+              ${galleryHtml}
+              <div class="gallery-item reveal" style="transition-delay:.05s"
+                   onclick="openLightbox('${escapeAttr(lastImage)}')">
+                <img src="${escapeAttr(lastImage)}" alt="${escapeAttr(name)} gallery 14" loading="lazy">
+              </div>
+
+              <div class="map-card">
+                <div class="map-label"><i class="fa-solid fa-location-dot mr-1"></i> Project Location</div>
+                <iframe
+                  title="Project Google Map Preview"
+                  src="https://www.google.com/maps?q=${mapQuery(project)}&output=embed"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+          </section>
+
+          <footer>
+            <div class="footer-brand">YNAD Construction</div>
+            <div class="footer-meta">${escapeHtml(name)} · ${escapeHtml(location)}</div>
+          </footer>
+        </div>
+      `;
+
+      setupScrollEffects();
+      setupHeader();
+    }
+
+    async function loadProject() {
+      const projectId = getQueryParam('id');
+      const projectName = getQueryParam('name');
+
+      let data = null;
+      let error = null;
+
+      if (projectId) {
+        ({ data, error } = await supabaseClient
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .maybeSingle());
+      }
+
+      if (!data && projectName) {
+        ({ data, error } = await supabaseClient
+          .from('projects')
+          .select('*')
+          .eq('project_name', projectName)
+          .maybeSingle());
+      }
+
+      if (!data && !projectId && !projectName) {
+        ({ data, error } = await supabaseClient
+          .from('projects')
+          .select('*')
+          .order('opening_date', { ascending:false, nullsFirst:false })
+          .limit(1)
+          .maybeSingle());
+      }
+
+      if (error || !data) {
+        console.error('Project View load error:', error);
+        document.getElementById('app').innerHTML = `
+          <div class="error-state">
+            <div>
+              <div class="mb-3 text-red-500">Project could not be loaded.</div>
+              <button onclick="goBack()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-xs">
+                <i class="fa-solid fa-arrow-left"></i> Back to Projects
+              </button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      renderProject(data);
+    }
+
+    function goBack() {
+      if (document.referrer && document.referrer.includes(location.host)) {
+        history.back();
+      } else {
+        location.href = 'index.html';
+      }
+    }
+
+    function setupHeader() {
+      const topbar = document.getElementById('topbar');
+      const hero = document.getElementById('heroSection');
+      if (!topbar || !hero) return;
+
+      const onScroll = () => {
+        topbar.classList.toggle('solid', window.scrollY > hero.offsetHeight - 90);
+      };
+
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    }
+
+    function setupScrollEffects() {
+      const items = document.querySelectorAll('.reveal');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {threshold:.12, rootMargin:'0px 0px -35px 0px'});
+
+      items.forEach(item => observer.observe(item));
+    }
+
+    function openLightbox(src) {
+      const box = document.getElementById('lightbox');
+      const image = document.getElementById('lightboxImage');
+      image.src = src;
+      box.classList.add('open');
+      box.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      const box = document.getElementById('lightbox');
+      box.classList.remove('open');
+      box.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    loadProject();
+  </script>
+</body>
+</html>
