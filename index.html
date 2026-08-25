@@ -410,7 +410,7 @@
         /* Smooth Slide Animation for Left Sidebar & Toggle Button */
         #categorySidebarWrapper {
             position: absolute;
-            top: 20px;
+            top: 108px;
             left: 20px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 45;
@@ -431,7 +431,7 @@
         /* Fixed Toggle Arrow Button Style */
         #sidebarToggleBtn {
             position: absolute;
-            top: 20px;
+            top: 108px;
             left: 20px;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 46;
@@ -441,12 +441,72 @@
             left: 285px;
         }
 
-        /* Hero section owns its own stacking context so absolutely positioned
-           children — like the sidebar toggle arrow — can never paint above
-           the sticky header once the page scrolls and the hero moves out of
-           view. (isolation alone is enough; no overflow clipping needed,
-           which also avoids interfering with the toggle button's clicks.) */
+        /* Header: floats over the hero image (transparent, light icons/text)
+           and turns into a solid white bar with a soft bottom shadow once
+           the page is scrolled past the hero into the white content below.
+           Hides on scroll-down and reappears on scroll-up, but only while
+           still within the hero section — once past the hero it stays
+           pinned/visible (normal sticky) so it doesn't disappear over
+           regular page content. */
+        #mainNav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.65);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        background-color 0.35s ease,
+                        border-color 0.35s ease,
+                        box-shadow 0.35s ease;
+            transform: translateY(0);
+        }
+        #mainNav.nav-hidden {
+            transform: translateY(-100%);
+        }
+        #mainNav.nav-solid {
+            background-color: #ffffff;
+            border-bottom-color: #e5e7eb;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        /* Text/icon color flips from white (over the hero photo) to dark
+           (over the white page) as the nav becomes solid. */
+        #mainNav .nav-adaptive {
+            color: #ffffff;
+            transition: color 0.35s ease;
+        }
+        #mainNav.nav-solid .nav-adaptive {
+            color: #0f172a;
+        }
+        #mainNav .nav-adaptive-muted {
+            color: rgba(255, 255, 255, 0.85);
+            transition: color 0.35s ease;
+        }
+        #mainNav.nav-solid .nav-adaptive-muted {
+            color: #334155;
+        }
+        #mainNav .nav-icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid transparent;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+                        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+        #mainNav.nav-solid .nav-icon-btn {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        #mainNav .nav-icon-btn:hover {
+            background-color: #d97706;
+            border-color: #d97706;
+            color: #ffffff !important;
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
+        }
+        /* Push page content below the now-fixed nav (nav height ~72px incl. padding) */
         #heroSection {
+            padding-top: 88px;
+            margin-top: -88px;
             isolation: isolate;
         }
 
@@ -496,6 +556,21 @@
             transform: translateX(0);
         }
 
+
+        /* Settings Dropdown Box Animations (same treatment as user dropdown) */
+        #settingsDropdownMenu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.96);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        #settingsDropdownMenu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
 
         /* User Profile Dropdown Box Animations */
         #userDropdownMenu {
@@ -620,13 +695,26 @@
             box-shadow: 0 14px 34px rgba(0,0,0,0.35);
         }
 
-        /* Right-to-Left Smooth Slide Animation for Search Box */
+        /* Unified search box + icon:
+           - Closed: only the round magnifying-glass icon button is visible.
+           - Open: a pill-shaped box slides out to the LEFT of the icon, and
+             the icon itself shrinks slightly and tucks into the box's right
+             edge (no gap, no separate arrow key) — clicking it again both
+             closes the box AND (if there's a query) runs the search. */
+        #searchBoxWrap {
+            height: 40px;
+        }
         #searchDropdownMenu {
-            width: 0px;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(12px);
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
             opacity: 0;
             visibility: hidden;
             overflow: hidden;
-            transform: translateX(20px);
             transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                         opacity 0.3s ease,
                         visibility 0.4s ease,
@@ -638,13 +726,34 @@
             width: 250px;
             opacity: 1;
             visibility: visible;
-            transform: translateX(0);
+            transform: translateY(-50%) translateX(0);
             pointer-events: auto;
         }
         @media (min-width: 640px) {
             #searchDropdownMenu.open {
                 width: 270px;
             }
+        }
+        #searchDropdownMenu input {
+            padding-right: 38px;
+        }
+        /* Icon shrinks and sits flush on the box's right edge once open */
+        #searchIconBtn {
+            transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+                        transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        #searchBoxWrap.search-open #searchIconBtn {
+            width: 30px;
+            height: 30px;
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+            border-color: #d97706 !important;
+        }
+        #searchBoxWrap.search-open #searchIconBtn:hover {
+            background-color: #b45309 !important;
+            border-color: #b45309 !important;
         }
 
         /* Header pill buttons (Project Add / Overview) — outline pill, amber
@@ -827,60 +936,67 @@
     <div id="pageContentWrapper">
 
         <!-- Header / Navigation -->
-        <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
+        <nav id="mainNav" class="sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <div class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
-                    YNAD <span class="text-amber-600 font-light">Construction</span>
+                <div class="text-2xl font-bold tracking-widest nav-adaptive uppercase">
+                    YNAD <span class="text-amber-500 font-light">Construction</span>
                 </div>
-                <!-- Project Add pill button: outline amber pill, fills solid amber
-                     left-to-right on hover with the label turning white. -->
-                <button type="button" title="Add New Project" onclick="openProjectAddModal(event)" style="margin-left: 0.4in;" class="pill-nav-btn">
-                    Project Add
-                </button>
-                <!-- Overview pill button: navigates to project-status.html.
-                     Same pill treatment and same gap as the wordmark→Project Add
-                     gap (margin-left: 0.4in), so the three elements read as one
-                     evenly-spaced group. Icon mark still spins 360° on hover-in
-                     and unwinds back to 0° on hover-out. -->
-                <a href="project-status.html" id="statusOverviewBtn" title="Project Status Overview" style="margin-left: 0.2in;" class="pill-nav-btn">
-                    Overview
-                </a>
-            </div>
-            
-            <div class="hidden md:flex gap-8 font-medium text-sm tracking-wider items-center">
-                <a href="#" class="hover:text-amber-600">HOME</a>
-                <a href="project-graph.html" class="nav-graph-link hover:text-amber-600" title="Project Graph">
-                    <i class="fa-solid fa-chart-line nav-graph-icon"></i>
-                    <span>PROJECT GRAPH</span>
-                </a>
-                <a href="#about" class="hover:text-amber-600">ABOUT</a>
-                <a href="#contact" class="hover:text-amber-600">CONTACT</a>
             </div>
 
-            <!-- Right Nav Section: Search Container, User Profile & Hamburger Menu -->
+            <!-- Right Nav Section: Home/Contact/Login, Search, Settings, User Profile & Hamburger Menu -->
             <div class="flex items-center gap-4">
-                <!-- Search Box Wrapper (Right-to-Left Slide Container) -->
-                <div class="flex items-center gap-2">
-                    <!-- Sliding Search Input Box -->
-                    <div id="searchDropdownMenu" class="bg-white rounded-full shadow-lg border border-slate-200 px-3 py-1.5 flex items-center z-50">
-                        <div class="relative flex items-center w-full">
-                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none px-2 py-1 text-xs text-slate-800 focus:outline-none">
-                            <button onclick="executeSearch()" class="bg-amber-600 hover:bg-amber-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition cursor-pointer flex-shrink-0 ml-1">
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
-                        </div>
+                <div class="hidden md:flex gap-3 font-medium text-sm tracking-wider items-center">
+                    <a href="#" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                        <i class="fa-solid fa-house text-sm"></i>
+                    </a>
+                    <a href="#contact" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                        <i class="fa-solid fa-envelope text-sm"></i>
+                    </a>
+                    <a href="login.html" id="loginIconBtn" title="Log In" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full items-center justify-center cursor-pointer" style="display:none;">
+                        <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- Unified Search Box: the magnifying-glass icon is the sole
+                     trigger. Closed, it's a standalone round icon button.
+                     Clicking it opens the sliding search box and the SAME
+                     icon shrinks/docks to sit inside the box as its
+                     search-execute button — no separate arrow key. -->
+                <div id="searchBoxWrap" class="relative flex items-center">
+                    <div id="searchDropdownMenu" class="bg-white shadow-lg border border-slate-200 flex items-center z-0">
+                        <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none pl-4 pr-1 py-1.5 text-xs text-slate-800 focus:outline-none">
                     </div>
 
-                    <!-- Search Icon Button (Toggles search box open/close on click) -->
-                    <div id="searchIconBtn" onclick="toggleSearchDropdown(event)" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-600 flex items-center justify-center border border-slate-200 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200 flex-shrink-0" title="Search Project">
+                    <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
+                            class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 relative z-10">
                         <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </div>
+                    </button>
                 </div>
                 <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
 
+                <!-- Settings Icon -->
+                <div class="relative">
+                    <div id="settingsIconBtn" onclick="toggleSettingsDropdown(event)" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Settings">
+                        <i class="fa-solid fa-gear text-sm"></i>
+                    </div>
+
+                    <!-- Settings Dropdown Box -->
+                    <div id="settingsDropdownMenu" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2 z-50">
+                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                            <i class="fa-solid fa-sliders w-4 text-center"></i> Preferences
+                        </a>
+                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                            <i class="fa-solid fa-shield-halved w-4 text-center"></i> Account &amp; Security
+                        </a>
+                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                            <i class="fa-solid fa-bell w-4 text-center"></i> Notifications
+                        </a>
+                    </div>
+                </div>
+
                 <!-- User Profile Image with Animated Dropdown Box -->
                 <div class="relative">
-                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)" class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-600 cursor-pointer shadow-sm hover:scale-105 transition transform duration-200">
+                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)" class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500 cursor-pointer shadow-sm transition transform duration-300 hover:scale-110 hover:shadow-lg">
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Hasanur Rahman" class="w-full h-full object-cover">
                     </div>
 
@@ -903,8 +1019,8 @@
                 </div>
 
                 <!-- Hamburger Button -->
-                <div class="text-2xl cursor-pointer p-1" onclick="openMenuWithEffect()">
-                    <i id="hamburgerBtnIcon" class="fa-solid fa-bars hamburger-icon"></i>
+                <div class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" onclick="openMenuWithEffect()" title="Menu">
+                    <i id="hamburgerBtnIcon" class="fa-solid fa-bars hamburger-icon text-sm"></i>
                 </div>
             </div>
         </nav>
@@ -1004,29 +1120,29 @@
                 </div>
                 
                 <div class="flex gap-8 lg:gap-16 text-center">
+                    <a href="#" onclick="openProjectAddModal(event); return false;" class="group cursor-pointer">
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
+                            <i class="fa-solid fa-square-plus text-lg"></i>
+                        </div>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Project Add</span>
+                    </a>
                     <a href="all-projects.html" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-layer-group text-lg"></i>
                         </div>
                         <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">All Project</span>
                     </a>
-                    <a href="#projects" class="group cursor-pointer">
+                    <a href="project-status.html" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                            <i class="fa-solid fa-building text-lg"></i>
+                            <i class="fa-solid fa-chart-pie text-lg"></i>
                         </div>
-                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Ongoing</span>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Overview</span>
                     </a>
-                    <a href="#projects" class="group cursor-pointer">
+                    <a href="project-graph.html" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                            <i class="fa-solid fa-circle-check text-lg"></i>
+                            <i class="fa-solid fa-chart-line text-lg"></i>
                         </div>
-                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Completed</span>
-                    </a>
-                    <a href="#projects" class="group cursor-pointer">
-                        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
-                            <i class="fa-solid fa-map-location-dot text-lg"></i>
-                        </div>
-                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Upcoming</span>
+                        <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Project Graph</span>
                     </a>
                 </div>
             </div>
@@ -1199,6 +1315,74 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+        /* ---- Header scroll behavior (Concord Real Estate style) ----
+           - Scrolling DOWN (anywhere on the page): header slides up and hides.
+           - Scrolling UP (anywhere on the page, hero or white section): header
+             slides back down and becomes visible again immediately.
+           - While within the hero image: header is a dark/transparent bar.
+           - Once past the hero into the white page: header becomes a solid
+             white bar with a bottom shadow — same show/hide-on-direction
+             behavior continues to apply there too. */
+        (function () {
+            const nav = document.getElementById('mainNav');
+            const hero = document.getElementById('heroSection');
+            if (!nav || !hero) return;
+
+            let lastScrollY = window.scrollY;
+            let ticking = false;
+
+            function handleNavScroll() {
+                const currentScrollY = window.scrollY;
+                const heroBottom = hero.offsetTop + hero.offsetHeight;
+                const pastHero = currentScrollY >= heroBottom - nav.offsetHeight;
+
+                nav.classList.toggle('nav-solid', pastHero);
+
+                if (currentScrollY <= 4) {
+                    // Always show at the very top of the page.
+                    nav.classList.remove('nav-hidden');
+                } else if (currentScrollY > lastScrollY) {
+                    // Scrolling down -> hide.
+                    nav.classList.add('nav-hidden');
+                } else if (currentScrollY < lastScrollY) {
+                    // Scrolling up -> show.
+                    nav.classList.remove('nav-hidden');
+                }
+
+                lastScrollY = currentScrollY;
+                ticking = false;
+            }
+
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    window.requestAnimationFrame(handleNavScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            handleNavScroll();
+        })();
+
+        // ---- Login icon visibility: only shown when NOT logged in ----
+        // Wired directly to Supabase Auth so it needs no rework once real
+        // sign-in/sign-up flows are added — it already reflects the true
+        // session state via getSession() and stays in sync via onAuthStateChange().
+        function updateLoginIconVisibility(session) {
+            const loginBtn = document.getElementById('loginIconBtn');
+            if (!loginBtn) return;
+            const isLoggedIn = !!session;
+            loginBtn.style.display = isLoggedIn ? 'none' : 'flex';
+        }
+
+        async function initAuthState() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            updateLoginIconVisibility(session);
+
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                updateLoginIconVisibility(session);
+            });
+        }
+
         // Hero Background Slideshow Script (queries slides fresh each tick since they are loaded dynamically)
         let currentHeroSlide = 0;
         function nextHeroSlide() {
@@ -1233,25 +1417,61 @@
             }
         }
 
+        // Toggle Settings Dropdown Box with Animation
+        function toggleSettingsDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdownMenu');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            if(userDropdown) userDropdown.classList.remove('open');
+            if(searchDropdown) searchDropdown.classList.remove('open');
+            if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+            dropdown.classList.toggle('open');
+        }
+
         // Toggle User Profile Dropdown Box with Animation
         function toggleUserDropdown(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('userDropdownMenu');
             const searchDropdown = document.getElementById('searchDropdownMenu');
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
             if(searchDropdown) searchDropdown.classList.remove('open');
+            if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+            if(settingsDropdown) settingsDropdown.classList.remove('open');
             dropdown.classList.toggle('open');
         }
 
-        // Toggle Search Dropdown Box (Right-to-Left Slide from Search Icon)
+        // Toggle Search Box: first click opens the box (icon shrinks and
+        // docks into it). If the box is already open, clicking the icon
+        // again runs the search (same as pressing Enter) instead of closing
+        // it outright — the box only closes via executeSearch()'s own
+        // auto-close-after-match logic, by finding no match and re-clicking
+        // to close, or by clicking elsewhere on the page.
         function toggleSearchDropdown(event) {
             event.stopPropagation();
+            const wrap = document.getElementById('searchBoxWrap');
             const searchDropdown = document.getElementById('searchDropdownMenu');
             const userDropdown = document.getElementById('userDropdownMenu');
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
             if(userDropdown) userDropdown.classList.remove('open');
-            
-            searchDropdown.classList.toggle('open');
-            if(searchDropdown.classList.contains('open')) {
+            if(settingsDropdown) settingsDropdown.classList.remove('open');
+
+            const isOpen = searchDropdown.classList.contains('open');
+
+            if (!isOpen) {
+                searchDropdown.classList.add('open');
+                wrap.classList.add('search-open');
                 document.getElementById('projectSearchInput').focus();
+            } else {
+                const query = document.getElementById('projectSearchInput').value.trim();
+                if (query) {
+                    executeSearch();
+                } else {
+                    searchDropdown.classList.remove('open');
+                    wrap.classList.remove('search-open');
+                }
             }
         }
 
@@ -1263,6 +1483,23 @@
             if (userDropdown && userDropdown.classList.contains('open')) {
                 if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
                     userDropdown.classList.remove('open');
+                }
+            }
+
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const settingsBtn = document.getElementById('settingsIconBtn');
+            if (settingsDropdown && settingsDropdown.classList.contains('open')) {
+                if (!settingsDropdown.contains(e.target) && !settingsBtn.contains(e.target)) {
+                    settingsDropdown.classList.remove('open');
+                }
+            }
+
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            if (searchDropdown && searchDropdown.classList.contains('open')) {
+                if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
+                    searchDropdown.classList.remove('open');
+                    searchBoxWrap.classList.remove('search-open');
                 }
             }
 
@@ -1405,6 +1642,7 @@
                 // 3 seconds delay before minimizing/closing the search box automatically
                 setTimeout(() => {
                     document.getElementById('searchDropdownMenu').classList.remove('open');
+                    document.getElementById('searchBoxWrap').classList.remove('search-open');
                     feedback.classList.add('hidden');
                 }, 3000);
             } else {
@@ -1866,6 +2104,7 @@
             loadHeroSlides();
             loadHeroStats();
             observeRevealTargets(document);
+            initAuthState();
         });
     </script>
 </body>
