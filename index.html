@@ -10,6 +10,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
+
+        /* Top page loading progress bar */
+        #pageLoadingBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: transparent;
+            z-index: 99999;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #pageLoadingProgress {
+            width: 8%;
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #38bdf8, #2563eb);
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.65);
+            transition: width 0.45s ease, opacity 0.35s ease;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -654,22 +676,14 @@
             border-color: #334155 !important;
             border-bottom-color: #334155 !important;
             box-shadow:
+                inset 0 -1px 0 #334155,
                 0 6px 18px rgba(15, 23, 42, 0.10),
                 0 10px 12px -12px rgba(15, 23, 42, 0.78);
         }
 
         body.theme-effective-dark #projects .recent-project-card::after {
-            /*
-             * Dark mode only:
-             * Keep the same bottom stroke visible as the other card edges.
-             * Light mode is intentionally untouched.
-             */
-            background: #334155 !important;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 1px;
-            box-shadow: none !important;
+            background: transparent !important;
+            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.78);
         }
 
         body.theme-effective-dark #searchDropdownMenu input {
@@ -1409,7 +1423,14 @@
         }
     </style>
 </head>
+
 <body class="bg-white text-slate-800">
+
+    <!-- Full-page load progress bar: visible at the very top of the webpage -->
+    <div id="pageLoadingBar" aria-hidden="true">
+        <div id="pageLoadingProgress"></div>
+    </div>
+
 
     <!-- Main Content Wrapper to handle Page Blur Effect -->
     <div id="pageContentWrapper">
@@ -2955,6 +2976,57 @@
             });
         }
 
+
+        /* Re-play the hero statistics animation whenever the hero is revisited. */
+        let heroStatsReady = false;
+        let heroWasOutOfView = false;
+
+        function replayHeroStats() {
+            if (!heroStatsReady) return;
+
+            const counters = [
+                { id: 'statOngoing', duration: 1400 },
+                { id: 'statCompleted', duration: 1550 },
+                { id: 'statUpcoming', duration: 1700 }
+            ];
+
+            counters.forEach(({ id, duration }) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                const target = el.dataset.finalCount;
+                if (target == null) return;
+
+                animateNumber(el, target, duration);
+            });
+
+            animateAllVisibleCounters();
+        }
+
+        function initHeroCounterReplay() {
+            const hero = document.getElementById('heroSection');
+            if (!hero || !('IntersectionObserver' in window)) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        heroWasOutOfView = true;
+                        return;
+                    }
+
+                    if (heroWasOutOfView && heroStatsReady) {
+                        replayHeroStats();
+                    }
+
+                    heroWasOutOfView = false;
+                });
+            }, {
+                threshold: 0.35
+            });
+
+            observer.observe(hero);
+        }
+
         /* ---- Load Ongoing / Completed / Upcoming counters (real counts from Supabase) ---- */
         async function loadHeroStats() {
             const [ongoingRes, completedRes, upcomingRes] = await Promise.all([
@@ -2963,9 +3035,22 @@
                 supabaseClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'Upcoming')
             ]);
 
-            animateNumber(document.getElementById('statOngoing'), ongoingRes.count ?? 0, 1400);
-            animateNumber(document.getElementById('statCompleted'), completedRes.count ?? 0, 1550);
-            animateNumber(document.getElementById('statUpcoming'), upcomingRes.count ?? 0, 1700);
+            const statValues = {
+                statOngoing: ongoingRes.count ?? 0,
+                statCompleted: completedRes.count ?? 0,
+                statUpcoming: upcomingRes.count ?? 0
+            };
+
+            Object.entries(statValues).forEach(([id, value]) => {
+                const el = document.getElementById(id);
+                if (el) el.dataset.finalCount = String(value);
+            });
+
+            heroStatsReady = true;
+
+            animateNumber(document.getElementById('statOngoing'), statValues.statOngoing, 1400);
+            animateNumber(document.getElementById('statCompleted'), statValues.statCompleted, 1550);
+            animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1700);
             animateAllVisibleCounters();
         }
 
@@ -2977,6 +3062,34 @@
             animateAllVisibleCounters();
             observeRevealTargets(document);
             initAuthState();
+            initHeroCounterReplay();
+
+            /* Start the top loading bar, then complete and hide it after the
+               browser has finished loading the page resources. */
+            const loadingProgress = document.getElementById('pageLoadingProgress');
+            const finishPageLoad = () => {
+                if (!loadingProgress) return;
+                loadingProgress.style.width = '100%';
+                setTimeout(() => {
+                    loadingProgress.style.opacity = '0';
+                }, 250);
+                setTimeout(() => {
+                    const bar = document.getElementById('pageLoadingBar');
+                    if (bar) bar.style.display = 'none';
+                }, 650);
+            };
+
+            if (loadingProgress) {
+                requestAnimationFrame(() => {
+                    loadingProgress.style.width = '72%';
+                });
+            }
+
+            if (document.readyState === 'complete') {
+                finishPageLoad();
+            } else {
+                window.addEventListener('load', finishPageLoad, { once: true });
+            }
         });
     </script>
 </body>
