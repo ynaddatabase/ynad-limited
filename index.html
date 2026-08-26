@@ -652,11 +652,24 @@
 
         body.theme-effective-dark #projects .recent-project-card {
             border-color: #334155 !important;
+            border-bottom-color: #334155 !important;
+            box-shadow:
+                0 6px 18px rgba(15, 23, 42, 0.10),
+                0 10px 12px -12px rgba(15, 23, 42, 0.78);
         }
 
         body.theme-effective-dark #projects .recent-project-card::after {
-            background: transparent !important;
-            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.78);
+            /*
+             * Dark mode only:
+             * Keep the same bottom stroke visible as the other card edges.
+             * Light mode is intentionally untouched.
+             */
+            background: #334155 !important;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            box-shadow: none !important;
         }
 
         body.theme-effective-dark #searchDropdownMenu input {
@@ -2508,9 +2521,11 @@
             if (!projects) return;
 
             const nav = document.getElementById('mainNav');
-            const navOffset = nav ? nav.offsetHeight : 0;
             const startY = window.scrollY;
-            const targetY = Math.max(0, projects.getBoundingClientRect().top + window.scrollY - navOffset);
+            // The hero arrow should place Recent Projects exactly at the viewport top.
+            // Do not subtract the fixed header height; otherwise the hidden header
+            // leaves a black/hero strip above the Recent Projects section.
+            const targetY = Math.max(0, projects.getBoundingClientRect().top + window.scrollY);
             const distance = targetY - startY;
 
             if (Math.abs(distance) < 1) return;
