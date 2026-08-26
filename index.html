@@ -682,8 +682,12 @@
         }
 
         body.theme-effective-dark #projects .recent-project-card::after {
-            background: transparent !important;
-            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.78);
+            background: #334155 !important;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            box-shadow: none !important;
         }
 
         body.theme-effective-dark #searchDropdownMenu input {
@@ -2972,7 +2976,7 @@
 
         function animateAllVisibleCounters() {
             document.querySelectorAll('#categorySidebarWrapper [data-count]').forEach(el => {
-                animateNumber(el, el.dataset.count, 500);
+                animateNumber(el, el.dataset.count, 1500);
             });
         }
 
@@ -3048,9 +3052,9 @@
 
             heroStatsReady = true;
 
-            animateNumber(document.getElementById('statOngoing'), statValues.statOngoing, 650);
-            animateNumber(document.getElementById('statCompleted'), statValues.statCompleted, 650);
-            animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 650);
+            animateNumber(document.getElementById('statOngoing'), statValues.statOngoing, 1200);
+            animateNumber(document.getElementById('statCompleted'), statValues.statCompleted, 1200);
+            animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
 
