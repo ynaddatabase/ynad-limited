@@ -30,13 +30,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.35);
+            /* Match the reference hover darkness on Recent Project images. */
+            background-color: rgba(0, 0, 0, 0.48);
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             pointer-events: none;
             z-index: 10;
         }
-        .zoom-wrapper:hover::after {
+        .zoom-wrapper:hover::after,
+        .recent-project-card:hover .zoom-wrapper::after {
             opacity: 1;
         }
         .zoom-wrapper img {
@@ -97,6 +99,14 @@
             margin: 0 auto;
         }
 
+        /* The main projects rail is controlled by JS in fixed two-card steps.
+           Disable native snap so there is no snap-back / spring-like correction. */
+        #mainProjectSlider {
+            scroll-snap-type: none !important;
+            scroll-behavior: auto !important;
+            overscroll-behavior-x: contain;
+        }
+
         .recent-project-card {
             width: calc(25% - 18px);
             min-width: calc(25% - 18px);
@@ -107,9 +117,10 @@
             position: relative;
             overflow: visible;
             background: #ffffff;
-            border: 1px solid #eef0f3;
+            border: 1px solid transparent;
             box-sizing: border-box;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10),
+                        0 10px 12px -12px rgba(15, 23, 42, 0.42);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: left;
         }
@@ -124,13 +135,14 @@
         .recent-project-card::after {
             content: "";
             position: absolute;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            height: 1px;
-            background: #eef0f3;
+            left: 8px;
+            right: 8px;
+            bottom: -10px;
+            height: 10px;
+            background: transparent;
             pointer-events: none;
             z-index: 40;
+            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.55);
         }
 
         .recent-project-image {
@@ -339,6 +351,21 @@
         /* Dots: tightened to sit directly under the heading, matching the
            reference mock (small gap under "OUR RECENT PROJECTS...", not the
            large gap that used to separate them from the carousel below). */
+        /* Recent Projects divider/stroke is visible only in dark mode. */
+        #projects::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 1px;
+            background: transparent;
+            pointer-events: none;
+        }
+        body.theme-effective-dark #projects::before {
+            background: rgba(148, 163, 184, 0.28);
+        }
+
         .recent-project-dots {
             display: flex;
             align-items: center;
@@ -424,7 +451,7 @@
         /* Smooth Slide Animation for Left Sidebar & Toggle Button */
         #categorySidebarWrapper {
             position: absolute;
-            top: 179px;
+            top: calc(72px + 0.3in);
             left: 20px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 45;
@@ -445,7 +472,7 @@
         /* Fixed Toggle Arrow Button Style */
         #sidebarToggleBtn {
             position: absolute;
-            top: 179px;
+            top: calc(72px + 0.3in);
             left: 20px;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 46;
@@ -590,12 +617,46 @@
         body.theme-effective-dark .recent-project-action.location {
             color: #94a3b8 !important;
         }
+
+        /* Dark-mode hover: the full action (icon + label) must turn white over the fill. */
+        body.theme-effective-dark .recent-project-action.docs:hover,
+        body.theme-effective-dark .recent-project-action.docs:hover span,
+        body.theme-effective-dark .recent-project-action.docs:hover i,
+        body.theme-effective-dark .recent-project-action.media:hover,
+        body.theme-effective-dark .recent-project-action.media:hover span,
+        body.theme-effective-dark .recent-project-action.media:hover i,
+        body.theme-effective-dark .recent-project-action.location:hover,
+        body.theme-effective-dark .recent-project-action.location:hover span,
+        body.theme-effective-dark .recent-project-action.location:hover i {
+            color: #ffffff !important;
+        }
+
+        body.theme-effective-dark .recent-project-action.docs:hover {
+            background: #2563eb !important;
+        }
+        body.theme-effective-dark .recent-project-action.media:hover {
+            background: #d97706 !important;
+        }
+        body.theme-effective-dark .recent-project-action.location:hover {
+            background: #334155 !important;
+        }
+        /* Recent-project card strokes are intentionally dark-mode only. */
+        body.theme-light #projects .recent-project-card {
+            border-color: transparent !important;
+        }
+
+        body.theme-light #projects .recent-project-card::after {
+            background: transparent !important;
+            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.55);
+        }
+
         body.theme-effective-dark #projects .recent-project-card {
             border-color: #334155 !important;
         }
 
         body.theme-effective-dark #projects .recent-project-card::after {
-            background: #334155 !important;
+            background: transparent !important;
+            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.78);
         }
 
         body.theme-effective-dark #searchDropdownMenu input {
@@ -788,9 +849,49 @@
         }
         /* Push page content below the now-fixed nav (nav height ~72px incl. padding) */
         #heroSection {
-            padding-top: 88px;
-            margin-top: -88px;
+            /* Full browser viewport like the reference page: no white strip below the hero. */
+            padding-top: 0;
+            margin-top: 0;
             isolation: isolate;
+            box-sizing: border-box;
+            height: var(--hero-viewport-height, 100vh);
+            min-height: var(--hero-viewport-height, 100vh);
+            max-height: var(--hero-viewport-height, 100vh);
+        }
+
+        /* Bottom-center arrow: jump from the hero directly to Recent Projects. */
+        #heroProjectsArrow {
+            position: absolute;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.55);
+            background: rgba(255,255,255,.92);
+            color: #475569;
+            box-shadow: 0 8px 24px rgba(0,0,0,.18);
+            z-index: 35;
+            cursor: pointer;
+            transition: transform .25s ease, background-color .25s ease, color .25s ease, box-shadow .25s ease;
+        }
+        #heroProjectsArrow:hover {
+            transform: translateX(-50%) translateY(-2px);
+            background: #ffffff;
+            color: #d97706;
+            box-shadow: 0 10px 28px rgba(0,0,0,.24);
+        }
+        #heroProjectsArrow i {
+            font-size: 12px;
+            animation: heroArrowPulse 2.25s ease-in-out infinite;
+        }
+        @keyframes heroArrowPulse {
+            0%, 100% { transform: translateY(-2px); }
+            50% { transform: translateY(3px); }
         }
 
         /* 3-Line Hamburger Icon Click Animation */
@@ -1429,50 +1530,50 @@
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Masjid</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">15</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">120</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="15">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="120">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Madrasa</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">8</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">45</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="8">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="45">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Markaz</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">5</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">30</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="5">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="30">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Orphanage</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">4</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">25</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="4">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="25">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Ablution</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">12</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">80</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="12">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="80">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Water Well</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">56</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">150</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="56">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="150">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-300 uppercase tracking-wider font-normal text-[10px]">Clinic</span>
                         <div class="flex gap-2.5 text-right">
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">2</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
-                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]">10</strong> <span class="text-[8px] uppercase">Done</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="2">0</strong> <span class="text-[8px] uppercase">Ongoing</span></span>
+                            <span class="text-gray-400 text-[9px]"><strong class="text-amber-400 font-medium text-[11px]" data-count="10">0</strong> <span class="text-[8px] uppercase">Done</span></span>
                         </div>
                     </div>
                 </div>
@@ -1532,6 +1633,10 @@
                     </a>
                 </div>
             </div>
+
+            <button id="heroProjectsArrow" type="button" aria-label="Go to Recent Projects" title="Recent Projects" onclick="goToRecentProjects()">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
         </header>
 
         <!-- Recent Projects Section -->
@@ -1696,6 +1801,19 @@
 
     <!-- JavaScript -->
     <script>
+
+        function syncHeroViewportHeight() {
+            const hero = document.getElementById('heroSection');
+            if (!hero) return;
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+            if (viewportHeight > 0) {
+                hero.style.setProperty('--hero-viewport-height', viewportHeight + 'px');
+            }
+        }
+        window.addEventListener('resize', syncHeroViewportHeight, { passive: true });
+        window.addEventListener('orientationchange', syncHeroViewportHeight, { passive: true });
+        syncHeroViewportHeight();
+
         // Supabase Connection
         const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
@@ -1724,14 +1842,21 @@
 
                 nav.classList.toggle('nav-solid', pastHero);
 
+                /* While the hero-arrow is taking the user to Recent Projects,
+                   keep the header locked in its current hidden state so it never
+                   briefly drops in from the top and then hides again. */
+                if (nav.dataset.scrollLock === 'true') {
+                    nav.classList.add('nav-hidden');
+                    lastScrollY = currentScrollY;
+                    ticking = false;
+                    return;
+                }
+
                 if (currentScrollY <= 4) {
-                    // Always show at the very top of the page.
                     nav.classList.remove('nav-hidden');
                 } else if (currentScrollY > lastScrollY) {
-                    // Scrolling down -> hide.
                     nav.classList.add('nav-hidden');
                 } else if (currentScrollY < lastScrollY) {
-                    // Scrolling up -> show.
                     nav.classList.remove('nav-hidden');
                 }
 
@@ -1906,6 +2031,7 @@
                 wrapper.classList.add('open');
                 icon.className = "fa-solid fa-chevron-left text-xs";
                 toggleBtn.classList.add('shifted');
+                setTimeout(animateAllVisibleCounters, 80);
             }
         }
 
@@ -2334,47 +2460,108 @@
             slider.style.transform = `translateX(-${cardImageIndices[cardId] * 100}%)`;
         }
 
-        /* Main Project Horizontal Slider — custom eased "push and settle"
-           animation (spring-like ease-out-back) instead of the plain native
-           smooth-scroll, so it visibly reacts and settles like something
-           physically nudged rather than sliding at a flat linear speed. */
+        /* Main Project Horizontal Slider — moves exactly TWO cards per click.
+           Slow smooth travel only; no spring/overshoot/back movement here. */
         let sliderAnimId = null;
-        function easeOutBack(t) {
-            const c1 = 1.4;
-            const c3 = c1 + 1;
-            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+
+        function easeInOutCubic(t) {
+            return t < 0.5
+                ? 4 * t * t * t
+                : 1 - Math.pow(-2 * t + 2, 3) / 2;
         }
+
+        function getRecentProjectsPerView() {
+            const slider = document.getElementById('mainProjectSlider');
+            const firstCard = slider ? slider.querySelector('.recent-project-card') : null;
+            if (!slider || !firstCard) return 1;
+
+            const styles = getComputedStyle(slider);
+            const gap = parseFloat(styles.columnGap || styles.gap || '24') || 24;
+            const cardWidth = firstCard.getBoundingClientRect().width;
+            return Math.max(1, Math.floor((slider.clientWidth + gap) / (cardWidth + gap) + 0.001));
+        }
+
+        /* Move exactly TWO cards on every arrow click.
+           At the final position the rail stops exactly at its end. */
+        function getRecentProjectStep() {
+            return getRecentProjectCardStep() * 2;
+        }
+
         function scrollMainSlider(direction) {
             const slider = document.getElementById('mainProjectSlider');
             if (!slider) return;
-            const firstCard = slider.querySelector('.recent-project-card');
-            const gap = parseFloat(getComputedStyle(slider).columnGap || getComputedStyle(slider).gap || '24') || 24;
-            const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : slider.clientWidth / 4;
-            const scrollAmount = Math.round(cardWidth + gap);
+
+            const step = getRecentProjectStep();
+            const maxScroll = Math.max(0, slider.scrollWidth - slider.clientWidth);
             const startScroll = slider.scrollLeft;
-            const maxScroll = slider.scrollWidth - slider.clientWidth;
-            let targetScroll = direction === 'left' ? startScroll - scrollAmount : startScroll + scrollAmount;
-            targetScroll = Math.max(0, Math.min(maxScroll, targetScroll));
+            const rawTarget = direction === 'left'
+                ? startScroll - step
+                : startScroll + step;
+            const targetScroll = Math.max(0, Math.min(maxScroll, rawTarget));
 
-            const distance = targetScroll - startScroll;
-            const duration = 550;
-            const startTime = performance.now();
+            animateMainProjectSlider(targetScroll);
+        }
 
-            if (sliderAnimId) cancelAnimationFrame(sliderAnimId);
+        let heroScrollAnimId = null;
+        function goToRecentProjects() {
+            const projects = document.getElementById('projects');
+            if (!projects) return;
 
-            function step(now) {
-                const elapsed = now - startTime;
-                const t = Math.min(elapsed / duration, 1);
-                const eased = easeOutBack(t);
-                slider.scrollLeft = startScroll + distance * eased;
+            const nav = document.getElementById('mainNav');
+            const navOffset = nav ? nav.offsetHeight : 0;
+            const startY = window.scrollY;
+            const targetY = Math.max(0, projects.getBoundingClientRect().top + window.scrollY - navOffset);
+            const distance = targetY - startY;
+
+            if (Math.abs(distance) < 1) return;
+
+            if (heroScrollAnimId) cancelAnimationFrame(heroScrollAnimId);
+
+            /* Lock the header hidden for the whole programmed scroll. This
+               prevents the normal scroll-direction handler from making the
+               header appear briefly during the animation. */
+            if (nav) {
+                nav.dataset.scrollLock = 'true';
+                nav.classList.add('nav-hidden');
+            }
+
+            /* Fast enough to feel responsive, but still smooth and deliberate. */
+            const duration = Math.min(1250, Math.max(850, Math.abs(distance) * 0.72));
+            const startedAt = performance.now();
+
+            // Very smooth ease-in-out: no spring, no bounce, no overshoot.
+            function smoothEase(t) {
+                return t < 0.5
+                    ? 4 * t * t * t
+                    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            function frame(now) {
+                const t = Math.min((now - startedAt) / duration, 1);
+                const eased = smoothEase(t);
+                window.scrollTo(0, startY + distance * eased);
+
                 if (t < 1) {
-                    sliderAnimId = requestAnimationFrame(step);
+                    heroScrollAnimId = requestAnimationFrame(frame);
                 } else {
-                    slider.scrollLeft = targetScroll;
-                    sliderAnimId = null;
+                    window.scrollTo(0, targetY);
+                    if (nav) {
+                        nav.classList.add('nav-hidden');
+                        nav.dataset.scrollLock = 'false';
+                        /* Refresh the normal header state after the animation
+                           without causing a visible pop-in. */
+                        setTimeout(() => {
+                            const y = window.scrollY;
+                            const heroBottom = hero.offsetTop + hero.offsetHeight;
+                            nav.classList.toggle('nav-solid', y >= heroBottom - nav.offsetHeight);
+                            nav.classList.add('nav-hidden');
+                        }, 80);
+                    }
+                    heroScrollAnimId = null;
                 }
             }
-            sliderAnimId = requestAnimationFrame(step);
+
+            heroScrollAnimId = requestAnimationFrame(frame);
         }
 
         /* ---- Scroll-triggered fade-in (left -> right) for heading & project cards ---- */
@@ -2585,38 +2772,117 @@
             observeRevealTargets(slider);
         }
 
-        /* ---- 3-dot pagination for the recent projects carousel ---- */
+        /* ---- Pagination for the recent projects carousel (2 cards per click) ---- */
         function setupProjectDots() {
             const slider = document.getElementById('mainProjectSlider');
             const dotsWrap = document.getElementById('projectsDots');
             if (!slider || !dotsWrap) return;
 
-            const dotCount = 3;
+            const cards = Array.from(slider.querySelectorAll('.recent-project-card'));
+            if (!cards.length) return;
+
+            const perView = Math.max(1, getRecentProjectsPerView());
+            const stepCards = 2;
+            const groupCount = Math.max(1, Math.ceil(Math.max(0, cards.length - perView) / stepCards) + 1);
+
             dotsWrap.innerHTML = '';
-            for (let i = 0; i < dotCount; i++) {
+
+            // Always show exactly three indicator dots. The middle dot is active
+            // on the first position; indicators then cycle 1 -> 2 -> 0 -> 1...
+            for (let i = 0; i < 3; i++) {
                 const dot = document.createElement('button');
-                dot.className = 'recent-project-dot' + (i === 0 ? ' active' : '');
-                dot.setAttribute('aria-label', 'Go to project group ' + (i + 1));
+                dot.className = 'recent-project-dot' + (i === 1 ? ' active' : '');
+                dot.setAttribute('aria-label', 'Recent project indicator ' + (i + 1));
+
                 dot.addEventListener('click', () => {
-                    const maxScroll = slider.scrollWidth - slider.clientWidth;
-                    const target = maxScroll * (i / (dotCount - 1));
-                    slider.scrollTo({ left: target, behavior: 'smooth' });
+                    // Clicking the indicators keeps the same visual 3-state cycle.
+                    const currentGroup = Math.max(0, Math.round((slider.scrollLeft / Math.max(getRecentProjectCardStep(), 1)) / 2));
+                    const desiredOffset = i === 1 ? 0 : (i === 2 ? 1 : 2);
+                    const targetGroup = Math.max(0, Math.min(groupCount - 1, currentGroup - (currentGroup % 3) + desiredOffset));
+                    animateMainProjectSlider(getRecentProjectGroupScroll(targetGroup));
                 });
+
                 dotsWrap.appendChild(dot);
             }
 
             const updateActiveDot = () => {
-                const maxScroll = slider.scrollWidth - slider.clientWidth;
-                const progress = maxScroll > 0 ? slider.scrollLeft / maxScroll : 0;
-                const activeIndex = Math.min(dotCount - 1, Math.round(progress * (dotCount - 1)));
+                const step = getRecentProjectCardStep();
+                const groupIndex = step > 0 ? Math.max(0, Math.round((slider.scrollLeft / step) / 2)) : 0;
+                const activeIndex = (groupIndex + 1) % 3;
+
                 dotsWrap.querySelectorAll('.recent-project-dot').forEach((d, i) => {
                     d.classList.toggle('active', i === activeIndex);
                 });
             };
 
+            if (slider._recentProjectsDotHandler) {
+                slider.removeEventListener('scroll', slider._recentProjectsDotHandler);
+            }
+            slider._recentProjectsDotHandler = updateActiveDot;
             slider.addEventListener('scroll', updateActiveDot, { passive: true });
             updateActiveDot();
         }
+
+        function getRecentProjectCardStep() {
+            const slider = document.getElementById('mainProjectSlider');
+            const firstCard = slider ? slider.querySelector('.recent-project-card') : null;
+            if (!slider || !firstCard) return 0;
+
+            const styles = getComputedStyle(slider);
+            const gap = parseFloat(styles.columnGap || styles.gap || '24') || 24;
+            return Math.round(firstCard.getBoundingClientRect().width + gap);
+        }
+
+        function getRecentProjectGroupScroll(groupIndex) {
+            const slider = document.getElementById('mainProjectSlider');
+            if (!slider) return 0;
+
+            const step = getRecentProjectCardStep();
+            const maxScroll = Math.max(0, slider.scrollWidth - slider.clientWidth);
+            return Math.max(0, Math.min(maxScroll, groupIndex * step * 2));
+        }
+
+        function animateMainProjectSlider(targetScroll) {
+            const slider = document.getElementById('mainProjectSlider');
+            if (!slider) return;
+
+            const startScroll = slider.scrollLeft;
+            const distance = targetScroll - startScroll;
+            if (Math.abs(distance) < 1) return;
+
+            const duration = 950;
+            const startTime = performance.now();
+
+            if (sliderAnimId) cancelAnimationFrame(sliderAnimId);
+
+            function frame(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const eased = easeInOutCubic(t);
+                slider.scrollLeft = startScroll + distance * eased;
+
+                if (t < 1) {
+                    sliderAnimId = requestAnimationFrame(frame);
+                } else {
+                    slider.scrollLeft = targetScroll;
+                    sliderAnimId = null;
+                }
+            }
+
+            sliderAnimId = requestAnimationFrame(frame);
+        }
+
+        // Keep the dot count/step correct when the viewport changes between 2-up and 1-up.
+        let recentProjectsResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(recentProjectsResizeTimer);
+            recentProjectsResizeTimer = setTimeout(() => {
+                const slider = document.getElementById('mainProjectSlider');
+                if (slider && slider.querySelector('.recent-project-card')) {
+                    setupProjectDots();
+                }
+            }, 120);
+        });
 
         /* ---- Load Hero Slideshow from last 10 projects (by opening_date) using C-Photo ---- */
         async function loadHeroSlides() {
@@ -2645,6 +2911,35 @@
             currentHeroSlide = 0;
         }
 
+
+        function animateNumber(element, target, duration = 1200) {
+            if (!element) return;
+            const finalValue = Math.max(0, Number(target) || 0);
+            const startValue = 0;
+            const startedAt = performance.now();
+            if (element._countAnimId) cancelAnimationFrame(element._countAnimId);
+
+            function frame(now) {
+                const t = Math.min((now - startedAt) / duration, 1);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const value = Math.round(startValue + (finalValue - startValue) * eased);
+                element.textContent = value.toLocaleString();
+                if (t < 1) {
+                    element._countAnimId = requestAnimationFrame(frame);
+                } else {
+                    element.textContent = finalValue.toLocaleString();
+                    element._countAnimId = null;
+                }
+            }
+            element._countAnimId = requestAnimationFrame(frame);
+        }
+
+        function animateAllVisibleCounters() {
+            document.querySelectorAll('#categorySidebarWrapper [data-count]').forEach(el => {
+                animateNumber(el, el.dataset.count, 1050);
+            });
+        }
+
         /* ---- Load Ongoing / Completed / Upcoming counters (real counts from Supabase) ---- */
         async function loadHeroStats() {
             const [ongoingRes, completedRes, upcomingRes] = await Promise.all([
@@ -2653,9 +2948,10 @@
                 supabaseClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'Upcoming')
             ]);
 
-            document.getElementById('statOngoing').textContent = ongoingRes.count ?? 0;
-            document.getElementById('statCompleted').textContent = completedRes.count ?? 0;
-            document.getElementById('statUpcoming').textContent = upcomingRes.count ?? 0;
+            animateNumber(document.getElementById('statOngoing'), ongoingRes.count ?? 0, 1400);
+            animateNumber(document.getElementById('statCompleted'), completedRes.count ?? 0, 1550);
+            animateNumber(document.getElementById('statUpcoming'), upcomingRes.count ?? 0, 1700);
+            animateAllVisibleCounters();
         }
 
         // Load projects, hero slideshow & stats on first page load
@@ -2663,6 +2959,7 @@
             loadProjects();
             loadHeroSlides();
             loadHeroStats();
+            animateAllVisibleCounters();
             observeRevealTargets(document);
             initAuthState();
         });
