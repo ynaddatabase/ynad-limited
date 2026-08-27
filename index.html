@@ -1425,79 +1425,6 @@
             color: #ffffff !important;
             opacity: 1;
         }
-
-        /* ================================================================
-           ABOUT SECTION — ADMIN/MANAGER INLINE EDIT (Alt+Shift+D toggle)
-           ================================================================ */
-        #aboutEditIconBtn {
-            display: none; /* only shown when isAdminOrManager() is true AND Alt+Shift+D toggles it visible */
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 999px;
-            border: 1px solid #d97706;
-            background: #ffffff;
-            color: #d97706;
-            cursor: pointer;
-            margin-left: 10px;
-            vertical-align: middle;
-            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-        }
-        #aboutEditIconBtn:hover {
-            background: #d97706;
-            color: #ffffff;
-            transform: scale(1.08);
-        }
-        #aboutEditIconBtn.show {
-            display: inline-flex;
-        }
-
-        #aboutEditOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 300;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            padding: 20px;
-        }
-        #aboutEditOverlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
-        #aboutEditBox {
-            width: 100%;
-            max-width: 560px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
-            padding: 24px;
-            transform: scale(0.92);
-            transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.4, 1);
-        }
-        #aboutEditOverlay.open #aboutEditBox {
-            transform: scale(1);
-        }
-        #aboutEditBox textarea {
-            width: 100%;
-            min-height: 140px;
-            resize: vertical;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 13px;
-            font-family: 'Poppins', sans-serif;
-            color: #334155;
-            outline: none;
-        }
-        #aboutEditBox textarea:focus {
-            border-color: #d97706;
-        }
     </style>
 </head>
 
@@ -1782,16 +1709,11 @@
         <section id="about" class="py-16 bg-slate-50 border-t border-slate-200 px-6">
             <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">
-                        About YNAD Construction
-                        <button id="aboutEditIconBtn" onclick="openAboutEditModal()" title="Edit About text">
-                            <i class="fa-solid fa-pen text-xs"></i>
-                        </button>
-                    </h2>
-                    <p id="aboutPara1" class="text-sm text-slate-600 leading-relaxed mb-4">
+                    <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">About YNAD Construction</h2>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">
                         YNAD Construction is a premier construction and development firm dedicated to delivering high-quality residential, commercial, and philanthropic infrastructure projects across the nation.
                     </p>
-                    <p id="aboutPara2" class="text-sm text-slate-600 leading-relaxed">
+                    <p class="text-sm text-slate-600 leading-relaxed">
                         With international donors and local communities working hand in hand, we build structures that stand the test of time, ensuring safety, reliability, and satisfaction.
                     </p>
                 </div>
@@ -1913,28 +1835,6 @@
     <div id="projectAddMinimizedTab" onclick="restoreProjectAddModal()">
         <i class="fa-solid fa-file-circle-plus"></i>
         <span class="text-xs font-semibold uppercase tracking-wide">Project Add</span>
-    </div>
-
-    <!-- About Section Edit Modal (Admin/Manager only, toggled via Alt+Shift+D) -->
-    <div id="aboutEditOverlay">
-        <div id="aboutEditBox">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">Edit About Text</h3>
-
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Paragraph 1</label>
-            <textarea id="aboutTextPara1" class="mb-4"></textarea>
-
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Paragraph 2</label>
-            <textarea id="aboutTextPara2"></textarea>
-
-            <div class="flex justify-end gap-3 mt-5">
-                <button onclick="closeAboutEditModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 border border-slate-300 hover:bg-slate-50 transition cursor-pointer">
-                    Cancel
-                </button>
-                <button onclick="saveAboutText()" class="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer">
-                    Save
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- JavaScript -->
@@ -3158,107 +3058,6 @@
             animateAllVisibleCounters();
         }
 
-        /* ================================================================
-           ABOUT SECTION — ADMIN/MANAGER INLINE EDIT
-           ================================================================
-           PLACEHOLDER: swap this out once real Supabase auth + role checking
-           is wired up. For now it's a simple flag so the UI can be built and
-           tested. Later, replace the body of isAdminOrManager() with a real
-           check against the logged-in user's role from Supabase
-           (e.g. session.user.app_metadata.role === 'admin' || 'manager').
-           ================================================================ */
-        function isAdminOrManager() {
-            // TEMP: run localStorage.setItem('ynad-role','admin') in the browser
-            // console to test the icon, or wire real Supabase auth/role later.
-            try {
-                return localStorage.getItem('ynad-role') === 'admin' || localStorage.getItem('ynad-role') === 'manager';
-            } catch (e) {
-                return false;
-            }
-        }
-
-        let aboutEditIconVisible = false;
-
-        function toggleAboutEditIcon() {
-            if (!isAdminOrManager()) return; // non-admins can never see it, even with the key combo
-            const btn = document.getElementById('aboutEditIconBtn');
-            if (!btn) return;
-            aboutEditIconVisible = !aboutEditIconVisible;
-            btn.classList.toggle('show', aboutEditIconVisible);
-        }
-
-        // Alt+Shift+D toggles the edit icon's visibility (admin/manager only)
-        document.addEventListener('keydown', function (e) {
-            if (e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
-                e.preventDefault();
-                toggleAboutEditIcon();
-            }
-        });
-
-        function openAboutEditModal() {
-            const overlay = document.getElementById('aboutEditOverlay');
-            const para1 = document.getElementById('aboutPara1');
-            const para2 = document.getElementById('aboutPara2');
-            const input1 = document.getElementById('aboutTextPara1');
-            const input2 = document.getElementById('aboutTextPara2');
-            if (!overlay || !para1 || !para2 || !input1 || !input2) return;
-
-            input1.value = para1.textContent.trim();
-            input2.value = para2.textContent.trim();
-            overlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAboutEditModal() {
-            const overlay = document.getElementById('aboutEditOverlay');
-            if (!overlay) return;
-            overlay.classList.remove('open');
-            document.body.style.overflow = 'auto';
-        }
-
-        // PLACEHOLDER PERSISTENCE: currently saves to localStorage so the UI is
-        // fully testable end-to-end right now. When Supabase is connected, replace
-        // the localStorage.setItem calls with an update to a `site_content` (or
-        // similar) table, then reload the values from Supabase on page load
-        // instead of from localStorage (see loadAboutTextFromStorage() below).
-        function saveAboutText() {
-            const input1 = document.getElementById('aboutTextPara1');
-            const input2 = document.getElementById('aboutTextPara2');
-            const para1 = document.getElementById('aboutPara1');
-            const para2 = document.getElementById('aboutPara2');
-            if (!input1 || !input2 || !para1 || !para2) return;
-
-            const newText1 = input1.value.trim();
-            const newText2 = input2.value.trim();
-
-            para1.textContent = newText1;
-            para2.textContent = newText2;
-
-            try {
-                localStorage.setItem('ynad-about-para1', newText1);
-                localStorage.setItem('ynad-about-para2', newText2);
-            } catch (e) {
-                console.error('Failed to save About text locally:', e);
-            }
-
-            closeAboutEditModal();
-        }
-
-        // On page load, apply any previously saved About text (placeholder for
-        // what will later be a Supabase fetch instead of localStorage).
-        function loadAboutTextFromStorage() {
-            try {
-                const saved1 = localStorage.getItem('ynad-about-para1');
-                const saved2 = localStorage.getItem('ynad-about-para2');
-                const para1 = document.getElementById('aboutPara1');
-                const para2 = document.getElementById('aboutPara2');
-                if (saved1 && para1) para1.textContent = saved1;
-                if (saved2 && para2) para2.textContent = saved2;
-            } catch (e) {
-                console.error('Failed to load saved About text:', e);
-            }
-        }
-
         // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
             loadProjects();
@@ -3268,7 +3067,6 @@
             observeRevealTargets(document);
             initAuthState();
             initHeroCounterReplay();
-            loadAboutTextFromStorage();
 
             /* Start the top loading bar, then complete and hide it after the
                browser has finished loading the page resources. */
