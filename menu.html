@@ -4,20 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menu</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-    * { box-sizing: border-box; }
+    * {
+        box-sizing: border-box;
+    }
+
     body {
         margin: 0;
         font-family: 'Montserrat', sans-serif;
         background: transparent;
     }
+
     .menu-list {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
         padding: 4px 4px 0 4px;
     }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     .menu-link {
         opacity: 0;
         transform: translateY(35px);
@@ -30,60 +43,211 @@
         text-transform: uppercase;
         cursor: pointer;
     }
+
     @media (min-width: 768px) {
-        .menu-link { font-size: 1.125rem; }
+        .menu-link {
+            font-size: 1.125rem;
+        }
     }
-    .menu-link:hover { color: #d97706; }
-    .menu-link:nth-child(1) { animation-delay: 0.15s; }
-    .menu-link:nth-child(2) { animation-delay: 0.25s; }
-    .menu-link:nth-child(3) { animation-delay: 0.35s; }
-    .menu-link:nth-child(4) { animation-delay: 0.45s; }
-    .menu-link:nth-child(5) { animation-delay: 0.55s; }
+
+    .menu-link:hover {
+        color: #d97706;
+    }
+
+    /* Edit icon */
+    .edit-icon {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 15px;
+        color: #64748b;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        opacity: 0;
+        transform: scale(0.7);
+    }
+
+    .edit-icon:hover {
+        color: #d97706;
+        transform: scale(1);
+    }
+
+    /* Show edit icon when edit mode is active */
+    body.edit-mode .edit-icon {
+        display: inline-flex;
+        animation: editIconIn 0.25s ease forwards;
+    }
+
+    @keyframes editIconIn {
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .menu-link:nth-child(1) {
+        animation-delay: 0.15s;
+    }
+
+    .menu-link:nth-child(2) {
+        animation-delay: 0.25s;
+    }
+
+    .menu-link:nth-child(3) {
+        animation-delay: 0.35s;
+    }
+
+    .menu-link:nth-child(4) {
+        animation-delay: 0.45s;
+    }
+
+    .menu-link:nth-child(5) {
+        animation-delay: 0.55s;
+    }
+
     @keyframes menuItemIn {
-        to { opacity: 1; transform: translateY(0); }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 </head>
+
 <body>
+
 <div class="menu-list">
-    <a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
-    <a class="menu-link" onclick="goTo('about')">About</a>
-    <a class="menu-link" onclick="goTo('blog')">Blog</a>
-    <a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
-    <a class="menu-link" onclick="goTo('ynad-team')">YNAD Team</a>
+
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('financial-overview')">
+            Financial Overview
+        </a>
+    </div>
+
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('about')">
+            About
+        </a>
+
+        <!-- Edit icon -->
+        <a
+            href="javascript:void(0)"
+            class="edit-icon"
+            title="Edit About"
+            onclick="editAbout(event)"
+        >
+            ✎
+        </a>
+    </div>
+
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('blog')">
+            Blog
+        </a>
+    </div>
+
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('ynad-moments')">
+            YNAD Moments
+        </a>
+    </div>
+
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('ynad-team')">
+            YNAD Team
+        </a>
+    </div>
+
 </div>
 
+
 <script>
-    // Closes the overlay using the parent page's existing closeMenuWithEffect()
-    // (same animation it opened with), then — once that close animation has
-    // fully finished — smoothly scrolls the parent page to the target section.
-    // targetId should match a real section id on the parent page (e.g. "about").
+
+    /*
+     * Alt + Shift + D
+     * Toggle Edit Icon beside About
+     */
+    document.addEventListener('keydown', function (event) {
+
+        if (
+            event.altKey &&
+            event.shiftKey &&
+            event.code === 'KeyD'
+        ) {
+            event.preventDefault();
+
+            document.body.classList.toggle('edit-mode');
+        }
+
+    });
+
+
+    /*
+     * Edit About button
+     */
+    function editAbout(event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Parent page function থাকলে সেটি ব্যবহার করবে
+        if (
+            parent &&
+            typeof parent.editAbout === 'function'
+        ) {
+            parent.editAbout();
+            return;
+        }
+
+        console.log('About edit mode activated');
+    }
+
+
+    /*
+     * Menu navigation
+     */
     function goTo(targetId) {
-        if (parent && typeof parent.closeMenuWithEffect === 'function') {
+
+        if (
+            parent &&
+            typeof parent.closeMenuWithEffect === 'function'
+        ) {
             parent.closeMenuWithEffect();
         }
 
-        // parent.closeMenuWithEffect() removes the 'open' class immediately,
-        // then un-blurs the page + resets the iframe after 400ms. We wait for
-        // that same 400ms before starting the scroll, so the scroll only
-        // begins once the menu has fully closed — matching the open animation's
-        // own timing rather than fighting it.
         setTimeout(function () {
+
             if (parent && parent.document) {
-                const targetEl = parent.document.getElementById(targetId);
+
+                const targetEl =
+                    parent.document.getElementById(targetId);
+
                 if (targetEl) {
-                    // Use the parent's own smooth-scroll if available (matches
-                    // the site's existing easing used for goToRecentProjects());
-                    // otherwise fall back to native smooth scrolling.
-                    if (typeof parent.smoothScrollToElement === 'function') {
+
+                    if (
+                        typeof parent.smoothScrollToElement === 'function'
+                    ) {
+
                         parent.smoothScrollToElement(targetEl);
+
                     } else {
-                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                        targetEl.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+
                     }
                 }
             }
+
         }, 400);
     }
+
 </script>
+
 </body>
 </html>
