@@ -62,13 +62,6 @@ body.edit-mode .edit-icon{display:inline-block}
 
 /* ================================================================
    THEME SYNC — mirrors the parent page's dark/light mode
-   ================================================================
-   The parent (index.html) broadcasts { type: 'ynad-theme', dark }
-   whenever the user toggles dark mode, and also right after this
-   iframe loads (once it asks via 'ynad-request-theme'). Applying
-   the same html.dark class here means any UI this iframe renders —
-   including the About editor injected into the PARENT document —
-   can use the same html.dark selector and stay in sync automatically.
    ================================================================ */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
@@ -77,39 +70,15 @@ window.addEventListener('message', function(e){
     }
 });
 try{
-    // Ask the parent for the current theme as soon as we're ready,
-    // in case dark mode was already on before this menu opened.
     parent.postMessage({ type: 'ynad-request-theme' }, '*');
-    // Also read it directly if same-origin access is available (covers
-    // the case where the postMessage round-trip hasn't completed yet
-    // by the time openEditor() runs).
     if (parent.document.documentElement.classList.contains('dark')) {
         document.documentElement.classList.add('dark');
     }
 }catch(e){}
 
-/* ================================================================
-   ALT + SHIFT + D — edit mode toggle
-   ================================================================
-   Listens on THIS iframe's own document (a listener on `parent`
-   reliably fails/gets blocked even for same-origin iframes in many
-   setups). To make the shortcut work the INSTANT the menu slides
-   in — not only after the user clicks something inside the iframe
-   first — the iframe's <body> is given tabindex="-1" and is
-   explicitly focused as soon as the script runs, so keydown events
-   land here immediately without requiring a prior click.
-
-   Toggling here shows the pencil icon locally, AND notifies the
-   parent page via postMessage so index.html's own admin/manager
-   check (isAdminOrManager) can also gate it — see the matching
-   message listener in index.html.
-   ================================================================ */
 function focusMenuFrame(){
     try{ document.body.focus({ preventScroll: true }); }catch(e){}
 }
-// Focus immediately, and again shortly after (covers the case where
-// this script runs before the parent's slide-in transition/focus
-// handoff has fully settled).
 focusMenuFrame();
 window.addEventListener('load', focusMenuFrame);
 setTimeout(focusMenuFrame, 50);
@@ -117,10 +86,6 @@ setTimeout(focusMenuFrame, 350);
 
 function toggleEdit(){
     document.body.classList.toggle('edit-mode');
-
-    // Tell the parent page edit-mode was toggled here, so index.html
-    // can apply its OWN admin/manager permission check before fully
-    // trusting this — this iframe alone should not be the sole gate.
     try{
         parent.postMessage({ type: 'ynad-toggle-edit-mode' }, '*');
     }catch(e){}
@@ -133,9 +98,6 @@ document.addEventListener('keydown', function(e){
     }
 });
 
-/* If the parent page (index.html) decides the current user is NOT
-   an admin/manager, it messages back here to force edit-mode off,
-   so the pencil icon never actually stays visible for non-admins. */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
     if(e.data.type === 'ynad-deny-edit-mode'){
@@ -156,8 +118,11 @@ function openEditor(e){
 
     const originalHeading = h ? h.textContent.trim() : '';
     const originalText = p ? p.textContent.trim() : '';
-    let originalAlign = (p ? d.defaultView.getComputedStyle(p).textAlign : 'left');
-    if(originalAlign === 'start') originalAlign = 'left';
+
+    let originalHeadingAlign = (h ? d.defaultView.getComputedStyle(h).textAlign : 'left');
+    if(originalHeadingAlign === 'start') originalHeadingAlign = 'left';
+    let originalTextAlign = (p ? d.defaultView.getComputedStyle(p).textAlign : 'left');
+    if(originalTextAlign === 'start') originalTextAlign = 'left';
 
     const MIN_WORDS = 60, MAX_WORDS = 200;
     const ALIGN_ORDER = ['left','center','right','justify'];
@@ -175,6 +140,15 @@ function openEditor(e){
           <label>Heading <span class="ae-req">*</span></label>
           <input id="ae-head" value="${originalHeading}" placeholder="e.g. About YNAD Construction">
           <p class="ae-error" id="ae-head-err">Heading is required.</p>
+
+          <label>Heading Alignment</label>
+          <div class="ae-align" id="ae-head-align">
+            <span class="ae-align-fill" id="ae-head-align-fill"></span>
+            <button type="button" data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
+            <button type="button" data-a="center" title="Align center"><i class="ae-ic ae-ic-center"><span></span><span></span><span></span></i>Center</button>
+            <button type="button" data-a="right" title="Align right"><i class="ae-ic ae-ic-right"><span></span><span></span><span></span></i>Right</button>
+            <button type="button" data-a="justify" title="Justify"><i class="ae-ic ae-ic-justify"><span></span><span></span><span></span></i>Justify</button>
+          </div>
 
           <label>
             About Text <span class="ae-req">*</span>
@@ -246,7 +220,7 @@ function openEditor(e){
       width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;
       border-radius:9px;outline:0;font:14px/1.55 Montserrat;
       color:#0f172a;background:#fff;
-      transition:border-color .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease
+      transition:border-color .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, text-align .1s ease
     }
     #about-editor input:focus,#about-editor textarea:focus{
       border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)
@@ -271,7 +245,7 @@ function openEditor(e){
     .ae-align-fill{
       position:absolute;top:4px;left:4px;bottom:4px;
       width:calc(25% - 3px);border-radius:8px;
-      background:#0f172a;
+      background:#d97706;
       transition:transform .3s cubic-bezier(.65,0,.35,1);
       z-index:0
     }
@@ -319,7 +293,7 @@ function openEditor(e){
     }
     #ae-x:hover{background:#fee2e2;color:#dc2626;transform:rotate(90deg)}
 
-    /* ---- Dark mode (mirrors the main site's html.dark palette) ---- */
+    /* ---- Dark mode (mirrors the main site's html.dark / theme-effective-dark palette) ---- */
     html.dark #about-editor .ae-box{background:#1e293b}
     html.dark #about-editor .ae-header{background:#1e293b;border-bottom-color:#334155}
     html.dark #about-editor h3{color:#f1f5f9}
@@ -335,7 +309,7 @@ function openEditor(e){
     html.dark .ae-align{background:#0f172a;border-color:#334155}
     html.dark .ae-align-fill{background:#d97706}
     html.dark .ae-align button{color:#94a3b8}
-    html.dark .ae-align button.active{color:#0f172a}
+    html.dark .ae-align button.active{color:#fff}
     html.dark #ae-clear{background:#0f172a;border-color:#334155;color:#94a3b8}
     html.dark #ae-clear:hover{border-color:#dc2626;color:#f87171;background:rgba(220,38,38,.1)}
     html.dark #ae-save:disabled{background:#334155;border-color:#334155;color:#64748b}
@@ -352,10 +326,14 @@ function openEditor(e){
     const textErr = d.getElementById('ae-text-err');
     const countEl = d.getElementById('ae-count');
     const saveBtn = d.getElementById('ae-save');
-    const alignWrap = d.getElementById('ae-align');
-    const alignFill = d.getElementById('ae-align-fill');
 
-    let align = originalAlign;
+    const textAlignWrap = d.getElementById('ae-align');
+    const textAlignFill = d.getElementById('ae-align-fill');
+    const headAlignWrap = d.getElementById('ae-head-align');
+    const headAlignFill = d.getElementById('ae-head-align-fill');
+
+    let textAlign = originalTextAlign;
+    let headAlign = originalHeadingAlign;
 
     function countWords(str){
         const trimmed = str.trim();
@@ -363,34 +341,52 @@ function openEditor(e){
         return trimmed.split(/\s+/).filter(Boolean).length;
     }
 
-    function positionFill(a){
+    function positionFill(fillEl, a){
         const idx = Math.max(0, ALIGN_ORDER.indexOf(a));
-        alignFill.style.transform = `translateX(${idx * 100}%)`;
+        fillEl.style.transform = `translateX(${idx * 100}%)`;
     }
 
-    const setAlign=(a, isUserAction)=>{
-        align=a;
-        s.querySelectorAll('[data-a]').forEach(b=>
+    const setTextAlign=(a, isUserAction)=>{
+        textAlign=a;
+        s.querySelectorAll('#ae-align [data-a]').forEach(b=>
             b.classList.toggle('active',b.dataset.a===a)
         );
-        positionFill(a);
-        // Apply immediately so the textarea itself reflects the chosen
-        // alignment right away, not just after saving.
+        positionFill(textAlignFill, a);
         textarea.style.textAlign = a;
         if(isUserAction) validate();
     };
 
-    s.querySelectorAll('[data-a]').forEach(b=>
-        b.onclick=()=>setAlign(b.dataset.a, true)
+    const setHeadAlign=(a, isUserAction)=>{
+        headAlign=a;
+        s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
+            b.classList.toggle('active',b.dataset.a===a)
+        );
+        positionFill(headAlignFill, a);
+        headInput.style.textAlign = a;
+        if(isUserAction) validate();
+    };
+
+    s.querySelectorAll('#ae-align [data-a]').forEach(b=>
+        b.onclick=()=>setTextAlign(b.dataset.a, true)
+    );
+    s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
+        b.onclick=()=>setHeadAlign(b.dataset.a, true)
     );
 
-    // Position the fill instantly on open (no slide-in from a stale spot).
-    align = originalAlign;
-    s.querySelectorAll('[data-a]').forEach(b=>
-        b.classList.toggle('active', b.dataset.a === align)
+    // Position the fills instantly on open (no slide-in from a stale spot).
+    s.querySelectorAll('#ae-align [data-a]').forEach(b=>
+        b.classList.toggle('active', b.dataset.a === textAlign)
     );
-    requestAnimationFrame(()=>{ alignFill.style.transition='none'; positionFill(align); requestAnimationFrame(()=>{ alignFill.style.transition=''; }); });
-    textarea.style.textAlign = align;
+    s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
+        b.classList.toggle('active', b.dataset.a === headAlign)
+    );
+    requestAnimationFrame(()=>{
+        textAlignFill.style.transition='none'; positionFill(textAlignFill, textAlign);
+        headAlignFill.style.transition='none'; positionFill(headAlignFill, headAlign);
+        requestAnimationFrame(()=>{ textAlignFill.style.transition=''; headAlignFill.style.transition=''; });
+    });
+    textarea.style.textAlign = textAlign;
+    headInput.style.textAlign = headAlign;
 
     // ---- Validation + dirty-check: Save only enables once the form is
     // both valid (required fields filled, word count in range) AND
@@ -415,7 +411,8 @@ function openEditor(e){
             countEl.classList.add(wordsValid ? 'ae-count-ok' : 'ae-count-bad');
         }
 
-        const hasChanged = headVal !== originalHeading || textVal !== originalText || align !== originalAlign;
+        const hasChanged = headVal !== originalHeading || textVal !== originalText ||
+                            textAlign !== originalTextAlign || headAlign !== originalHeadingAlign;
         const isValid = headValid && wordsValid;
 
         saveBtn.disabled = !(isValid && hasChanged);
@@ -444,7 +441,8 @@ function openEditor(e){
         textarea.value='';
         headTouched = true;
         textTouched = true;
-        setAlign('left', false);
+        setTextAlign('left', false);
+        setHeadAlign('left', false);
         validate();
         headInput.focus();
     };
@@ -452,10 +450,13 @@ function openEditor(e){
     saveBtn.onclick=()=>{
         if(saveBtn.disabled) return;
         if(!validate()) return;
-        if(h)h.textContent=headInput.value.trim();
+        if(h){
+            h.textContent=headInput.value.trim();
+            h.style.textAlign=headAlign;
+        }
         if(p){
             p.textContent=textarea.value.trim();
-            p.style.textAlign=align;
+            p.style.textAlign=textAlign;
         }
         close();
     };
