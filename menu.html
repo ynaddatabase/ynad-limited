@@ -60,27 +60,50 @@ body.edit-mode .edit-icon{display:inline-block}
 
 <script>
 
-/* ALT + SHIFT + D */
+/* ================================================================
+   ALT + SHIFT + D — edit mode toggle
+   ================================================================
+   This listener lives ONLY here, on this iframe's own document.
+   It does NOT try to attach a listener onto `parent` (that reliably
+   fails/gets blocked in real browsers even for same-origin iframes
+   in many setups — the previous version's try/catch was silently
+   swallowing that failure, which is why nothing ever showed up).
+
+   Because the hamburger menu overlay keeps keyboard focus INSIDE
+   this iframe while it's open, THIS iframe needs its own listener
+   to catch the key combo while the menu is open. Toggling here
+   shows the pencil icon locally, AND notifies the parent page via
+   postMessage so index.html's own admin/manager check
+   (isAdminOrManager) can also gate it — see the matching message
+   listener added in index.html below.
+   ================================================================ */
 function toggleEdit(){
     document.body.classList.toggle('edit-mode');
+
+    // Tell the parent page edit-mode was toggled here, so index.html
+    // can apply its OWN admin/manager permission check before fully
+    // trusting this — this iframe alone should not be the sole gate.
+    try{
+        parent.postMessage({ type: 'ynad-toggle-edit-mode' }, '*');
+    }catch(e){}
 }
 
-document.addEventListener('keydown',e=>{
-    if(e.altKey&&e.shiftKey&&e.code==='KeyD'){
+document.addEventListener('keydown', function(e){
+    if(e.altKey && e.shiftKey && e.code === 'KeyD'){
         e.preventDefault();
         toggleEdit();
     }
 });
 
-/* Parent page থেকেও shortcut ধরবে */
-try{
-    parent.addEventListener('keydown',e=>{
-        if(e.altKey&&e.shiftKey&&e.code==='KeyD'){
-            e.preventDefault();
-            toggleEdit();
-        }
-    },true);
-}catch(e){}
+/* If the parent page (index.html) decides the current user is NOT
+   an admin/manager, it messages back here to force edit-mode off,
+   so the pencil icon never actually stays visible for non-admins. */
+window.addEventListener('message', function(e){
+    if(!e.data || typeof e.data !== 'object') return;
+    if(e.data.type === 'ynad-deny-edit-mode'){
+        document.body.classList.remove('edit-mode');
+    }
+});
 
 /* About Editor */
 function openEditor(e){
