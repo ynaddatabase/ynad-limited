@@ -31,7 +31,7 @@ body.edit-mode .edit-icon{display:inline-block}
 </style>
 </head>
 
-<body>
+<body tabindex="-1">
 
 <div class="menu-list">
 
@@ -63,20 +63,30 @@ body.edit-mode .edit-icon{display:inline-block}
 /* ================================================================
    ALT + SHIFT + D — edit mode toggle
    ================================================================
-   This listener lives ONLY here, on this iframe's own document.
-   It does NOT try to attach a listener onto `parent` (that reliably
-   fails/gets blocked in real browsers even for same-origin iframes
-   in many setups — the previous version's try/catch was silently
-   swallowing that failure, which is why nothing ever showed up).
+   Listens on THIS iframe's own document (a listener on `parent`
+   reliably fails/gets blocked even for same-origin iframes in many
+   setups). To make the shortcut work the INSTANT the menu slides
+   in — not only after the user clicks something inside the iframe
+   first — the iframe's <body> is given tabindex="-1" and is
+   explicitly focused as soon as the script runs, so keydown events
+   land here immediately without requiring a prior click.
 
-   Because the hamburger menu overlay keeps keyboard focus INSIDE
-   this iframe while it's open, THIS iframe needs its own listener
-   to catch the key combo while the menu is open. Toggling here
-   shows the pencil icon locally, AND notifies the parent page via
-   postMessage so index.html's own admin/manager check
-   (isAdminOrManager) can also gate it — see the matching message
-   listener added in index.html below.
+   Toggling here shows the pencil icon locally, AND notifies the
+   parent page via postMessage so index.html's own admin/manager
+   check (isAdminOrManager) can also gate it — see the matching
+   message listener in index.html.
    ================================================================ */
+function focusMenuFrame(){
+    try{ document.body.focus({ preventScroll: true }); }catch(e){}
+}
+// Focus immediately, and again shortly after (covers the case where
+// this script runs before the parent's slide-in transition/focus
+// handoff has fully settled).
+focusMenuFrame();
+window.addEventListener('load', focusMenuFrame);
+setTimeout(focusMenuFrame, 50);
+setTimeout(focusMenuFrame, 350);
+
 function toggleEdit(){
     document.body.classList.toggle('edit-mode');
 
@@ -116,29 +126,38 @@ function openEditor(e){
     const h=about.querySelector('h1,h2,h3,h4');
     const p=about.querySelector('p');
 
+    const originalHeading = h ? h.textContent.trim() : '';
+    const originalText = p ? p.textContent.trim() : '';
+    let originalAlign = (p ? d.defaultView.getComputedStyle(p).textAlign : 'left');
+    if(originalAlign === 'start') originalAlign = 'left';
+
     s.id='about-editor';
     s.innerHTML=`
     <div class="ae-bg">
       <div class="ae-box">
-        <button id="ae-x">×</button>
-        <h3>Edit About</h3>
+        <div class="ae-header">
+          <h3>Edit About</h3>
+          <button id="ae-x" aria-label="Close">×</button>
+        </div>
 
-        <label>Heading</label>
-        <input id="ae-head" value="${h?h.textContent.trim():''}">
+        <div class="ae-body">
+          <label>Heading</label>
+          <input id="ae-head" value="${originalHeading}">
 
-        <label>Full Text</label>
-        <textarea id="ae-text">${p?p.textContent.trim():''}</textarea>
+          <label>About Text</label>
+          <textarea id="ae-text">${originalText}</textarea>
 
-        <label>Text Alignment</label>
-        <div class="ae-align">
-          <button data-a="left">Left</button>
-          <button data-a="center">Center</button>
-          <button data-a="right">Right</button>
-          <button data-a="justify">Justify</button>
+          <label>Text Alignment</label>
+          <div class="ae-align">
+            <button data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
+            <button data-a="center" title="Align center"><i class="ae-ic ae-ic-center"><span></span><span></span><span></span></i>Center</button>
+            <button data-a="right" title="Align right"><i class="ae-ic ae-ic-right"><span></span><span></span><span></span></i>Right</button>
+            <button data-a="justify" title="Justify"><i class="ae-ic ae-ic-justify"><span></span><span></span><span></span></i>Justify</button>
+          </div>
         </div>
 
         <div class="ae-actions">
-          <button id="ae-cancel">Cancel</button>
+          <button id="ae-clear">Clear</button>
           <button id="ae-save">Save Changes</button>
         </div>
       </div>
@@ -150,46 +169,98 @@ function openEditor(e){
     #about-editor .ae-bg{
       position:fixed;inset:0;z-index:999999;
       display:flex;align-items:center;justify-content:center;
-      padding:20px;background:rgba(15,23,42,.55);
-      backdrop-filter:blur(6px)
+      padding:20px;background:rgba(15,23,42,.6);
+      backdrop-filter:blur(8px);
+      opacity:0;
+      animation:ae-fade .25s ease forwards
     }
+    @keyframes ae-fade{to{opacity:1}}
     #about-editor .ae-box{
       position:relative;width:min(650px,100%);
-      background:#fff;border-radius:14px;padding:24px;
-      box-shadow:0 20px 60px rgba(0,0,0,.25);
-      font-family:Montserrat,sans-serif
+      max-height:90vh;overflow-y:auto;
+      background:#fff;border-radius:16px;
+      box-shadow:0 25px 70px rgba(0,0,0,.3);
+      font-family:Montserrat,sans-serif;
+      transform:translateY(14px) scale(.98);
+      opacity:0;
+      animation:ae-pop .35s cubic-bezier(.16,1,.3,1) .05s forwards
     }
-    #about-editor h3{margin:0 0 20px;color:#0f172a}
-    #about-editor label{display:block;margin:14px 0 7px;font-size:12px;font-weight:600;color:#334155}
+    @keyframes ae-pop{to{transform:translateY(0) scale(1);opacity:1}}
+    #about-editor .ae-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:20px 24px;border-bottom:1px solid #e2e8f0;
+      position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1
+    }
+    #about-editor h3{margin:0;color:#0f172a;font-size:19px;font-weight:600}
+    #about-editor .ae-body{padding:22px 24px 6px}
+    #about-editor label{display:block;margin:16px 0 8px;font-size:12px;font-weight:600;letter-spacing:.03em;color:#475569;text-transform:uppercase}
+    #about-editor label:first-child{margin-top:0}
     #about-editor input,#about-editor textarea{
-      width:100%;padding:11px;border:1px solid #cbd5e1;
-      border-radius:8px;outline:0;font:14px Montserrat
+      width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;
+      border-radius:9px;outline:0;font:14px/1.55 Montserrat;
+      color:#0f172a;transition:border-color .2s ease, box-shadow .2s ease
     }
-    #about-editor textarea{height:170px;resize:vertical;line-height:1.6}
-    .ae-align{display:flex;gap:7px;flex-wrap:wrap}
-    .ae-align button,#ae-cancel,#ae-save{
-      padding:9px 13px;border:1px solid #cbd5e1;border-radius:7px;
-      background:#fff;cursor:pointer
+    #about-editor input:focus,#about-editor textarea:focus{
+      border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.12)
     }
-    .ae-align button.active{background:#0f172a;color:#fff}
-    .ae-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
-    #ae-save{background:#0f172a;color:#fff}
+    #about-editor textarea{height:170px;resize:vertical;line-height:1.65;transition:border-color .2s ease, box-shadow .2s ease, text-align .1s ease}
+    .ae-align{display:flex;gap:8px;flex-wrap:wrap}
+    .ae-align button{
+      flex:1 1 0;min-width:80px;display:flex;align-items:center;justify-content:center;gap:6px;
+      padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:8px;
+      background:#fff;color:#475569;font:12.5px/1 Montserrat;font-weight:600;
+      cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s ease
+    }
+    .ae-align button:hover{border-color:#d97706;color:#d97706}
+    .ae-align button.active{background:#0f172a;border-color:#0f172a;color:#fff}
+    .ae-ic{width:15px;height:11px;display:inline-flex;flex-direction:column;justify-content:space-between}
+    .ae-ic span{display:block;height:1.6px;background:currentColor;border-radius:1px}
+    .ae-ic-left span:nth-child(1){width:100%}
+    .ae-ic-left span:nth-child(2){width:65%}
+    .ae-ic-left span:nth-child(3){width:85%}
+    .ae-ic-center span{margin:0 auto}
+    .ae-ic-center span:nth-child(1){width:100%}
+    .ae-ic-center span:nth-child(2){width:60%}
+    .ae-ic-center span:nth-child(3){width:80%}
+    .ae-ic-right span{margin-left:auto}
+    .ae-ic-right span:nth-child(1){width:100%}
+    .ae-ic-right span:nth-child(2){width:65%}
+    .ae-ic-right span:nth-child(3){width:85%}
+    .ae-ic-justify span{width:100%}
+    #about-editor .ae-actions{
+      display:flex;justify-content:flex-end;gap:10px;
+      padding:18px 24px 22px;
+    }
+    #about-editor .ae-actions button{
+      padding:10px 20px;border-radius:9px;font:13.5px Montserrat;font-weight:600;
+      cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s ease
+    }
+    #ae-clear{background:#fff;border:1.5px solid #e2e8f0;color:#64748b}
+    #ae-clear:hover{border-color:#ef4444;color:#ef4444;background:#fef2f2}
+    #ae-save{background:#0f172a;border:1.5px solid #0f172a;color:#fff}
+    #ae-save:hover{background:#1e293b;border-color:#1e293b;transform:translateY(-1px)}
     #ae-x{
-      position:absolute;right:15px;top:12px;border:0;background:none;
-      font-size:27px;color:#64748b;cursor:pointer
-    }`;
+      border:0;background:#f1f5f9;width:32px;height:32px;border-radius:50%;
+      font-size:20px;line-height:1;color:#64748b;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:background .18s ease,color .18s ease,transform .2s ease
+    }
+    #ae-x:hover{background:#fee2e2;color:#ef4444;transform:rotate(90deg)}`;
 
     d.head.appendChild(st);
     d.body.appendChild(s);
 
-    let align=(p?d.defaultView.getComputedStyle(p).textAlign:'left');
-    if(align==='start')align='left';
+    const textarea = d.getElementById('ae-text');
+    let align = originalAlign;
 
     const setAlign=a=>{
         align=a;
         s.querySelectorAll('[data-a]').forEach(b=>
             b.classList.toggle('active',b.dataset.a===a)
         );
+        // Apply immediately so the textarea itself reflects the chosen
+        // alignment right away, not just after saving.
+        textarea.style.textAlign = a;
     };
 
     s.querySelectorAll('[data-a]').forEach(b=>
@@ -204,12 +275,20 @@ function openEditor(e){
     };
 
     d.getElementById('ae-x').onclick=close;
-    d.getElementById('ae-cancel').onclick=close;
+
+    // Clear: wipes the heading/text fields and resets alignment to left,
+    // rather than closing the editor (that's what the × button is for).
+    d.getElementById('ae-clear').onclick=()=>{
+        d.getElementById('ae-head').value='';
+        textarea.value='';
+        setAlign('left');
+        d.getElementById('ae-head').focus();
+    };
 
     d.getElementById('ae-save').onclick=()=>{
         if(h)h.textContent=d.getElementById('ae-head').value.trim();
         if(p){
-            p.textContent=d.getElementById('ae-text').value.trim();
+            p.textContent=textarea.value.trim();
             p.style.textAlign=align;
         }
         close();
