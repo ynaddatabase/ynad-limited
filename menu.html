@@ -28,6 +28,7 @@
         color: #0f172a;
         text-decoration: none;
         text-transform: uppercase;
+        cursor: pointer;
     }
     @media (min-width: 768px) {
         .menu-link { font-size: 1.125rem; }
@@ -37,19 +38,52 @@
     .menu-link:nth-child(2) { animation-delay: 0.25s; }
     .menu-link:nth-child(3) { animation-delay: 0.35s; }
     .menu-link:nth-child(4) { animation-delay: 0.45s; }
+    .menu-link:nth-child(5) { animation-delay: 0.55s; }
     @keyframes menuItemIn {
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
 </head>
 <body>
-
 <div class="menu-list">
-    <a href="#projects" target="_top" class="menu-link" onclick="parent.closeMenuWithEffect()">About</a>
-    <a href="#" target="_top" class="menu-link" onclick="parent.closeMenuWithEffect()">Financial Overview</a>
-    <a href="#" target="_top" class="menu-link" onclick="parent.closeMenuWithEffect()">YNAD Moments</a>
-    <a href="#" target="_top" class="menu-link" onclick="parent.closeMenuWithEffect()">Blog</a>
+    <a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
+    <a class="menu-link" onclick="goTo('about')">About</a>
+    <a class="menu-link" onclick="goTo('blog')">Blog</a>
+    <a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
+    <a class="menu-link" onclick="goTo('ynad-team')">YNAD Team</a>
 </div>
 
+<script>
+    // Closes the overlay using the parent page's existing closeMenuWithEffect()
+    // (same animation it opened with), then — once that close animation has
+    // fully finished — smoothly scrolls the parent page to the target section.
+    // targetId should match a real section id on the parent page (e.g. "about").
+    function goTo(targetId) {
+        if (parent && typeof parent.closeMenuWithEffect === 'function') {
+            parent.closeMenuWithEffect();
+        }
+
+        // parent.closeMenuWithEffect() removes the 'open' class immediately,
+        // then un-blurs the page + resets the iframe after 400ms. We wait for
+        // that same 400ms before starting the scroll, so the scroll only
+        // begins once the menu has fully closed — matching the open animation's
+        // own timing rather than fighting it.
+        setTimeout(function () {
+            if (parent && parent.document) {
+                const targetEl = parent.document.getElementById(targetId);
+                if (targetEl) {
+                    // Use the parent's own smooth-scroll if available (matches
+                    // the site's existing easing used for goToRecentProjects());
+                    // otherwise fall back to native smooth scrolling.
+                    if (typeof parent.smoothScrollToElement === 'function') {
+                        parent.smoothScrollToElement(targetEl);
+                    } else {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }
+        }, 400);
+    }
+</script>
 </body>
 </html>
