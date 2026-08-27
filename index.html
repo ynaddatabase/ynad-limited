@@ -1425,6 +1425,80 @@
             color: #ffffff !important;
             opacity: 1;
         }
+
+        /* ================================================================
+           ABOUT EDITOR MODAL — DARK MODE (injected by menu.html into THIS
+           document, since #about lives here). Mirrors the site's own
+           .theme-effective-dark palette so the editor matches whichever
+           theme is active on the homepage when it's opened.
+           ================================================================ */
+        body.theme-effective-dark #about-editor .ae-box {
+            background: #1e293b;
+        }
+        body.theme-effective-dark #about-editor .ae-header {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+        body.theme-effective-dark #about-editor h3 {
+            color: #f1f5f9;
+        }
+        body.theme-effective-dark #about-editor label {
+            color: #94a3b8;
+        }
+        body.theme-effective-dark #about-editor .ae-count {
+            color: #64748b;
+        }
+        body.theme-effective-dark #about-editor input,
+        body.theme-effective-dark #about-editor textarea {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        body.theme-effective-dark #about-editor input::placeholder,
+        body.theme-effective-dark #about-editor textarea::placeholder {
+            color: #475569;
+        }
+        body.theme-effective-dark #about-editor input:focus,
+        body.theme-effective-dark #about-editor textarea:focus {
+            border-color: #d97706;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.22);
+        }
+        body.theme-effective-dark .ae-align {
+            background: #0f172a;
+            border-color: #334155;
+        }
+        body.theme-effective-dark .ae-align-fill {
+            background: #d97706;
+        }
+        body.theme-effective-dark .ae-align button {
+            color: #94a3b8;
+        }
+        body.theme-effective-dark .ae-align button.active {
+            color: #ffffff;
+        }
+        body.theme-effective-dark #ae-clear {
+            background: #0f172a;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        body.theme-effective-dark #ae-clear:hover {
+            border-color: #dc2626;
+            color: #f87171;
+            background: rgba(220, 38, 38, 0.1);
+        }
+        body.theme-effective-dark #ae-save:disabled {
+            background: #334155;
+            border-color: #334155;
+            color: #64748b;
+        }
+        body.theme-effective-dark #ae-x {
+            background: #0f172a;
+            color: #94a3b8;
+        }
+        body.theme-effective-dark #ae-x:hover {
+            background: rgba(220, 38, 38, 0.15);
+            color: #f87171;
+        }
     </style>
 </head>
 
@@ -1707,28 +1781,9 @@
 
         <!-- About Section -->
         <section id="about" class="py-16 bg-slate-50 border-t border-slate-200 px-6">
-            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">About YNAD Construction</h2>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-4">
-                        YNAD Construction is a premier construction and development firm dedicated to delivering high-quality residential, commercial, and philanthropic infrastructure projects across the nation.
-                    </p>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        With international donors and local communities working hand in hand, we build structures that stand the test of time, ensuring safety, reliability, and satisfaction.
-                    </p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-6 shadow-sm border text-center">
-                        <i class="fa-solid fa-shield-halved text-3xl text-amber-600 mb-2"></i>
-                        <h4 class="font-bold text-sm text-slate-900 uppercase">Quality Assured</h4>
-                        <p class="text-xs text-slate-500 mt-1">High standard materials</p>
-                    </div>
-                    <div class="bg-white p-6 shadow-sm border text-center">
-                        <i class="fa-solid fa-clock text-3xl text-amber-600 mb-2"></i>
-                        <h4 class="font-bold text-sm text-slate-900 uppercase">On-Time Delivery</h4>
-                        <p class="text-xs text-slate-500 mt-1">Efficient project execution</p>
-                    </div>
-                </div>
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6">About YNAD Construction</h2>
+                <p class="text-sm text-slate-600 leading-relaxed"></p>
             </div>
         </section>
 
@@ -2351,9 +2406,26 @@
             const prefersDark = window.matchMedia &&
                 window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            if (mode === 'dark' || (mode === 'dynamic' && prefersDark)) {
+            const isEffectiveDark = mode === 'dark' || (mode === 'dynamic' && prefersDark);
+
+            if (isEffectiveDark) {
                 body.classList.add('theme-effective-dark');
             }
+
+            /* Mirror the effective dark/light state onto <html class="dark">
+               so anything checking that convention (e.g. iframes reading
+               document.documentElement.classList) also sees it. */
+            document.documentElement.classList.toggle('dark', isEffectiveDark);
+
+            /* Let the menu.html iframe (if it's currently open) know the
+               theme changed live, so the About editor it injects stays in
+               sync without needing to be reopened. */
+            try {
+                const menuFrame = document.getElementById('menuLinksFrame');
+                if (menuFrame && menuFrame.contentWindow) {
+                    menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+                }
+            } catch (e) {}
 
             window.clearTimeout(window.__ynadThemeTransitionTimer);
             window.__ynadThemeTransitionTimer = window.setTimeout(function() {
@@ -2362,6 +2434,22 @@
 
             try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
         }
+
+        // Respond to the menu iframe asking for the current theme right
+        // after it loads (covers dark mode already being on before the
+        // menu/About editor is opened).
+        window.addEventListener('message', function(e) {
+            if (!e.data || typeof e.data !== 'object') return;
+            if (e.data.type === 'ynad-request-theme') {
+                const isEffectiveDark = document.body.classList.contains('theme-effective-dark');
+                try {
+                    const menuFrame = document.getElementById('menuLinksFrame');
+                    if (menuFrame && menuFrame.contentWindow && e.source === menuFrame.contentWindow) {
+                        menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+                    }
+                } catch (err) {}
+            }
+        });
 
         (function initThemeMode() {
             let saved = 'dynamic';
