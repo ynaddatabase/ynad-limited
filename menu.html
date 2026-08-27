@@ -2,1420 +2,212 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Menu</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,sans-serif;background:transparent}
+.menu-list{display:flex;flex-direction:column;gap:1.5rem;padding:4px}
+.menu-item{display:flex;align-items:center;gap:9px}
+.menu-link{
+ opacity:0;transform:translateY(35px);
+ animation:in .7s cubic-bezier(.16,1,.3,1) forwards;
+ font-size:1rem;font-weight:500;letter-spacing:.02em;
+ color:#0f172a;text-decoration:none;text-transform:uppercase;cursor:pointer
 }
-
-body {
-    margin: 0;
-    font-family: 'Montserrat', sans-serif;
-    background: transparent;
-}
-
-/* =========================
-   MENU
-========================= */
-
-.menu-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 4px 4px 0 4px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.menu-link {
-    opacity: 0;
-    transform: translateY(35px);
-
-    animation:
-        menuItemIn 0.7s cubic-bezier(0.16, 1, 0.3, 1)
-        forwards;
-
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-
-    color: #0f172a;
-
-    text-decoration: none;
-    text-transform: uppercase;
-
-    cursor: pointer;
-}
-
-@media (min-width: 768px) {
-
-    .menu-link {
-        font-size: 1.125rem;
-    }
-
-}
-
-.menu-link:hover {
-    color: #d97706;
-}
-
-
-/* =========================
-   EDIT ICON
-========================= */
-
-.edit-icon {
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 25px;
-    height: 25px;
-
-    color: #64748b;
-
-    font-size: 17px;
-
-    cursor: pointer;
-
-    opacity: 0;
-    transform: scale(0.6);
-
-    text-decoration: none;
-
-    transition:
-        color .2s ease,
-        transform .2s ease;
-}
-
-.edit-icon:hover {
-
-    color: #d97706;
-
-    transform: scale(1.1);
-
-}
-
-/* Show only when edit mode is ON */
-
-body.edit-mode .edit-icon {
-
-    display: inline-flex;
-
-    animation:
-        editIconShow .25s ease forwards;
-}
-
-@keyframes editIconShow {
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-}
-
-
-/* =========================
-   MENU ANIMATION
-========================= */
-
-.menu-link:nth-child(1) {
-    animation-delay: .15s;
-}
-
-.menu-link:nth-child(2) {
-    animation-delay: .25s;
-}
-
-.menu-link:nth-child(3) {
-    animation-delay: .35s;
-}
-
-.menu-link:nth-child(4) {
-    animation-delay: .45s;
-}
-
-.menu-link:nth-child(5) {
-    animation-delay: .55s;
-}
-
-@keyframes menuItemIn {
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
-
+.menu-link:hover{color:#d97706}
+.edit-icon{display:none;text-decoration:none;color:#64748b;font-size:17px;cursor:pointer}
+.edit-icon:hover{color:#d97706}
+body.edit-mode .edit-icon{display:inline-block}
+@media(min-width:768px){.menu-link{font-size:1.125rem}}
+.menu-link:nth-child(1){animation-delay:.15s}
+.menu-link:nth-child(2){animation-delay:.25s}
+.menu-link:nth-child(3){animation-delay:.35s}
+.menu-link:nth-child(4){animation-delay:.45s}
+.menu-link:nth-child(5){animation-delay:.55s}
+@keyframes in{to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 
-
 <body>
-
 
 <div class="menu-list">
 
-    <!-- Financial Overview -->
+<div class="menu-item">
+<a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
+</div>
 
-    <div class="menu-item">
+<div class="menu-item">
+<a class="menu-link" onclick="goTo('about')">About</a>
+<a class="edit-icon" href="#" onclick="openEditor(event)">✎</a>
+</div>
 
-        <a
-            class="menu-link"
-            onclick="goTo('financial-overview')"
-        >
-            Financial Overview
-        </a>
+<div class="menu-item">
+<a class="menu-link" onclick="goTo('blog')">Blog</a>
+</div>
 
-    </div>
+<div class="menu-item">
+<a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
+</div>
 
-
-    <!-- ABOUT -->
-
-    <div class="menu-item">
-
-        <a
-            class="menu-link"
-            onclick="goTo('about')"
-        >
-            About
-        </a>
-
-
-        <!-- EDIT BUTTON -->
-
-        <a
-            href="javascript:void(0)"
-            class="edit-icon"
-            title="Edit About"
-            onclick="openAboutEditor(event)"
-        >
-            ✎
-        </a>
-
-    </div>
-
-
-    <!-- BLOG -->
-
-    <div class="menu-item">
-
-        <a
-            class="menu-link"
-            onclick="goTo('blog')"
-        >
-            Blog
-        </a>
-
-    </div>
-
-
-    <!-- YNAD MOMENTS -->
-
-    <div class="menu-item">
-
-        <a
-            class="menu-link"
-            onclick="goTo('ynad-moments')"
-        >
-            YNAD Moments
-        </a>
-
-    </div>
-
-
-    <!-- YNAD TEAM -->
-
-    <div class="menu-item">
-
-        <a
-            class="menu-link"
-            onclick="goTo('ynad-team')"
-        >
-            YNAD Team
-        </a>
-
-    </div>
+<div class="menu-item">
+<a class="menu-link" onclick="goTo('ynad-team')">YNAD Team</a>
+</div>
 
 </div>
 
-
-
 <script>
 
-/* =========================================================
-   ALT + SHIFT + D
-   Works even without clicking inside the menu
-========================================================= */
-
-function toggleEditMode() {
-
+/* ALT + SHIFT + D */
+function toggleEdit(){
     document.body.classList.toggle('edit-mode');
-
 }
 
-
-/*
-   Listen inside menu iframe
-*/
-document.addEventListener(
-    'keydown',
-    handleShortcut,
-    true
-);
-
-
-/*
-   Also listen on parent page
-   This solves iframe focus problem.
-*/
-
-try {
-
-    if (
-        window.parent &&
-        window.parent !== window
-    ) {
-
-        window.parent.addEventListener(
-            'keydown',
-            handleParentShortcut,
-            true
-        );
-
+document.addEventListener('keydown',e=>{
+    if(e.altKey&&e.shiftKey&&e.code==='KeyD'){
+        e.preventDefault();
+        toggleEdit();
     }
+});
 
-} catch (error) {
-
-    console.log(
-        'Parent shortcut listener unavailable.'
-    );
-
-}
-
-
-/* Shortcut from iframe */
-
-function handleShortcut(event) {
-
-    if (
-        event.altKey &&
-        event.shiftKey &&
-        event.code === 'KeyD'
-    ) {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        toggleEditMode();
-
-    }
-
-}
-
-
-/* Shortcut from parent */
-
-function handleParentShortcut(event) {
-
-    if (
-        event.altKey &&
-        event.shiftKey &&
-        event.code === 'KeyD'
-    ) {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-
-        /*
-         * Tell this menu iframe to show
-         * the edit button.
-         */
-
-        try {
-
-            toggleEditMode();
-
-        } catch (error) {
-
-            console.log(error);
-
+/* Parent page থেকেও shortcut ধরবে */
+try{
+    parent.addEventListener('keydown',e=>{
+        if(e.altKey&&e.shiftKey&&e.code==='KeyD'){
+            e.preventDefault();
+            toggleEdit();
         }
-
-    }
-
-}
-
-
-/* =========================================================
-   ABOUT EDITOR
-========================================================= */
-
-function openAboutEditor(event) {
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    createAboutEditor();
-
-}
-
-
-/* =========================================================
-   CREATE EDITOR MODAL IN MAIN WEBSITE
-========================================================= */
-
-function createAboutEditor() {
-
-    const parentDoc = window.parent.document;
-
-
-    /*
-       Don't create duplicate editor
-    */
-
-    const oldEditor =
-        parentDoc.getElementById(
-            'ynad-about-editor'
-        );
-
-    if (oldEditor) {
-
-        oldEditor.remove();
-
-    }
-
-
-    /*
-       Find About section
-    */
-
-    const aboutSection =
-        parentDoc.getElementById('about');
-
-
-    if (!aboutSection) {
-
-        alert(
-            'About section with ID "about" was not found.'
-        );
-
-        return;
-
-    }
-
-
-    /*
-       Find heading
-    */
-
-    let heading =
-        aboutSection.querySelector(
-            'h1, h2, h3, h4'
-        );
-
-
-    /*
-       Find paragraph
-    */
-
-    let paragraph =
-        aboutSection.querySelector(
-            'p'
-        );
-
-
-    /*
-       Create editor
-    */
-
-    const overlay =
-        parentDoc.createElement('div');
-
-
-    overlay.id =
-        'ynad-about-editor';
-
-
-    overlay.innerHTML = `
-
-        <div class="ynad-editor-overlay">
-
-            <div class="ynad-editor-box">
-
-
-                <div class="ynad-editor-header">
-
-                    <div>
-
-                        <div class="ynad-editor-title">
-                            Edit About
-                        </div>
-
-                        <div class="ynad-editor-subtitle">
-                            Update your website About section
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="ynad-editor-close"
-                        id="ynad-editor-close"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
-
-
-                <div class="ynad-editor-body">
-
-
-                    <!-- HEADING -->
-
-                    <label class="ynad-editor-label">
-                        Heading
-                    </label>
-
-                    <input
-                        id="ynad-about-heading"
-                        class="ynad-editor-input"
-                        type="text"
-                    >
-
-
-
-                    <!-- FULL TEXT -->
-
-                    <label class="ynad-editor-label">
-                        Full Text
-                    </label>
-
-                    <textarea
-                        id="ynad-about-text"
-                        class="ynad-editor-textarea"
-                    ></textarea>
-
-
-
-                    <!-- ALIGNMENT -->
-
-                    <label class="ynad-editor-label">
-                        Text Alignment
-                    </label>
-
-
-                    <div
-                        class="ynad-alignment"
-                    >
-
-                        <button
-                            type="button"
-                            data-align="left"
-                            class="ynad-align-btn"
-                        >
-                            Left
-                        </button>
-
-
-                        <button
-                            type="button"
-                            data-align="center"
-                            class="ynad-align-btn"
-                        >
-                            Center
-                        </button>
-
-
-                        <button
-                            type="button"
-                            data-align="right"
-                            class="ynad-align-btn"
-                        >
-                            Right
-                        </button>
-
-
-                        <button
-                            type="button"
-                            data-align="justify"
-                            class="ynad-align-btn"
-                        >
-                            Justify
-                        </button>
-
-                    </div>
-
-
-                    <!-- ACTIONS -->
-
-                    <div class="ynad-editor-actions">
-
-                        <button
-                            type="button"
-                            id="ynad-editor-cancel"
-                            class="ynad-cancel-btn"
-                        >
-                            Cancel
-                        </button>
-
-
-                        <button
-                            type="button"
-                            id="ynad-editor-save"
-                            class="ynad-save-btn"
-                        >
-                            Save Changes
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+    },true);
+}catch(e){}
+
+/* About Editor */
+function openEditor(e){
+    e.preventDefault();
+
+    const d=parent.document,s=d.createElement('div');
+    const about=d.getElementById('about');
+    if(!about)return;
+
+    const h=about.querySelector('h1,h2,h3,h4');
+    const p=about.querySelector('p');
+
+    s.id='about-editor';
+    s.innerHTML=`
+    <div class="ae-bg">
+      <div class="ae-box">
+        <button id="ae-x">×</button>
+        <h3>Edit About</h3>
+
+        <label>Heading</label>
+        <input id="ae-head" value="${h?h.textContent.trim():''}">
+
+        <label>Full Text</label>
+        <textarea id="ae-text">${p?p.textContent.trim():''}</textarea>
+
+        <label>Text Alignment</label>
+        <div class="ae-align">
+          <button data-a="left">Left</button>
+          <button data-a="center">Center</button>
+          <button data-a="right">Right</button>
+          <button data-a="justify">Justify</button>
         </div>
-    `;
 
-
-    parentDoc.body.appendChild(
-        overlay
-    );
-
-
-    /* =====================================================
-       EDITOR STYLES
-    ===================================================== */
-
-    const style =
-        parentDoc.createElement('style');
-
-
-    style.id =
-        'ynad-about-editor-style';
-
-
-    style.textContent = `
-
-        #ynad-about-editor * {
-            box-sizing: border-box;
-        }
-
-
-        .ynad-editor-overlay {
-
-            position: fixed;
-
-            inset: 0;
-
-            z-index: 999999;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 20px;
-
-            background:
-                rgba(15, 23, 42, .55);
-
-            backdrop-filter:
-                blur(7px);
-
-            animation:
-                ynadEditorFade .2s ease;
-
-        }
-
-
-        @keyframes ynadEditorFade {
-
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-
-        }
-
-
-        .ynad-editor-box {
-
-            width: min(
-                700px,
-                100%
-            );
-
-            max-height: 90vh;
-
-            overflow-y: auto;
-
-            background: #ffffff;
-
-            border-radius: 16px;
-
-            box-shadow:
-                0 25px 70px
-                rgba(0,0,0,.25);
-
-            font-family:
-                Montserrat,
-                Arial,
-                sans-serif;
-
-            animation:
-                ynadEditorBox .25s
-                cubic-bezier(.16,1,.3,1);
-
-        }
-
-
-        @keyframes ynadEditorBox {
-
-            from {
-
-                opacity: 0;
-
-                transform:
-                    translateY(25px)
-                    scale(.97);
-
-            }
-
-            to {
-
-                opacity: 1;
-
-                transform:
-                    translateY(0)
-                    scale(1);
-
-            }
-
-        }
-
-
-        .ynad-editor-header {
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            padding:
-                22px 24px;
-
-            border-bottom:
-                1px solid #e5e7eb;
-
-        }
-
-
-        .ynad-editor-title {
-
-            font-size: 20px;
-
-            font-weight: 600;
-
-            color: #0f172a;
-
-        }
-
-
-        .ynad-editor-subtitle {
-
-            margin-top: 4px;
-
-            font-size: 12px;
-
-            color: #64748b;
-
-        }
-
-
-        .ynad-editor-close {
-
-            width: 36px;
-
-            height: 36px;
-
-            border: 0;
-
-            border-radius: 50%;
-
-            background: #f1f5f9;
-
-            color: #475569;
-
-            font-size: 24px;
-
-            line-height: 1;
-
-            cursor: pointer;
-
-            transition: .2s;
-
-        }
-
-
-        .ynad-editor-close:hover {
-
-            background: #e2e8f0;
-
-            color: #0f172a;
-
-        }
-
-
-        .ynad-editor-body {
-
-            padding: 24px;
-
-        }
-
-
-        .ynad-editor-label {
-
-            display: block;
-
-            margin-bottom: 8px;
-
-            margin-top: 18px;
-
-            font-size: 13px;
-
-            font-weight: 600;
-
-            color: #334155;
-
-        }
-
-
-        .ynad-editor-label:first-child {
-
-            margin-top: 0;
-
-        }
-
-
-        .ynad-editor-input,
-        .ynad-editor-textarea {
-
-            width: 100%;
-
-            border:
-                1px solid #cbd5e1;
-
-            border-radius: 9px;
-
-            padding:
-                12px 14px;
-
-            font-family:
-                Montserrat,
-                Arial,
-                sans-serif;
-
-            font-size: 14px;
-
-            color: #0f172a;
-
-            background: #fff;
-
-            outline: none;
-
-            transition: .2s;
-
-        }
-
-
-        .ynad-editor-input:focus,
-        .ynad-editor-textarea:focus {
-
-            border-color:
-                #64748b;
-
-            box-shadow:
-                0 0 0 3px
-                rgba(100,116,139,.12);
-
-        }
-
-
-        .ynad-editor-textarea {
-
-            min-height: 180px;
-
-            resize: vertical;
-
-            line-height: 1.7;
-
-        }
-
-
-        .ynad-alignment {
-
-            display: flex;
-
-            gap: 8px;
-
-            flex-wrap: wrap;
-
-        }
-
-
-        .ynad-align-btn {
-
-            border:
-                1px solid #cbd5e1;
-
-            background: #ffffff;
-
-            color: #334155;
-
-            padding:
-                9px 15px;
-
-            border-radius: 8px;
-
-            cursor: pointer;
-
-            font-family:
-                Montserrat,
-                Arial,
-                sans-serif;
-
-            font-size: 12px;
-
-            transition: .2s;
-
-        }
-
-
-        .ynad-align-btn:hover {
-
-            border-color:
-                #94a3b8;
-
-            background:
-                #f8fafc;
-
-        }
-
-
-        .ynad-align-btn.active {
-
-            background:
-                #0f172a;
-
-            border-color:
-                #0f172a;
-
-            color: white;
-
-        }
-
-
-        .ynad-editor-actions {
-
-            display: flex;
-
-            justify-content: flex-end;
-
-            gap: 10px;
-
-            margin-top: 28px;
-
-            padding-top: 20px;
-
-            border-top:
-                1px solid #e5e7eb;
-
-        }
-
-
-        .ynad-cancel-btn,
-        .ynad-save-btn {
-
-            border: 0;
-
-            border-radius: 8px;
-
-            padding:
-                11px 18px;
-
-            font-family:
-                Montserrat,
-                Arial,
-                sans-serif;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            cursor: pointer;
-
-        }
-
-
-        .ynad-cancel-btn {
-
-            background:
-                #f1f5f9;
-
-            color:
-                #334155;
-
-        }
-
-
-        .ynad-save-btn {
-
-            background:
-                #0f172a;
-
-            color: #fff;
-
-        }
-
-
-        .ynad-save-btn:hover {
-
-            background:
-                #1e293b;
-
-        }
-
-
-        @media(max-width:600px) {
-
-            .ynad-editor-body {
-
-                padding: 18px;
-
-            }
-
-            .ynad-editor-header {
-
-                padding: 18px;
-
-            }
-
-            .ynad-editor-actions {
-
-                flex-direction:
-                    column-reverse;
-
-            }
-
-            .ynad-cancel-btn,
-            .ynad-save-btn {
-
-                width: 100%;
-
-            }
-
-        }
-
-    `;
-
-
-    parentDoc.head.appendChild(
-        style
-    );
-
-
-    /* =====================================================
-       LOAD CURRENT ABOUT CONTENT
-    ===================================================== */
-
-    const headingInput =
-        parentDoc.getElementById(
-            'ynad-about-heading'
-        );
-
-
-    const textInput =
-        parentDoc.getElementById(
-            'ynad-about-text'
-        );
-
-
-    /*
-       Current heading
-    */
-
-    headingInput.value =
-        heading
-            ? heading.textContent.trim()
-            : '';
-
-
-    /*
-       Current paragraph/text
-    */
-
-    textInput.value =
-        paragraph
-            ? paragraph.textContent.trim()
-            : '';
-
-
-    /*
-       Existing text alignment
-    */
-
-    let currentAlignment =
-        paragraph
-            ? parentDoc.defaultView
-                .getComputedStyle(paragraph)
-                .textAlign
-            : 'left';
-
-
-    if (
-        currentAlignment === 'start'
-    ) {
-
-        currentAlignment = 'left';
-
+        <div class="ae-actions">
+          <button id="ae-cancel">Cancel</button>
+          <button id="ae-save">Save Changes</button>
+        </div>
+      </div>
+    </div>`;
+
+    const st=d.createElement('style');
+    st.id='about-editor-style';
+    st.textContent=`
+    #about-editor .ae-bg{
+      position:fixed;inset:0;z-index:999999;
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;background:rgba(15,23,42,.55);
+      backdrop-filter:blur(6px)
     }
-
-
-    setActiveAlignment(
-        currentAlignment
-    );
-
-
-    /* =====================================================
-       ALIGNMENT BUTTONS
-    ===================================================== */
-
-    const alignButtons =
-        parentDoc.querySelectorAll(
-            '#ynad-about-editor .ynad-align-btn'
-        );
-
-
-    alignButtons.forEach(
-        function(button) {
-
-            button.addEventListener(
-                'click',
-                function() {
-
-                    const align =
-                        this.getAttribute(
-                            'data-align'
-                        );
-
-                    setActiveAlignment(
-                        align
-                    );
-
-                }
-            );
-
-        }
-    );
-
-
-    function setActiveAlignment(
-        alignment
-    ) {
-
-        alignButtons.forEach(
-            function(button) {
-
-                button.classList.toggle(
-                    'active',
-                    button.getAttribute(
-                        'data-align'
-                    ) === alignment
-                );
-
-            }
-        );
-
+    #about-editor .ae-box{
+      position:relative;width:min(650px,100%);
+      background:#fff;border-radius:14px;padding:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,.25);
+      font-family:Montserrat,sans-serif
     }
+    #about-editor h3{margin:0 0 20px;color:#0f172a}
+    #about-editor label{display:block;margin:14px 0 7px;font-size:12px;font-weight:600;color:#334155}
+    #about-editor input,#about-editor textarea{
+      width:100%;padding:11px;border:1px solid #cbd5e1;
+      border-radius:8px;outline:0;font:14px Montserrat
+    }
+    #about-editor textarea{height:170px;resize:vertical;line-height:1.6}
+    .ae-align{display:flex;gap:7px;flex-wrap:wrap}
+    .ae-align button,#ae-cancel,#ae-save{
+      padding:9px 13px;border:1px solid #cbd5e1;border-radius:7px;
+      background:#fff;cursor:pointer
+    }
+    .ae-align button.active{background:#0f172a;color:#fff}
+    .ae-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+    #ae-save{background:#0f172a;color:#fff}
+    #ae-x{
+      position:absolute;right:15px;top:12px;border:0;background:none;
+      font-size:27px;color:#64748b;cursor:pointer
+    }`;
 
+    d.head.appendChild(st);
+    d.body.appendChild(s);
 
-    /* =====================================================
-       CLOSE
-    ===================================================== */
+    let align=(p?d.defaultView.getComputedStyle(p).textAlign:'left');
+    if(align==='start')align='left';
 
-    parentDoc.getElementById(
-        'ynad-editor-close'
-    ).onclick =
-        closeEditor;
+    const setAlign=a=>{
+        align=a;
+        s.querySelectorAll('[data-a]').forEach(b=>
+            b.classList.toggle('active',b.dataset.a===a)
+        );
+    };
 
-
-    parentDoc.getElementById(
-        'ynad-editor-cancel'
-    ).onclick =
-        closeEditor;
-
-
-    /* =====================================================
-       SAVE
-    ===================================================== */
-
-    parentDoc.getElementById(
-        'ynad-editor-save'
-    ).onclick =
-        function() {
-
-            const newHeading =
-                headingInput.value.trim();
-
-
-            const newText =
-                textInput.value.trim();
-
-
-            if (!newHeading) {
-
-                alert(
-                    'Please enter a heading.'
-                );
-
-                headingInput.focus();
-
-                return;
-
-            }
-
-
-            if (!newText) {
-
-                alert(
-                    'Please enter the About text.'
-                );
-
-                textInput.focus();
-
-                return;
-
-            }
-
-
-            /*
-               Update heading
-            */
-
-            if (heading) {
-
-                heading.textContent =
-                    newHeading;
-
-            }
-
-
-            /*
-               Update paragraph
-            */
-
-            if (paragraph) {
-
-                paragraph.textContent =
-                    newText;
-
-
-                /*
-                   Selected alignment
-                */
-
-                const activeButton =
-                    parentDoc.querySelector(
-                        '#ynad-about-editor .ynad-align-btn.active'
-                    );
-
-
-                if (activeButton) {
-
-                    paragraph.style.textAlign =
-                        activeButton.getAttribute(
-                            'data-align'
-                        );
-
-                }
-
-            }
-
-
-            /*
-               Trigger input/change events
-               in case the website has observers.
-            */
-
-            if (heading) {
-
-                heading.dispatchEvent(
-                    new Event(
-                        'input',
-                        {
-                            bubbles: true
-                        }
-                    )
-                );
-
-            }
-
-
-            if (paragraph) {
-
-                paragraph.dispatchEvent(
-                    new Event(
-                        'input',
-                        {
-                            bubbles: true
-                        }
-                    )
-                );
-
-            }
-
-
-            closeEditor();
-
-        };
-
-
-    /*
-       Close by clicking outside
-    */
-
-    overlay.addEventListener(
-        'click',
-        function(event) {
-
-            if (
-                event.target === overlay
-            ) {
-
-                closeEditor();
-
-            }
-
-        }
+    s.querySelectorAll('[data-a]').forEach(b=>
+        b.onclick=()=>setAlign(b.dataset.a)
     );
 
+    setAlign(align);
 
-    function closeEditor() {
+    const close=()=>{
+        s.remove();
+        st.remove();
+    };
 
-        const editor =
-            parentDoc.getElementById(
-                'ynad-about-editor'
-            );
+    d.getElementById('ae-x').onclick=close;
+    d.getElementById('ae-cancel').onclick=close;
 
-        if (editor) {
-
-            editor.remove();
-
+    d.getElementById('ae-save').onclick=()=>{
+        if(h)h.textContent=d.getElementById('ae-head').value.trim();
+        if(p){
+            p.textContent=d.getElementById('ae-text').value.trim();
+            p.style.textAlign=align;
         }
-
-
-        const editorStyle =
-            parentDoc.getElementById(
-                'ynad-about-editor-style'
-            );
-
-        if (editorStyle) {
-
-            editorStyle.remove();
-
-        }
-
-    }
-
+        close();
+    };
 }
 
-
-/* =========================================================
-   MENU NAVIGATION
-========================================================= */
-
-function goTo(targetId) {
-
-    if (
-        parent &&
-        typeof parent.closeMenuWithEffect ===
-        'function'
-    ) {
-
+/* Navigation */
+function goTo(id){
+    if(parent&&typeof parent.closeMenuWithEffect==='function')
         parent.closeMenuWithEffect();
 
-    }
-
-
-    setTimeout(
-        function() {
-
-            if (
-                parent &&
-                parent.document
-            ) {
-
-                const targetEl =
-                    parent.document.getElementById(
-                        targetId
-                    );
-
-
-                if (targetEl) {
-
-                    if (
-                        typeof parent.smoothScrollToElement ===
-                        'function'
-                    ) {
-
-                        parent.smoothScrollToElement(
-                            targetEl
-                        );
-
-                    } else {
-
-                        targetEl.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-
-                    }
-
-                }
-
-            }
-
-        },
-        400
-    );
-
+    setTimeout(()=>{
+        const el=parent.document.getElementById(id);
+        if(el){
+            if(typeof parent.smoothScrollToElement==='function')
+                parent.smoothScrollToElement(el);
+            else el.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+    },400);
 }
 
 </script>
-
 </body>
 </html>
