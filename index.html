@@ -2032,7 +2032,12 @@ function playAboutIntro(heading, bodyText) {
                 const payload = e.data.payload || {};
 
                 if (headingEl && payload.heading) headingEl.textContent = payload.heading;
-                if (textEl && payload.text) typewriteAboutText(textEl, payload.text);
+                if (textEl && payload.text) {
+                    textEl.textContent = payload.text;
+                    textEl.classList.remove('about-visible');
+                    void textEl.offsetWidth;
+                    textEl.classList.add('about-visible');
+                }
                 if (headingEl && payload.headingAlign) headingEl.style.textAlign = payload.headingAlign;
                 if (textEl && payload.textAlign) textEl.style.textAlign = payload.textAlign;
             }
