@@ -72,29 +72,54 @@ body.edit-mode .edit-icon{display:inline-block}
 
 <script>
 
+/* ================================================================
+   THEME SYNC — mirrors the parent page's dark/light mode.
+   FIX: theme is now resolved (or awaited) BEFORE the floating-in
+   animation is allowed to start, so links never animate in using
+   the wrong (light-mode) color and "disappear" against a dark bg.
+   ================================================================ */
+let themeReady = false;
+let pendingMenuOpen = false;
+
+function playMenuOpenAnimation(){
+    const list=document.querySelector('.menu-list');
+    if(list){ list.classList.remove('menu-open'); void list.offsetWidth; list.classList.add('menu-open'); }
+}
+
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
+
+    if(e.data.type === 'ynad-theme'){
+        document.documentElement.classList.toggle('dark', !!e.data.dark);
+        themeReady = true;
+        if(pendingMenuOpen){
+            pendingMenuOpen = false;
+            playMenuOpenAnimation();
+        }
+    }
+
     if(e.data.type === 'ynad-menu-open'){
-        const list=document.querySelector('.menu-list');
-        if(list){ list.classList.remove('menu-open'); void list.offsetWidth; list.classList.add('menu-open'); }
+        if(themeReady){
+            playMenuOpenAnimation();
+        }else{
+            // Theme reply from parent hasn't arrived yet — wait for it
+            // instead of animating in with (possibly wrong) light colors.
+            pendingMenuOpen = true;
+        }
     }
 });
 
-/* ================================================================
-   THEME SYNC — mirrors the parent page's dark/light mode
-   ================================================================ */
-window.addEventListener('message', function(e){
-    if(!e.data || typeof e.data !== 'object') return;
-    if(e.data.type === 'ynad-theme'){
-        document.documentElement.classList.toggle('dark', !!e.data.dark);
-    }
-});
 try{
     parent.postMessage({ type: 'ynad-request-theme' }, '*');
     if (parent.document.documentElement.classList.contains('dark')) {
         document.documentElement.classList.add('dark');
     }
-}catch(e){}
+    // Same-origin fast path: we already know the theme synchronously,
+    // no need to wait for the postMessage round-trip.
+    themeReady = true;
+}catch(e){
+    // Cross-origin iframe — must wait for the ynad-theme message above.
+}
 
 /* Supabase client — same project as index.html, used only to save the
    About section's heading/text so it's visible to every visitor/device,
@@ -160,7 +185,7 @@ function openEditor(e){
       <div class="ae-box">
         <div class="ae-header">
           <h3>Edit About</h3>
-          <button id="ae-x" aria-label="Close">×</button>
+          <button id="ae-x" aria-label="Close"><span class="ae-x-glyph">×</span></button>
         </div>
 
         <div class="ae-body">
@@ -301,14 +326,22 @@ function openEditor(e){
     #ae-save{background:#d97706;border:1.5px solid #d97706;color:#fff}
     #ae-save:hover:not(:disabled){background:#b45309;border-color:#b45309;transform:translateY(-1px)}
     #ae-save:disabled{background:#e2e8f0;border-color:#e2e8f0;color:#94a3b8;cursor:not-allowed;transform:none}
+
+    /* FIX: the outer #ae-x button (and its circular hit-area/background)
+       now stays perfectly still on hover. Only the × glyph inside it
+       rotates, via its own inner span. */
     #ae-x{
       border:0;background:#f1f5f9;width:32px;height:32px;border-radius:50%;
       font-size:20px;line-height:1;color:#64748b;cursor:pointer;
       display:flex;align-items:center;justify-content:center;
-      transition:background .18s ease,color .18s ease,transform .2s ease
+      transition:background .18s ease,color .18s ease
     }
-    #ae-x{transition:background .18s ease,color .18s ease,transform .55s cubic-bezier(.34,1.56,.64,1)}
-    #ae-x:hover{background:#fee2e2;color:#dc2626;transform:rotate(180deg)}
+    #ae-x:hover{background:#fee2e2;color:#dc2626}
+    #ae-x .ae-x-glyph{
+      display:inline-block;
+      transition:transform .55s cubic-bezier(.34,1.56,.64,1)
+    }
+    #ae-x:hover .ae-x-glyph{transform:rotate(180deg)}
 
     /* ---- Dark mode (mirrors the main site's html.dark / theme-effective-dark palette) ---- */
     html.dark #about-editor .ae-box{background:#1e293b}
@@ -346,6 +379,7 @@ function openEditor(e){
 
     const textAlignWrap = d.getElementById('ae-align');
     const textAlignFill = d.getElementById('ae-align-fill');
+    const alignTarget = d.getElementById('ae-align-target');
 
     let textAlign = originalTextAlign;
     let headAlign = originalHeadingAlign;
@@ -461,7 +495,7 @@ function openEditor(e){
         textarea.value='';
         headTouched = true;
         textTouched = true;
-        setTextAlign('left', false);
+        setActiveAlign('left', false);
         alignTargetField = 'body';
         applyActiveAlignment();
         validate();
