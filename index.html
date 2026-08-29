@@ -1955,52 +1955,16 @@ body.theme-light #about {
         // (fast, so long text still finishes quickly right after page load),
         // and each character's delay is randomized slightly so the reveal
         // doesn't feel perfectly mechanical.
-        let aboutTypingTimer = null;
-        function typewriteAboutText(el, fullText, totalDuration = 900) {
-            if (!el) return;
-            if (aboutTypingTimer) {
-                clearTimeout(aboutTypingTimer);
-                aboutTypingTimer = null;
-            }
-            el.textContent = '';
-            el.classList.add('about-typing');
-
-            const len = fullText.length;
-            if (len === 0) {
-                el.classList.remove('about-typing');
-                return;
-            }
-
-            const baseDelay = totalDuration / len;
-            let i = 0;
-
-            function step() {
-                i++;
-                el.textContent = fullText.slice(0, i);
-                if (i >= len) {
-                    aboutTypingTimer = null;
-                    el.classList.remove('about-typing');
-                    return;
-                }
-                // Randomize each character's delay between 40%-160% of the
-                // base delay so lines don't all finish in perfect lockstep.
-                const jitter = baseDelay * (0.4 + Math.random() * 1.2);
-                aboutTypingTimer = setTimeout(step, jitter);
-            }
-
-            step();
-        }
-
-        // Plays the heading fade-in, then starts the body typewriter once the
-        // heading has finished animating in.
-        function playAboutIntro(heading, bodyText) {
-            const headingEl = document.getElementById('aboutHeading');
-            const textEl = document.getElementById('aboutText');
-            if (headingEl) headingEl.classList.add('about-visible');
-            if (textEl && bodyText) {
-                setTimeout(() => typewriteAboutText(textEl, bodyText), 400);
-            }
-        }
+// Plays the heading fade-in, then floats the body text in shortly after.
+function playAboutIntro(heading, bodyText) {
+    const headingEl = document.getElementById('aboutHeading');
+    const textEl = document.getElementById('aboutText');
+    if (headingEl) headingEl.classList.add('about-visible');
+    if (textEl) {
+        if (bodyText) textEl.textContent = bodyText;
+        setTimeout(() => textEl.classList.add('about-visible'), 250);
+    }
+}
 
         // Only plays the About intro animation once per page load, the first
         // time the section scrolls into view (not every time it re-enters).
