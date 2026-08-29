@@ -1912,6 +1912,48 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+        // ================================================================
+        // ABOUT SECTION — load from Supabase + live update from menu.html editor
+        // ================================================================
+        async function loadAboutContent() {
+            const headingEl = document.getElementById('aboutHeading');
+            const textEl = document.getElementById('aboutText');
+            if (!headingEl || !textEl) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('about_content')
+                    .select('heading, body_text, heading_align, text_align')
+                    .eq('id', 1)
+                    .single();
+
+                if (error) throw error;
+                if (!data) return;
+
+                if (data.heading) headingEl.textContent = data.heading;
+                if (data.body_text) textEl.textContent = data.body_text;
+                if (data.heading_align) headingEl.style.textAlign = data.heading_align;
+                if (data.text_align) textEl.style.textAlign = data.text_align;
+            } catch (err) {
+                console.error('Failed to load About content from Supabase:', err);
+            }
+        }
+
+        // Live update: when menu.html's editor saves successfully, it posts this
+        // message so the homepage reflects the change immediately without a reload.
+        window.addEventListener('message', function (e) {
+            if (!e.data || typeof e.data !== 'object') return;
+            if (e.data.type === 'ynad-about-updated') {
+                const headingEl = document.getElementById('aboutHeading');
+                const textEl = document.getElementById('aboutText');
+                const payload = e.data.payload || {};
+
+                if (headingEl && payload.heading) headingEl.textContent = payload.heading;
+                if (textEl && payload.text) textEl.textContent = payload.text;
+                if (headingEl && payload.headingAlign) headingEl.style.textAlign = payload.headingAlign;
+                if (textEl && payload.textAlign) textEl.style.textAlign = payload.textAlign;
+            }
+        });
         /* ---- Header scroll behavior (Concord Real Estate style) ----
            - Scrolling DOWN (anywhere on the page): header slides up and hides.
            - Scrolling UP (anywhere on the page, hero or white section): header
