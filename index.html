@@ -1519,7 +1519,7 @@ body.theme-light #about {
            "line" so it can float in individually rather than the whole
            paragraph fading in at once. */
         .about-line-item {
-            display: inline-block;
+            display: inline;
             opacity: 0;
             transform: translateY(14px);
             transition: opacity 0.45s ease, transform 0.45s ease;
@@ -1953,30 +1953,32 @@ body.theme-light #about {
         // ABOUT SECTION — load from Supabase + live update from menu.html editor
         // ================================================================
 
-        // Splits the About body text into sentence-level "lines" (splits on
-        // ., !, ? and the Bengali দাঁড়ি "।"), trimming and dropping empties.
+        // Keeps the About text exactly as entered.
+        // Only an actual Enter/newline creates a new line.
+        // Sentences are NOT split automatically, so text will wrap naturally
+        // only when the available width requires it.
         function splitAboutTextIntoLines(text) {
             if (!text) return [];
-            const parts = text.match(/[^.!?।]+[.!?।]*/g) || [text];
-            return parts.map(p => p.trim()).filter(Boolean);
+            return String(text).replace(/\r\n?/g, '\n').split('\n');
         }
 
-        // Renders each sentence as its own <span class="about-line-item">
-        // with a computed stagger delay, so no matter how many lines there
-        // are, the WHOLE animation (first line starting to last line
-        // finishing) always completes within ~2.5 seconds.
+        // Renders only user-entered lines. Normal wrapping remains controlled
+        // by the browser; explicit Enter presses become <br> elements.
         function renderAboutBodyLines(textEl, text) {
             if (!textEl) return;
+
             const lines = splitAboutTextIntoLines(text);
             const totalDuration = 2500; // ms - overall animation budget
-            const lineDuration = 450;   // ms - each line's own transition duration (see CSS)
+            const lineDuration = 450;   // ms - each line's own transition duration
             const lastDelay = Math.max(0, totalDuration - lineDuration);
             const step = lines.length > 1 ? lastDelay / (lines.length - 1) : 0;
 
             textEl.innerHTML = lines.map((line, i) => {
                 const delay = Math.round(step * i);
-                return `<span class="about-line-item" style="transition-delay:${delay}ms;">${escapeHtml(line)}</span>`;
-            }).join(' ');
+                const safeLine = escapeHtml(line);
+                const lineHtml = safeLine || '&nbsp;';
+                return `<span class="about-line-item" style="transition-delay:${delay}ms;">${lineHtml}</span>`;
+            }).join('<br>');
         }
 
         // Plays the heading fade-in, then floats each body-text line in
