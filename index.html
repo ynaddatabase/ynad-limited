@@ -1499,6 +1499,31 @@
             background: rgba(220, 38, 38, 0.15);
             color: #f87171;
         }
+
+        /* About section: heading fade-in + typewriter body text */
+        .about-fade-in {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .about-fade-in.about-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #aboutText.about-typing::after {
+            content: "";
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: currentColor;
+            margin-left: 2px;
+            vertical-align: -2px;
+            animation: about-caret-blink 0.8s steps(1) infinite;
+        }
+        @keyframes about-caret-blink {
+            0%, 50% { opacity: 1; }
+            50.01%, 100% { opacity: 0; }
+        }
     </style>
 </head>
 
