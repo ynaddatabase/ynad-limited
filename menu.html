@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
@@ -75,6 +76,13 @@ try{
         document.documentElement.classList.add('dark');
     }
 }catch(e){}
+
+/* Supabase client — same project as index.html, used only to save the
+   About section's heading/text so it's visible to every visitor/device,
+   not just this browser's localStorage. */
+const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 function focusMenuFrame(){
     try{ document.body.focus({ preventScroll: true }); }catch(e){}
@@ -447,18 +455,65 @@ function openEditor(e){
         headInput.focus();
     };
 
-    saveBtn.onclick=()=>{
+    saveBtn.onclick=async ()=>{
         if(saveBtn.disabled) return;
         if(!validate()) return;
-        if(h){
-            h.textContent=headInput.value.trim();
-            h.style.textAlign=headAlign;
+
+        const newHeading = headInput.value.trim();
+        const newText = textarea.value.trim();
+
+        // Show a saving state and disable the button while the Supabase
+        // write is in flight, so a second click can't fire mid-save.
+        const originalLabel = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try{
+            const { error } = await supabaseClient
+                .from('about_content')
+                .update({
+                    heading: newHeading,
+                    body_text: newText,
+                    heading_align: headAlign,
+                    text_align: textAlign,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', 1);
+
+            if(error) throw error;
+
+            // Update the DOM immediately for this session.
+            if(h){
+                h.textContent=newHeading;
+                h.style.textAlign=headAlign;
+            }
+            if(p){
+                p.textContent=newText;
+                p.style.textAlign=textAlign;
+            }
+
+            // Tell the parent page (index.html) the About content changed,
+            // so it can reflect the update live without needing a reload.
+            try{
+                parent.postMessage({
+                    type: 'ynad-about-updated',
+                    payload: {
+                        heading: newHeading,
+                        text: newText,
+                        headingAlign: headAlign,
+                        textAlign: textAlign
+                    }
+                }, '*');
+            }catch(e){}
+
+            close();
+        }catch(err){
+            console.error('Failed to save About section to Supabase:', err);
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalLabel;
+            textErr.textContent = 'Save failed \u2014 please check your connection and try again.';
+            textErr.classList.add('show');
         }
-        if(p){
-            p.textContent=textarea.value.trim();
-            p.style.textAlign=textAlign;
-        }
-        close();
     };
 }
 
