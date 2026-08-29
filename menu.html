@@ -19,6 +19,9 @@ body{margin:0;font-family:Montserrat,sans-serif;background:transparent}
  color:#0f172a;text-decoration:none;text-transform:uppercase;cursor:pointer
 }
 .menu-link:hover{color:#d97706}
+html.dark .menu-link{color:#f8fafc}
+html.dark .edit-icon{color:#cbd5e1}
+html.dark .edit-icon:hover{color:#f59e0b}
 .edit-icon{display:none;text-decoration:none;color:#64748b;font-size:17px;cursor:pointer}
 .edit-icon:hover{color:#d97706}
 body.edit-mode .edit-icon{display:inline-block}
@@ -28,6 +31,12 @@ body.edit-mode .edit-icon{display:inline-block}
 .menu-link:nth-child(3){animation-delay:.35s}
 .menu-link:nth-child(4){animation-delay:.45s}
 .menu-link:nth-child(5){animation-delay:.55s}
+.menu-list.menu-open .menu-link{animation:none;opacity:0;transform:translateY(35px)}
+.menu-list.menu-open .menu-link:nth-child(1){animation:in .85s cubic-bezier(.16,1,.3,1) .10s forwards}
+.menu-list.menu-open .menu-link:nth-child(2){animation:in .85s cubic-bezier(.16,1,.3,1) .20s forwards}
+.menu-list.menu-open .menu-link:nth-child(3){animation:in .85s cubic-bezier(.16,1,.3,1) .30s forwards}
+.menu-list.menu-open .menu-link:nth-child(4){animation:in .85s cubic-bezier(.16,1,.3,1) .40s forwards}
+.menu-list.menu-open .menu-link:nth-child(5){animation:in .85s cubic-bezier(.16,1,.3,1) .50s forwards}
 @keyframes in{to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
@@ -60,6 +69,14 @@ body.edit-mode .edit-icon{display:inline-block}
 </div>
 
 <script>
+
+window.addEventListener('message', function(e){
+    if(!e.data || typeof e.data !== 'object') return;
+    if(e.data.type === 'ynad-menu-open'){
+        const list=document.querySelector('.menu-list');
+        if(list){ list.classList.remove('menu-open'); void list.offsetWidth; list.classList.add('menu-open'); }
+    }
+});
 
 /* ================================================================
    THEME SYNC — mirrors the parent page's dark/light mode
@@ -147,25 +164,14 @@ function openEditor(e){
         <div class="ae-body">
           <label>Heading <span class="ae-req">*</span></label>
           <input id="ae-head" value="${originalHeading}" placeholder="e.g. About YNAD Construction">
-          <p class="ae-error" id="ae-head-err">Heading is required.</p>
-
-          <label>Heading Alignment</label>
-          <div class="ae-align" id="ae-head-align">
-            <span class="ae-align-fill" id="ae-head-align-fill"></span>
-            <button type="button" data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
-            <button type="button" data-a="center" title="Align center"><i class="ae-ic ae-ic-center"><span></span><span></span><span></span></i>Center</button>
-            <button type="button" data-a="right" title="Align right"><i class="ae-ic ae-ic-right"><span></span><span></span><span></span></i>Right</button>
-            <button type="button" data-a="justify" title="Justify"><i class="ae-ic ae-ic-justify"><span></span><span></span><span></span></i>Justify</button>
-          </div>
-
-          <label>
+          <p class="ae-error" id="ae-head-err">Heading is required.</p><label>
             About Text <span class="ae-req">*</span>
             <span class="ae-count" id="ae-count">0 / ${MIN_WORDS}\u2013${MAX_WORDS} words</span>
           </label>
           <textarea id="ae-text" placeholder="Write 60\u2013200 words about YNAD Construction...">${originalText}</textarea>
           <p class="ae-error" id="ae-text-err">About Text must be between ${MIN_WORDS} and ${MAX_WORDS} words.</p>
 
-          <label>Text Alignment</label>
+          <label>Text Alignment <span id="ae-align-target" style="font-weight:500;color:#94a3b8;text-transform:none">Body</span></label>
           <div class="ae-align" id="ae-align">
             <span class="ae-align-fill" id="ae-align-fill"></span>
             <button type="button" data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
@@ -299,7 +305,8 @@ function openEditor(e){
       display:flex;align-items:center;justify-content:center;
       transition:background .18s ease,color .18s ease,transform .2s ease
     }
-    #ae-x:hover{background:#fee2e2;color:#dc2626;transform:rotate(90deg)}
+    #ae-x{transition:background .18s ease,color .18s ease,transform .55s cubic-bezier(.34,1.56,.64,1)}
+    #ae-x:hover{background:#fee2e2;color:#dc2626;transform:rotate(180deg)}
 
     /* ---- Dark mode (mirrors the main site's html.dark / theme-effective-dark palette) ---- */
     html.dark #about-editor .ae-box{background:#1e293b}
@@ -337,8 +344,6 @@ function openEditor(e){
 
     const textAlignWrap = d.getElementById('ae-align');
     const textAlignFill = d.getElementById('ae-align-fill');
-    const headAlignWrap = d.getElementById('ae-head-align');
-    const headAlignFill = d.getElementById('ae-head-align-fill');
 
     let textAlign = originalTextAlign;
     let headAlign = originalHeadingAlign;
@@ -354,44 +359,49 @@ function openEditor(e){
         fillEl.style.transform = `translateX(${idx * 100}%)`;
     }
 
-    const setTextAlign=(a, isUserAction)=>{
-        textAlign=a;
+    let alignTargetField = 'body';
+
+    const applyActiveAlignment=()=>{
+        const a = alignTargetField === 'heading' ? headAlign : textAlign;
         s.querySelectorAll('#ae-align [data-a]').forEach(b=>
             b.classList.toggle('active',b.dataset.a===a)
         );
         positionFill(textAlignFill, a);
-        textarea.style.textAlign = a;
-        if(isUserAction) validate();
+        alignTarget.textContent = alignTargetField === 'heading' ? 'Heading' : 'Body';
+        alignTarget.style.color = alignTargetField === 'heading' ? '#d97706' : '#94a3b8';
     };
 
-    const setHeadAlign=(a, isUserAction)=>{
-        headAlign=a;
-        s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
-            b.classList.toggle('active',b.dataset.a===a)
-        );
-        positionFill(headAlignFill, a);
-        headInput.style.textAlign = a;
+    const setActiveAlign=(a, isUserAction)=>{
+        if(alignTargetField === 'heading'){
+            headAlign=a;
+            headInput.style.textAlign=a;
+        }else{
+            textAlign=a;
+            textarea.style.textAlign=a;
+        }
+        applyActiveAlignment();
         if(isUserAction) validate();
     };
 
     s.querySelectorAll('#ae-align [data-a]').forEach(b=>
-        b.onclick=()=>setTextAlign(b.dataset.a, true)
-    );
-    s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
-        b.onclick=()=>setHeadAlign(b.dataset.a, true)
+        b.onclick=()=>setActiveAlign(b.dataset.a, true)
     );
 
-    // Position the fills instantly on open (no slide-in from a stale spot).
-    s.querySelectorAll('#ae-align [data-a]').forEach(b=>
-        b.classList.toggle('active', b.dataset.a === textAlign)
-    );
-    s.querySelectorAll('#ae-head-align [data-a]').forEach(b=>
-        b.classList.toggle('active', b.dataset.a === headAlign)
-    );
+    const selectAlignmentTarget=(target)=>{
+        alignTargetField = target;
+        applyActiveAlignment();
+    };
+
+    headInput.addEventListener('focus',()=>selectAlignmentTarget('heading'));
+    textarea.addEventListener('focus',()=>selectAlignmentTarget('body'));
+    headInput.addEventListener('click',()=>selectAlignmentTarget('heading'));
+    textarea.addEventListener('click',()=>selectAlignmentTarget('body'));
+
+        // Position the fills instantly on open (no slide-in from a stale spot).
     requestAnimationFrame(()=>{
-        textAlignFill.style.transition='none'; positionFill(textAlignFill, textAlign);
-        headAlignFill.style.transition='none'; positionFill(headAlignFill, headAlign);
-        requestAnimationFrame(()=>{ textAlignFill.style.transition=''; headAlignFill.style.transition=''; });
+        textAlignFill.style.transition='none';
+        applyActiveAlignment();
+        requestAnimationFrame(()=>{ textAlignFill.style.transition=''; });
     });
     textarea.style.textAlign = textAlign;
     headInput.style.textAlign = headAlign;
@@ -450,7 +460,8 @@ function openEditor(e){
         headTouched = true;
         textTouched = true;
         setTextAlign('left', false);
-        setHeadAlign('left', false);
+        alignTargetField = 'body';
+        applyActiveAlignment();
         validate();
         headInput.focus();
     };
@@ -506,6 +517,12 @@ function openEditor(e){
                 }, '*');
             }catch(e){}
 
+            const notice = d.createElement('div');
+            notice.textContent = 'About saved successfully';
+            notice.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:1000000;background:#16a34a;color:#fff;padding:11px 16px;border-radius:10px;font:600 13px Montserrat;box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;transform:translateY(10px);transition:opacity .3s ease,transform .3s ease';
+            d.body.appendChild(notice);
+            requestAnimationFrame(()=>{notice.style.opacity='1';notice.style.transform='translateY(0)'});
+            setTimeout(()=>{notice.style.opacity='0';notice.style.transform='translateY(10px)';setTimeout(()=>notice.remove(),320)},1800);
             close();
         }catch(err){
             console.error('Failed to save About section to Supabase:', err);
