@@ -1947,6 +1947,65 @@
         // ================================================================
         // ABOUT SECTION — load from Supabase + live update from menu.html editor
         // ================================================================
+        // Typewriter effect for the About body text. Cancels any in-progress
+        // typing before starting a new run (needed for live updates from the editor).
+        let aboutTypingTimer = null;
+        function typewriteAboutText(el, fullText, speed = 18) {
+            if (!el) return;
+            if (aboutTypingTimer) {
+                clearInterval(aboutTypingTimer);
+                aboutTypingTimer = null;
+            }
+            el.textContent = '';
+            el.classList.add('about-typing');
+
+            let i = 0;
+            aboutTypingTimer = setInterval(() => {
+                i++;
+                el.textContent = fullText.slice(0, i);
+                if (i >= fullText.length) {
+                    clearInterval(aboutTypingTimer);
+                    aboutTypingTimer = null;
+                    el.classList.remove('about-typing');
+                }
+            }, speed);
+        }
+
+        // Plays the heading fade-in, then starts the body typewriter once the
+        // heading has finished animating in.
+        function playAboutIntro(heading, bodyText) {
+            const headingEl = document.getElementById('aboutHeading');
+            const textEl = document.getElementById('aboutText');
+            if (headingEl) headingEl.classList.add('about-visible');
+            if (textEl && bodyText) {
+                setTimeout(() => typewriteAboutText(textEl, bodyText), 400);
+            }
+        }
+
+        // Only plays the About intro animation once per page load, the first
+        // time the section scrolls into view (not every time it re-enters).
+        let aboutIntroPlayed = false;
+        let aboutLoadedHeading = '';
+        let aboutLoadedText = '';
+        function initAboutIntroObserver() {
+            const about = document.getElementById('about');
+            if (!about || !('IntersectionObserver' in window)) {
+                // Fallback: no IntersectionObserver support — just play immediately.
+                playAboutIntro(aboutLoadedHeading, aboutLoadedText);
+                return;
+            }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !aboutIntroPlayed) {
+                        aboutIntroPlayed = true;
+                        playAboutIntro(aboutLoadedHeading, aboutLoadedText);
+                        observer.disconnect();
+                    }
+                });
+            }, { threshold: 0.25 });
+            observer.observe(about);
+        }
+
         async function loadAboutContent() {
             const headingEl = document.getElementById('aboutHeading');
             const textEl = document.getElementById('aboutText');
@@ -1962,10 +2021,17 @@
                 if (error) throw error;
                 if (!data) return;
 
-                if (data.heading) headingEl.textContent = data.heading;
-                if (data.body_text) textEl.textContent = data.body_text;
+                if (data.heading) {
+                    headingEl.textContent = data.heading;
+                    aboutLoadedHeading = data.heading;
+                }
+                if (data.body_text) {
+                    aboutLoadedText = data.body_text;
+                }
                 if (data.heading_align) headingEl.style.textAlign = data.heading_align;
                 if (data.text_align) textEl.style.textAlign = data.text_align;
+
+                initAboutIntroObserver();
             } catch (err) {
                 console.error('Failed to load About content from Supabase:', err);
             }
