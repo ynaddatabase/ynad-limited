@@ -2719,27 +2719,37 @@ body.theme-light #about {
             minimizedTab.classList.remove('show');
         }
 
-        // Open Menu with Blur Effect
-        function openMenuWithEffect() {
-            const icon = document.getElementById('hamburgerBtnIcon');
-            const pageWrapper = document.getElementById('pageContentWrapper');
-            const overlay = document.getElementById('menuOverlay');
-            const menuFrame = document.getElementById('menuLinksFrame');
+// Open Menu with Blur Effect
+function openMenuWithEffect() {
+    const icon = document.getElementById('hamburgerBtnIcon');
+    const pageWrapper = document.getElementById('pageContentWrapper');
+    const overlay = document.getElementById('menuOverlay');
+    const menuFrame = document.getElementById('menuLinksFrame');
 
-            icon.classList.add('clicked');
+    icon.classList.add('clicked');
 
-            setTimeout(() => {
-                icon.classList.remove('clicked');
-                pageWrapper.classList.add('blurred');
+    setTimeout(() => {
+        icon.classList.remove('clicked');
+        pageWrapper.classList.add('blurred');
 
-                setTimeout(() => {
-                    menuFrame.src = 'menu.html'; // fresh load replays the staggered fade-in each time
-                    overlay.classList.add('open');
-                    document.body.style.overflow = 'hidden';
-                }, 200);
+        setTimeout(() => {
+            menuFrame.src = 'menu.html'; // fresh load replays the staggered fade-in each time
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
 
-            }, 200);
-        }
+            // Tell menu.html to play its link float-in animation once it
+            // has actually finished loading. Without this, index.html never
+            // sends 'ynad-menu-open' at all, so the links inside menu.html
+            // stay stuck at opacity:0 forever — in both light and dark mode.
+            menuFrame.onload = function () {
+                try {
+                    menuFrame.contentWindow.postMessage({ type: 'ynad-menu-open' }, '*');
+                } catch (e) {}
+            };
+        }, 200);
+
+    }, 200);
+}
 
         // Close Menu
         function closeMenuWithEffect() {
