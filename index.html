@@ -2047,7 +2047,7 @@
                 const payload = e.data.payload || {};
 
                 if (headingEl && payload.heading) headingEl.textContent = payload.heading;
-                if (textEl && payload.text) textEl.textContent = payload.text;
+                if (textEl && payload.text) typewriteAboutText(textEl, payload.text);
                 if (headingEl && payload.headingAlign) headingEl.style.textAlign = payload.headingAlign;
                 if (textEl && payload.textAlign) textEl.style.textAlign = payload.textAlign;
             }
