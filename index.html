@@ -2011,6 +2011,7 @@ function playAboutIntro(heading, bodyText) {
                 }
                 if (data.body_text) {
                     aboutLoadedText = data.body_text;
+                    if (textEl) textEl.textContent = data.body_text;
                 }
                 if (data.heading_align) headingEl.style.textAlign = data.heading_align;
                 if (data.text_align) textEl.style.textAlign = data.text_align;
