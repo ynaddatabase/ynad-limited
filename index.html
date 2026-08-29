@@ -1895,6 +1895,13 @@
     <!-- JavaScript -->
     <script>
 
+        // Force every load/reload to start at the top of the page instead
+        // of the browser restoring the scroll position you were at before reload.
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
         function syncHeroViewportHeight() {
             const hero = document.getElementById('heroSection');
             if (!hero) return;
