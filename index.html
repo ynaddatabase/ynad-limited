@@ -598,7 +598,7 @@ body.theme-light #about {
         }
 
         body.theme-effective-dark #about {
-            background-color: #111827 !important;
+            background-color: #1e293b !important;
             border-color: #334155 !important;
         }
 
@@ -1504,13 +1504,27 @@ body.theme-light #about {
             color: #f87171;
         }
 
-        /* About section: heading fade-in + typewriter body text */
+        /* About section: heading fade-in + line-by-line float-in body text */
         .about-fade-in {
             opacity: 0;
             transform: translateY(16px);
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
         .about-fade-in.about-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Each sentence of the About body renders as its own inline-block
+           "line" so it can float in individually rather than the whole
+           paragraph fading in at once. */
+        .about-line-item {
+            display: block;
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+        .about-line-item.about-visible {
             opacity: 1;
             transform: translateY(0);
         }
@@ -1799,7 +1813,7 @@ body.theme-light #about {
         <section id="about" class="py-16 bg-slate-100 px-6">
             <div class="max-w-6xl mx-auto">
                 <h2 id="aboutHeading" class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6 about-fade-in">About YNAD Construction</h2>
-                <p id="aboutText" class="text-sm text-slate-600 leading-relaxed about-fade-in" style="transition-delay: 0.15s;"></p>
+                <p id="aboutText" class="text-sm text-slate-600 leading-relaxed"></p>
             </div>
         </section>
 
@@ -1938,39 +1952,85 @@ body.theme-light #about {
         // ================================================================
         // ABOUT SECTION — load from Supabase + live update from menu.html editor
         // ================================================================
-        // Typewriter effect for the About body text. Total duration is fixed
-        // (fast, so long text still finishes quickly right after page load),
-        // and each character's delay is randomized slightly so the reveal
-        // doesn't feel perfectly mechanical.
-// Plays the heading fade-in, then floats the body text in shortly after.
-function playAboutIntro(heading, bodyText) {
-    const headingEl = document.getElementById('aboutHeading');
-    const textEl = document.getElementById('aboutText');
-    if (headingEl) headingEl.classList.add('about-visible');
-    if (textEl) {
-        if (bodyText) textEl.textContent = bodyText;
-        setTimeout(() => textEl.classList.add('about-visible'), 250);
-    }
-}
 
-        // Only plays the About intro animation once per page load, the first
-        // time the section scrolls into view (not every time it re-enters).
-        let aboutIntroPlayed = false;
+        // Splits the About body text into sentence-level "lines" (splits on
+        // ., !, ? and the Bengali দাঁড়ি "।"), trimming and dropping empties.
+        function splitAboutTextIntoLines(text) {
+            if (!text) return [];
+            const parts = text.match(/[^.!?।]+[.!?।]*/g) || [text];
+            return parts.map(p => p.trim()).filter(Boolean);
+        }
+
+        // Renders each sentence as its own <span class="about-line-item">
+        // with a computed stagger delay, so no matter how many lines there
+        // are, the WHOLE animation (first line starting to last line
+        // finishing) always completes within ~2.5 seconds.
+        function renderAboutBodyLines(textEl, text) {
+            if (!textEl) return;
+            const lines = splitAboutTextIntoLines(text);
+            const totalDuration = 2500; // ms - overall animation budget
+            const lineDuration = 450;   // ms - each line's own transition duration (see CSS)
+            const lastDelay = Math.max(0, totalDuration - lineDuration);
+            const step = lines.length > 1 ? lastDelay / (lines.length - 1) : 0;
+
+            textEl.innerHTML = lines.map((line, i) => {
+                const delay = Math.round(step * i);
+                return `<span class="about-line-item" style="transition-delay:${delay}ms;">${escapeHtml(line)}</span>`;
+            }).join(' ');
+        }
+
+        // Plays the heading fade-in, then floats each body-text line in
+        // one-by-one so the whole paragraph finishes within ~2.5 seconds.
+        function playAboutIntro(heading, bodyText) {
+            const headingEl = document.getElementById('aboutHeading');
+            const textEl = document.getElementById('aboutText');
+            if (headingEl) headingEl.classList.add('about-visible');
+            if (textEl) {
+                renderAboutBodyLines(textEl, bodyText || aboutLoadedText);
+                // Force a reflow so the browser registers the freshly-rendered
+                // (opacity: 0) spans before we flip them visible — this is what
+                // makes the animation replay correctly every time it re-triggers.
+                void textEl.offsetWidth;
+                requestAnimationFrame(function () {
+                    textEl.querySelectorAll('.about-line-item').forEach(function (span) {
+                        span.classList.add('about-visible');
+                    });
+                });
+            }
+        }
+
+        // Resets the About section back to its pre-animation (invisible)
+        // state so that scrolling back into view can replay it from scratch.
+        function resetAboutIntro() {
+            const headingEl = document.getElementById('aboutHeading');
+            const textEl = document.getElementById('aboutText');
+            if (headingEl) headingEl.classList.remove('about-visible');
+            if (textEl) {
+                textEl.querySelectorAll('.about-line-item').forEach(function (span) {
+                    span.classList.remove('about-visible');
+                });
+            }
+        }
+
         let aboutLoadedHeading = '';
         let aboutLoadedText = '';
+
+        // Watches the About section: every time it scrolls INTO view the
+        // intro animation plays again, and every time it scrolls OUT of
+        // view it resets so the next entrance replays from the start.
         function initAboutIntroObserver() {
             const about = document.getElementById('about');
             if (!about || !('IntersectionObserver' in window)) {
-                // Fallback: no IntersectionObserver support — just play immediately.
+                // Fallback: no IntersectionObserver support — just play once.
                 playAboutIntro(aboutLoadedHeading, aboutLoadedText);
                 return;
             }
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && !aboutIntroPlayed) {
-                        aboutIntroPlayed = true;
+                    if (entry.isIntersecting) {
                         playAboutIntro(aboutLoadedHeading, aboutLoadedText);
-                        observer.disconnect();
+                    } else {
+                        resetAboutIntro();
                     }
                 });
             }, { threshold: 0.25 });
@@ -1998,7 +2058,6 @@ function playAboutIntro(heading, bodyText) {
                 }
                 if (data.body_text) {
                     aboutLoadedText = data.body_text;
-                    if (textEl) textEl.textContent = data.body_text;
                 }
                 if (data.heading_align) headingEl.style.textAlign = data.heading_align;
                 if (data.text_align) textEl.style.textAlign = data.text_align;
@@ -2018,12 +2077,16 @@ function playAboutIntro(heading, bodyText) {
                 const textEl = document.getElementById('aboutText');
                 const payload = e.data.payload || {};
 
-                if (headingEl && payload.heading) headingEl.textContent = payload.heading;
-                if (textEl && payload.text) {
-                    textEl.textContent = payload.text;
-                    textEl.classList.remove('about-visible');
-                    void textEl.offsetWidth;
-                    textEl.classList.add('about-visible');
+                if (headingEl && payload.heading) {
+                    headingEl.textContent = payload.heading;
+                    aboutLoadedHeading = payload.heading;
+                }
+                if (payload.text) {
+                    aboutLoadedText = payload.text;
+                    if (textEl) {
+                        resetAboutIntro();
+                        playAboutIntro(aboutLoadedHeading, aboutLoadedText);
+                    }
                 }
                 if (headingEl && payload.headingAlign) headingEl.style.textAlign = payload.headingAlign;
                 if (textEl && payload.textAlign) textEl.style.textAlign = payload.textAlign;
