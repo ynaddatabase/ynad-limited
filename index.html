@@ -1947,28 +1947,44 @@
         // ================================================================
         // ABOUT SECTION — load from Supabase + live update from menu.html editor
         // ================================================================
-        // Typewriter effect for the About body text. Cancels any in-progress
-        // typing before starting a new run (needed for live updates from the editor).
+        // Typewriter effect for the About body text. Total duration is fixed
+        // (fast, so long text still finishes quickly right after page load),
+        // and each character's delay is randomized slightly so the reveal
+        // doesn't feel perfectly mechanical.
         let aboutTypingTimer = null;
-        function typewriteAboutText(el, fullText, speed = 18) {
+        function typewriteAboutText(el, fullText, totalDuration = 900) {
             if (!el) return;
             if (aboutTypingTimer) {
-                clearInterval(aboutTypingTimer);
+                clearTimeout(aboutTypingTimer);
                 aboutTypingTimer = null;
             }
             el.textContent = '';
             el.classList.add('about-typing');
 
+            const len = fullText.length;
+            if (len === 0) {
+                el.classList.remove('about-typing');
+                return;
+            }
+
+            const baseDelay = totalDuration / len;
             let i = 0;
-            aboutTypingTimer = setInterval(() => {
+
+            function step() {
                 i++;
                 el.textContent = fullText.slice(0, i);
-                if (i >= fullText.length) {
-                    clearInterval(aboutTypingTimer);
+                if (i >= len) {
                     aboutTypingTimer = null;
                     el.classList.remove('about-typing');
+                    return;
                 }
-            }, speed);
+                // Randomize each character's delay between 40%-160% of the
+                // base delay so lines don't all finish in perfect lockstep.
+                const jitter = baseDelay * (0.4 + Math.random() * 1.2);
+                aboutTypingTimer = setTimeout(step, jitter);
+            }
+
+            step();
         }
 
         // Plays the heading fade-in, then starts the body typewriter once the
