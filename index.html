@@ -1507,8 +1507,10 @@ body.theme-light #about {
         /* About section: heading fade-in + line-by-line float-in body text */
         .about-fade-in {
             opacity: 0;
-            transform: translateY(16px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: translateY(70px);
+            transition: opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+                        margin-bottom 1.15s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .about-fade-in.about-visible {
             opacity: 1;
@@ -1519,14 +1521,20 @@ body.theme-light #about {
            "line" so it can float in individually rather than the whole
            paragraph fading in at once. */
         .about-line-item {
-            display: inline;
+            display: block;
             opacity: 0;
-            transform: translateY(14px);
-            transition: opacity 0.45s ease, transform 0.45s ease;
+            transform: translateY(70px);
+            margin-bottom: 18px;
+            transition:
+                opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-bottom 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: opacity, transform, margin-bottom;
         }
         .about-line-item.about-visible {
             opacity: 1;
             transform: translateY(0);
+            margin-bottom: 0;
         }
 
     </style>
@@ -1953,32 +1961,28 @@ body.theme-light #about {
         // ABOUT SECTION — load from Supabase + live update from menu.html editor
         // ================================================================
 
-        // Keeps the About text exactly as entered.
         // Only an actual Enter/newline creates a new line.
-        // Sentences are NOT split automatically, so text will wrap naturally
-        // only when the available width requires it.
+        // Sentences are not split automatically.
         function splitAboutTextIntoLines(text) {
             if (!text) return [];
             return String(text).replace(/\r\n?/g, '\n').split('\n');
         }
 
-        // Renders only user-entered lines. Normal wrapping remains controlled
-        // by the browser; explicit Enter presses become <br> elements.
+        // Renders only user-entered lines. Normal browser wrapping is preserved.
         function renderAboutBodyLines(textEl, text) {
             if (!textEl) return;
-
             const lines = splitAboutTextIntoLines(text);
-            const totalDuration = 2500; // ms - overall animation budget
-            const lineDuration = 450;   // ms - each line's own transition duration
+
+            const totalDuration = 3600; // slower, smoother overall animation
+            const lineDuration = 900;  // each line's transition duration
             const lastDelay = Math.max(0, totalDuration - lineDuration);
             const step = lines.length > 1 ? lastDelay / (lines.length - 1) : 0;
 
             textEl.innerHTML = lines.map((line, i) => {
                 const delay = Math.round(step * i);
                 const safeLine = escapeHtml(line);
-                const lineHtml = safeLine || '&nbsp;';
-                return `<span class="about-line-item" style="transition-delay:${delay}ms;">${lineHtml}</span>`;
-            }).join('<br>');
+                return `<span class="about-line-item" style="transition-delay:${delay}ms;">${safeLine || '&nbsp;'}</span>`;
+            }).join('');
         }
 
         // Plays the heading fade-in, then floats each body-text line in
