@@ -1537,6 +1537,37 @@ body.theme-effective-dark #ae-x:hover {
             margin-bottom: 0;
         }
 
+        /* ================================================================
+           OUR PROJECT LOCATION — map embed section (replaces old Contact)
+           ================================================================ */
+        #projectLocationSection {
+            position: relative;
+        }
+        #projectLocationMapWrap {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 560px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        #projectLocationMapWrap iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        body.theme-effective-dark #projectLocationMapWrap {
+            border-color: #334155;
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+        }
+        @media (max-width: 768px) {
+            #projectLocationMapWrap { height: 440px; }
+        }
+
     </style>
 </head>
 
@@ -1825,29 +1856,15 @@ body.theme-effective-dark #ae-x:hover {
             </div>
         </section>
 
-        <!-- Contact Section -->
+        <!-- Our Project Location Section (replaces the old Contact section) -->
         <section id="contact" class="py-16 bg-white px-6">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-4">Get In Touch</h2>
-                <p class="text-sm text-slate-600 mb-8">Have questions or want to collaborate with us? Reach out today.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-10">
-                    <div class="p-6 border bg-slate-50">
-                        <i class="fa-solid fa-location-dot text-amber-600 text-xl mb-2"></i>
-                        <h4 class="font-bold text-sm uppercase text-slate-900">Office Location</h4>
-                        <p class="text-xs text-slate-600 mt-1">Dhaka, Bangladesh</p>
-                    </div>
-                    <div class="p-6 border bg-slate-50">
-                        <i class="fa-solid fa-envelope text-amber-600 text-xl mb-2"></i>
-                        <h4 class="font-bold text-sm uppercase text-slate-900">Email Address</h4>
-                        <p class="text-xs text-slate-600 mt-1">info@ynadconstruction.com</p>
-                    </div>
-                    <div class="p-6 border bg-slate-50">
-                        <i class="fa-solid fa-phone text-amber-600 text-xl mb-2"></i>
-                        <h4 class="font-bold text-sm uppercase text-slate-900">Phone Number</h4>
-                        <p class="text-xs text-slate-600 mt-1">+880 1234 567890</p>
-                    </div>
-                </div>
+            <div class="max-w-4xl mx-auto text-center mb-8">
+                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-4">Our Project Location</h2>
+                <p class="text-sm text-slate-600">Explore every project we've completed, are currently working on, or have planned across the country.</p>
+            </div>
+
+            <div id="projectLocationMapWrap">
+                <iframe id="projectLocationFrame" src="project-locations.html" title="Project Locations Map" loading="lazy"></iframe>
             </div>
         </section>
 
@@ -1868,7 +1885,7 @@ body.theme-effective-dark #ae-x:hover {
                         <li><a href="#" class="hover:text-amber-500 transition">Home</a></li>
                         <li><a href="#projects" class="hover:text-amber-500 transition">Projects</a></li>
                         <li><a href="#about" class="hover:text-amber-500 transition">About Us</a></li>
-                        <li><a href="#contact" class="hover:text-amber-500 transition">Contact</a></li>
+                        <li><a href="#contact" class="hover:text-amber-500 transition">Project Location</a></li>
                     </ul>
                 </div>
                 <div>
@@ -2699,6 +2716,7 @@ body.theme-effective-dark #ae-x:hover {
             loadProjects(); // refresh homepage cards in case a new project was just added
             loadHeroSlides(); // refresh hero slideshow too in case a new project was just added
             loadHeroStats(); // refresh Ongoing/Completed/Upcoming counters too
+            refreshProjectLocationMap(); // refresh the project location map too
         }
 
         // Minimize Project Add Modal — hides the box WITHOUT resetting the iframe, so form data stays intact
@@ -2717,6 +2735,14 @@ body.theme-effective-dark #ae-x:hover {
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
             minimizedTab.classList.remove('show');
+        }
+
+        // Reload the Project Location map iframe (used after a new project is added)
+        function refreshProjectLocationMap() {
+            const frame = document.getElementById('projectLocationFrame');
+            if (frame) {
+                frame.src = 'project-locations.html';
+            }
         }
 
 // Open Menu with Blur Effect
