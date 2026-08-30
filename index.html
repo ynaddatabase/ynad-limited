@@ -1539,19 +1539,18 @@ body.theme-effective-dark #ae-x:hover {
 
         /* ================================================================
            OUR PROJECT LOCATION — map embed section (replaces old Contact)
+           Now edge-to-edge: no side gutters, no rounded corners/border/
+           shadow, and it sits flush against the footer below it (the
+           section itself keeps its normal top padding/heading, but the
+           map block has zero bottom padding beneath it).
            ================================================================ */
         #projectLocationSection {
             position: relative;
         }
         #projectLocationMapWrap {
             width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            height: 560px;
-            border-radius: 12px;
+            height: 620px;
             overflow: hidden;
-            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
-            border: 1px solid #e2e8f0;
             position: relative;
         }
         #projectLocationMapWrap iframe {
@@ -1559,10 +1558,6 @@ body.theme-effective-dark #ae-x:hover {
             height: 100%;
             border: none;
             display: block;
-        }
-        body.theme-effective-dark #projectLocationMapWrap {
-            border-color: #334155;
-            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
         }
         @media (max-width: 768px) {
             #projectLocationMapWrap { height: 440px; }
@@ -1857,11 +1852,8 @@ body.theme-effective-dark #ae-x:hover {
         </section>
 
         <!-- Our Project Location Section (replaces the old Contact section) -->
-        <section id="contact" class="py-16 bg-white px-6">
-            <div class="max-w-4xl mx-auto text-center mb-8">
-                <h2 class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-4">Our Project Location</h2>
-                <p class="text-sm text-slate-600">Explore every project we've completed, are currently working on, or have planned across the country.</p>
-            </div>
+        <section id="contact" class="py-12 md:py-16 bg-white text-center relative">
+            <h2 id="projectLocationHeading" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">Our Project Location</h2>
 
             <div id="projectLocationMapWrap">
                 <iframe id="projectLocationFrame" src="project-locations.html" title="Project Locations Map" loading="lazy"></iframe>
