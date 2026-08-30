@@ -176,13 +176,13 @@ window.addEventListener('message', function(e){
         const list = document.querySelector('.menu-list');
 
         if(list){
-            list.classList.remove('menu-open');
-            void list.offsetWidth;
+            /* Keep menu-open until the closing animation finishes */
             list.classList.add('menu-closing');
 
             setTimeout(() => {
                 list.classList.remove('menu-closing');
-            }, 600);
+                list.classList.remove('menu-open');
+            }, 550);
         }
     }
 });
