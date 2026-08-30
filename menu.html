@@ -38,8 +38,11 @@ html.dark .edit-icon:hover{color:#d97706}
 .edit-icon:hover{color:#d97706}
 body.edit-mode .edit-icon{display:inline-block}
 @media(min-width:768px){.menu-link{font-size:1.125rem}}
+
+/* Faster float-in, single smooth ease-out curve (no mid-keyframe overshoot
+   so there's no late jitter), shorter stagger between items */
 .menu-list.menu-open .menu-item .menu-link{
-    animation:menuFloatIn 1.15s ease-out forwards;
+    animation:menuFloatIn .62s cubic-bezier(.22,1,.36,1) forwards;
 }
 
 .menu-list.menu-open .menu-item:nth-child(1) .menu-link{
@@ -47,23 +50,35 @@ body.edit-mode .edit-icon{display:inline-block}
 }
 
 .menu-list.menu-open .menu-item:nth-child(2) .menu-link{
-    animation-delay:.42s;
+    animation-delay:.09s;
 }
 
 .menu-list.menu-open .menu-item:nth-child(3) .menu-link{
-    animation-delay:.84s;
+    animation-delay:.18s;
 }
 
 .menu-list.menu-open .menu-item:nth-child(4) .menu-link{
-    animation-delay:1.26s;
+    animation-delay:.27s;
 }
 
 .menu-list.menu-open .menu-item:nth-child(5) .menu-link{
-    animation-delay:1.68s;
+    animation-delay:.36s;
 }
 
 @keyframes menuFloatIn{
- .menu-list.menu-closing .menu-item .menu-link{
+    0%{
+        opacity:0;
+        transform:translateY(55px);
+        filter:blur(3px);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0);
+        filter:blur(0);
+    }
+}
+
+.menu-list.menu-closing .menu-item .menu-link{
     animation:menuFloatOut .38s ease-in forwards !important;
 }
 
@@ -98,24 +113,6 @@ body.edit-mode .edit-icon{display:inline-block}
         opacity:0;
         transform:translateY(55px);
         filter:blur(3px);
-    }
-}
-    0%{
-        opacity:0;
-        transform:translateY(55px);
-        filter:blur(3px);
-    }
-
-    70%{
-        opacity:.9;
-        transform:translateY(8px);
-        filter:blur(.5px);
-    }
-
-    100%{
-        opacity:1;
-        transform:translateY(0);
-        filter:blur(0);
     }
 }
 </style>
@@ -298,7 +295,11 @@ function openEditor(e){
       opacity:0;
       animation:ae-fade .25s ease forwards
     }
+    #about-editor .ae-bg.ae-bg-closing{
+      animation:ae-fade-out .3s ease forwards
+    }
     @keyframes ae-fade{to{opacity:1}}
+    @keyframes ae-fade-out{to{opacity:0}}
     #about-editor .ae-box{
       position:relative;width:min(650px,100%);
       max-height:90vh;overflow-y:auto;
@@ -311,11 +312,36 @@ function openEditor(e){
       transition:background-color .25s ease
     }
     @keyframes ae-pop{to{transform:translateY(0) scale(1);opacity:1}}
+
+    /* Closing sequence: box itself shrinks/fades slightly, timed to start
+       just after the inner content has finished dropping+fading down. */
+    #about-editor .ae-box.ae-box-closing{
+      animation:ae-box-close .28s cubic-bezier(.4,0,1,1) .22s forwards
+    }
+    @keyframes ae-box-close{
+      to{transform:translateY(10px) scale(.97);opacity:0}
+    }
+
+    /* Content drop-down-and-fade before the box closes */
+    #about-editor .ae-header,
+    #about-editor .ae-body,
+    #about-editor .ae-actions{
+      transition:opacity .3s ease, transform .3s ease
+    }
+    #about-editor.ae-content-closing .ae-header,
+    #about-editor.ae-content-closing .ae-body,
+    #about-editor.ae-content-closing .ae-actions{
+      opacity:0;
+      transform:translateY(18px);
+    }
+    #about-editor.ae-content-closing .ae-body{transition-delay:.03s}
+    #about-editor.ae-content-closing .ae-actions{transition-delay:.06s}
+
     #about-editor .ae-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:20px 24px;border-bottom:1px solid #e2e8f0;
       position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;
-      transition:background-color .25s ease, border-color .25s ease
+      transition:background-color .25s ease, border-color .25s ease, opacity .3s ease, transform .3s ease
     }
     #about-editor h3{margin:0;color:#0f172a;font-size:19px;font-weight:600}
     #about-editor .ae-body{padding:22px 24px 6px}
@@ -553,9 +579,26 @@ function openEditor(e){
 
     validate();
 
+    // ---- Close sequence: text/content drops+fades down first, then the
+    // box itself fades out, then the whole overlay is removed. ----
+    const bgEl = s.querySelector('.ae-bg');
+    const boxEl = s.querySelector('.ae-box');
+
     const close=()=>{
-        s.remove();
-        st.remove();
+        // Step 1: drop + fade the inner content downward
+        s.classList.add('ae-content-closing');
+
+        // Step 2 (slightly after): fade the box + overlay together
+        setTimeout(()=>{
+            boxEl.classList.add('ae-box-closing');
+            bgEl.classList.add('ae-bg-closing');
+        }, 180);
+
+        // Step 3: remove from DOM once everything has finished animating
+        setTimeout(()=>{
+            s.remove();
+            st.remove();
+        }, 180 + 300);
     };
 
     d.getElementById('ae-x').onclick=close;
