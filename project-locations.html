@@ -14,7 +14,22 @@
     html, body { margin: 0; padding: 0; height: 100%; font-family: 'Poppins', sans-serif; overflow: hidden; }
 
     #mapRoot { position: relative; width: 100%; height: 100%; background: #e5e7eb; }
-    #leafletMap { width: 100%; height: 100%; z-index: 0; }
+
+    /* The map itself now animates its LEFT offset/width when the filter
+       panel opens/closes, instead of just having the panel float on top
+       of it. This makes the visible map area actually shrink/grow. */
+    #leafletMap {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 0;
+        transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    #mapRoot.panel-open #leafletMap {
+        left: 258px; /* filter panel width (230px) + 14px gap on each side */
+    }
 
     /* Grayscale base-tile treatment to echo the reference screenshot */
     #leafletMap .leaflet-tile-pane {
@@ -134,10 +149,12 @@
     }
     #filterCount strong { color: #334155; }
 
-    /* Toggle button shown when panel is collapsed */
+    /* Toggle button shown when panel is collapsed.
+       Moved further down so it never overlaps Leaflet's zoom controls
+       or any other top-left map UI. */
     #filterToggleBtn {
         position: absolute;
-        top: 14px;
+        top: 74px;
         left: 14px;
         z-index: 21;
         width: 38px;
@@ -151,7 +168,7 @@
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 10px 28px rgba(15,23,42,0.2);
-        transition: transform 0.25s ease;
+        transition: transform 0.25s ease, left 0.35s cubic-bezier(0.4,0,0.2,1);
     }
     #filterToggleBtn.show { display: flex; }
     #filterToggleBtn:hover { transform: scale(1.06); }
@@ -172,6 +189,7 @@
         gap: 12px;
         align-items: center;
         flex-wrap: wrap;
+        transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
     }
     .legend-item { display: flex; align-items: center; gap: 5px; color: #334155; font-weight: 500; }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 3px rgba(0,0,0,0.08); }
@@ -276,6 +294,7 @@
 
     @media (max-width: 640px) {
         #filterPanel { width: 190px; top: 10px; left: 10px; }
+        #mapRoot.panel-open #leafletMap { left: 218px; }
         #mapLegend { flex-direction: column; align-items: flex-start; gap: 6px; bottom: 10px; left: 10px; }
     }
 </style>
@@ -534,13 +553,45 @@
         }
     }
 
+    /* Toggling the filter panel now also toggles a class on #mapRoot so the
+       map's #leafletMap element animates its "left" offset in sync with the
+       panel's slide transition — this is what makes the map visibly grow
+       into the freed-up space (and shrink again when reopened) instead of
+       the panel just floating over/off the map with no map-side animation. */
     function toggleFilterPanel() {
         const panel = document.getElementById('filterPanel');
         const toggleBtn = document.getElementById('filterToggleBtn');
+        const mapRoot = document.getElementById('mapRoot');
         const collapsing = !panel.classList.contains('collapsed');
 
         panel.classList.toggle('collapsed', collapsing);
         toggleBtn.classList.toggle('show', collapsing);
+        mapRoot.classList.toggle('panel-open', !collapsing);
+
+        // Leaflet needs to be told its container size changed so tiles
+        // repaint correctly once the CSS transition finishes.
+        if (leafletMap) {
+            setTimeout(() => leafletMap.invalidateSize({ animate: true }), 360);
+        }
+    }
+
+    function initMap() {
+        leafletMap = L.map('leafletMap', {
+            zoomControl: true,
+            attributionControl: true
+        }).setView([23.8103, 90.4125], 8); // default center: Dhaka, Bangladesh
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 19
+        }).addTo(leafletMap);
+
+        markerLayer = L.layerGroup().addTo(leafletMap);
+
+        // Panel starts open, so the map starts in the "panel-open" (shrunk) state.
+        document.getElementById('mapRoot').classList.add('panel-open');
+
+        loadMapData();
     }
 
     async function loadMapData() {
@@ -578,22 +629,6 @@
                 total: (data || []).length
             }, '*');
         } catch (e) {}
-    }
-
-    function initMap() {
-        leafletMap = L.map('leafletMap', {
-            zoomControl: true,
-            attributionControl: true
-        }).setView([23.8103, 90.4125], 8); // default center: Dhaka, Bangladesh
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 19
-        }).addTo(leafletMap);
-
-        markerLayer = L.layerGroup().addTo(leafletMap);
-
-        loadMapData();
     }
 
     document.addEventListener('DOMContentLoaded', initMap);
