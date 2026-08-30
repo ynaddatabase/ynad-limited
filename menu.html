@@ -63,6 +63,43 @@ body.edit-mode .edit-icon{display:inline-block}
 }
 
 @keyframes menuFloatIn{
+ .menu-list.menu-closing .menu-item .menu-link{
+    animation:menuFloatOut .38s ease-in forwards !important;
+}
+
+.menu-list.menu-closing .menu-item:nth-child(1) .menu-link{
+    animation-delay:0s !important;
+}
+
+.menu-list.menu-closing .menu-item:nth-child(2) .menu-link{
+    animation-delay:.04s !important;
+}
+
+.menu-list.menu-closing .menu-item:nth-child(3) .menu-link{
+    animation-delay:.08s !important;
+}
+
+.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{
+    animation-delay:.12s !important;
+}
+
+.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{
+    animation-delay:.16s !important;
+}
+
+@keyframes menuFloatOut{
+    0%{
+        opacity:1;
+        transform:translateY(0);
+        filter:blur(0);
+    }
+
+    100%{
+        opacity:0;
+        transform:translateY(55px);
+        filter:blur(3px);
+    }
+}
     0%{
         opacity:0;
         transform:translateY(55px);
