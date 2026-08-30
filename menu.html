@@ -167,6 +167,25 @@ window.addEventListener('message', function(e){
         document.documentElement.classList.toggle('dark', !!e.data.dark);
     }
 });
+
+/* Menu closing animation */
+window.addEventListener('message', function(e){
+    if(!e.data || typeof e.data !== 'object') return;
+
+    if(e.data.type === 'ynad-menu-closing'){
+        const list = document.querySelector('.menu-list');
+
+        if(list){
+            list.classList.remove('menu-open');
+            void list.offsetWidth;
+            list.classList.add('menu-closing');
+
+            setTimeout(() => {
+                list.classList.remove('menu-closing');
+            }, 600);
+        }
+    }
+});
 try{
     parent.postMessage({ type: 'ynad-request-theme' }, '*');
     if (parent.document.documentElement.classList.contains('dark')) {
