@@ -2752,19 +2752,32 @@ function openMenuWithEffect() {
 }
 
         // Close Menu
-        function closeMenuWithEffect() {
-            const overlay = document.getElementById('menuOverlay');
-            const pageWrapper = document.getElementById('pageContentWrapper');
-            const menuFrame = document.getElementById('menuLinksFrame');
+function closeMenuWithEffect() {
+    const overlay = document.getElementById('menuOverlay');
+    const pageWrapper = document.getElementById('pageContentWrapper');
+    const menuFrame = document.getElementById('menuLinksFrame');
 
-            overlay.classList.remove('open');
-
-            setTimeout(() => {
-                pageWrapper.classList.remove('blurred');
-                document.body.style.overflow = 'auto';
-                menuFrame.src = 'about:blank';
-            }, 400);
+    /* First: animate menu text downward + fade out */
+    try{
+        if(menuFrame && menuFrame.contentWindow){
+            menuFrame.contentWindow.postMessage({
+                type:'ynad-menu-closing'
+            }, '*');
         }
+    }catch(e){}
+
+    /* Then close the side box */
+    setTimeout(() => {
+        overlay.classList.remove('open');
+
+        setTimeout(() => {
+            pageWrapper.classList.remove('blurred');
+            document.body.style.overflow = 'auto';
+            menuFrame.src = 'about:blank';
+        }, 400);
+
+    }, 380);
+}
 
         // Handle clicking outside the menu box
         function handleOverlayClick(event) {
