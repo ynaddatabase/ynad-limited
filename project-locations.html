@@ -2,636 +2,384 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Project Locations Map</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-    html, body { margin: 0; padding: 0; height: 100%; font-family: 'Poppins', sans-serif; overflow: hidden; }
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:'Poppins',sans-serif}body{background:#fff}
+#mapRoot{position:relative;width:100%;height:100%;min-height:100%;overflow:hidden;background:#e5e7eb}
+#leafletMap{position:absolute;inset:0;left:0;width:100%;height:100%;z-index:0;transition:left .38s cubic-bezier(.4,0,.2,1),width .38s cubic-bezier(.4,0,.2,1)}
+#mapRoot.panel-open #leafletMap{left:258px;width:calc(100% - 258px)}
+#leafletMap .leaflet-tile-pane{filter:none}
 
-    #mapRoot { position: relative; width: 100%; height: 100%; background: #e5e7eb; }
+#filterPanel{position:absolute;top:14px;left:14px;width:230px;max-width:calc(100% - 28px);z-index:20;background:rgba(255,255,255,.98);border:1px solid #dfe3e8;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;transform:translateX(0);opacity:1;pointer-events:auto;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+#filterPanel.collapsed{transform:translateX(calc(-100% - 25px));opacity:0;pointer-events:none}
+#filterPanelHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border-bottom:1px solid #e5e7eb}
+#filterPanelHeader h3{margin:0;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#d97706}
+#filterPanelHeader button{width:28px;height:28px;border:0;border-radius:50%;background:#f1f5f9;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+#filterPanelHeader button:hover{background:#d97706;color:#fff}
+#filterPanelBody{max-height:62vh;overflow-y:auto;padding:12px}
+#filterPanelBody::-webkit-scrollbar{width:5px}
+#filterPanelBody::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+.filter-group{margin-bottom:14px}.filter-group:last-child{margin-bottom:4px}
+.filter-group-title{display:flex;align-items:center;gap:5px;margin-bottom:6px;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#64748b;text-transform:uppercase}
+.filter-group-title i{color:#d97706;font-size:9px}
+.filter-select{width:100%;box-sizing:border-box;font-family:inherit;font-size:11.5px;padding:7px 8px;border:1px solid #dce2e8;border-radius:5px;background:#f8fafc;color:#1e293b;outline:0;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.filter-select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.12)}
+#filterResetBtn{width:100%;margin-top:4px;padding:7px 0;border:1.5px solid #d97706;border-radius:5px;background:transparent;color:#d97706;font-family:inherit;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+#filterResetBtn:hover{background:#d97706;color:#fff}
+#filterCount{margin-top:8px;color:#94a3b8;font-size:10px;text-align:center}
+#filterCount strong{color:#334155}
 
-    /* The map itself now animates its LEFT offset/width when the filter
-       panel opens/closes, instead of just having the panel float on top
-       of it. This makes the visible map area actually shrink/grow. */
-    #leafletMap {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 0;
-        transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
-    }
-    #mapRoot.panel-open #leafletMap {
-        left: 258px; /* filter panel width (230px) + 14px gap on each side */
-    }
+#filterToggleBtn{position:absolute;top:125px;left:14px;z-index:21;width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:#d97706;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:transform .2s,background .2s,color .2s}
+#filterToggleBtn.show{display:flex}
+#filterToggleBtn:hover{background:#d97706;color:#fff;transform:scale(1.04)}
 
-    /* Grayscale base-tile treatment to echo the reference screenshot */
-    #leafletMap .leaflet-tile-pane {
-        filter: grayscale(1) contrast(0.95) brightness(1.02);
-    }
+.google-controls{position:absolute;right:14px;bottom:78px;z-index:15;display:flex;flex-direction:column;box-shadow:0 2px 7px rgba(0,0,0,.22)}
+.google-control-btn{width:40px;height:40px;border:0;background:#fff;color:#555;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
+.google-control-btn+.google-control-btn{border-top:1px solid #ddd}
+.google-control-btn:hover{background:#f1f3f4;color:#222}
+.google-control-btn:active{background:#e8eaed}
 
-    /* ---------------- Filter Panel (left side) ---------------- */
-    #filterPanel {
-        position: absolute;
-        top: 14px;
-        left: 14px;
-        z-index: 20;
-        width: 230px;
-        max-width: calc(100% - 28px);
-        background: rgba(255,255,255,0.97);
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        box-shadow: 0 10px 28px rgba(15,23,42,0.16);
-        overflow: hidden;
-        transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
-    }
-    #filterPanel.collapsed {
-        transform: translateX(calc(-100% - 20px));
-        opacity: 0;
-        pointer-events: none;
-    }
-    #filterPanelHeader {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: #0f172a;
-        color: #fff;
-    }
-    #filterPanelHeader h3 {
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-weight: 600;
-        margin: 0;
-        color: #f59e0b;
-    }
-    #filterPanelHeader button {
-        background: transparent;
-        border: none;
-        color: #cbd5e1;
-        cursor: pointer;
-        font-size: 12px;
-        padding: 4px;
-        transition: color 0.2s ease;
-    }
-    #filterPanelHeader button:hover { color: #f59e0b; }
+#mapLegend{position:absolute;bottom:14px;left:14px;z-index:20;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #e2e8f0;border-radius:7px;box-shadow:0 5px 18px rgba(15,23,42,.14);display:flex;align-items:center;gap:12px;font-size:10.5px;transition:left .38s cubic-bezier(.4,0,.2,1)}
+#mapRoot.panel-open #mapLegend{left:272px}
+.legend-item{display:flex;align-items:center;gap:5px;color:#334155;font-weight:500}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 0 3px rgba(0,0,0,.08)}
 
-    #filterPanelBody {
-        max-height: 62vh;
-        overflow-y: auto;
-        padding: 12px;
-    }
-    #filterPanelBody::-webkit-scrollbar { width: 5px; }
-    #filterPanelBody::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.project-pin{position:relative;width:34px;height:40px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%)}
+.project-pin svg{position:absolute;top:0;left:0;width:34px;height:40px}
+.project-pin .pin-label{position:relative;top:-6px;font-size:8.5px;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.4);max-width:22px;overflow:hidden;white-space:nowrap;pointer-events:none}
+.project-pin:hover{z-index:500!important}
+.project-pin:hover svg{filter:brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,.35))}
 
-    .filter-group { margin-bottom: 14px; }
-    .filter-group:last-child { margin-bottom: 4px; }
-    .filter-group-title {
-        font-size: 9.5px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .filter-group-title i { color: #d97706; font-size: 9px; }
+.leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.22)}
+.leaflet-popup-content{margin:0;width:220px!important}
+.popup-card{font-family:'Poppins',sans-serif}
+.popup-card .popup-title{padding:10px 12px 4px;font-size:12.5px;font-weight:600;color:#0f172a;text-transform:uppercase;line-height:1.3}
+.popup-card .popup-row{display:flex;justify-content:space-between;gap:8px;padding:3px 12px;font-size:10.5px;color:#475569}
+.popup-card .popup-row span:first-child{color:#94a3b8;font-weight:500;font-size:9px;text-transform:uppercase}
+.popup-card .popup-status{display:inline-block;margin:6px 12px 10px;padding:3px 9px;border-radius:999px;font-size:9px;font-weight:700;color:#fff;text-transform:uppercase}
 
-    .filter-select {
-        width: 100%;
-        font-size: 11.5px;
-        padding: 6px 8px;
-        border-radius: 6px;
-        border: 1px solid #e2e8f0;
-        background: #f8fafc;
-        color: #1e293b;
-        cursor: pointer;
-        outline: none;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .filter-select:focus {
-        border-color: #d97706;
-        box-shadow: 0 0 0 3px rgba(217,119,6,0.15);
-    }
+#mapLoadingState{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#f3f4f6;color:#64748b;font-size:12px;text-transform:uppercase}
+#mapLoadingState i{font-size:22px;color:#d97706}
+#mapEmptyState{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:15;background:rgba(255,255,255,.96);border:1px solid #e2e8f0;border-radius:8px;padding:16px 22px;font-size:12px;color:#64748b;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.14);display:none}
 
-    #filterResetBtn {
-        width: 100%;
-        margin-top: 4px;
-        padding: 7px 0;
-        border-radius: 6px;
-        border: 1.5px solid #d97706;
-        background: transparent;
-        color: #d97706;
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: background 0.25s ease, color 0.25s ease;
-    }
-    #filterResetBtn:hover { background: #d97706; color: #fff; }
-
-    #filterCount {
-        font-size: 10px;
-        color: #94a3b8;
-        text-align: center;
-        margin-top: 8px;
-        letter-spacing: 0.02em;
-    }
-    #filterCount strong { color: #334155; }
-
-    /* Toggle button shown when panel is collapsed.
-       Moved further down so it never overlaps Leaflet's zoom controls
-       or any other top-left map UI. */
-    #filterToggleBtn {
-        position: absolute;
-        top: 74px;
-        left: 14px;
-        z-index: 21;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #0f172a;
-        color: #f59e0b;
-        border: none;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 10px 28px rgba(15,23,42,0.2);
-        transition: transform 0.25s ease, left 0.35s cubic-bezier(0.4,0,0.2,1);
-    }
-    #filterToggleBtn.show { display: flex; }
-    #filterToggleBtn:hover { transform: scale(1.06); }
-
-    /* ---------------- Legend (bottom-left) ---------------- */
-    #mapLegend {
-        position: absolute;
-        bottom: 14px;
-        left: 14px;
-        z-index: 20;
-        background: rgba(255,255,255,0.97);
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        box-shadow: 0 8px 22px rgba(15,23,42,0.14);
-        padding: 9px 12px;
-        font-size: 10.5px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-        transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
-    }
-    .legend-item { display: flex; align-items: center; gap: 5px; color: #334155; font-weight: 500; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 3px rgba(0,0,0,0.08); }
-
-    /* ---------------- Custom pin marker ---------------- */
-    .project-pin {
-        position: relative;
-        width: 34px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transform: translate(-50%, -100%);
-    }
-    .project-pin svg { position: absolute; top: 0; left: 0; width: 34px; height: 40px; }
-    .project-pin .pin-label {
-        position: relative;
-        top: -6px;
-        font-size: 8.5px;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: 0.01em;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.35);
-        max-width: 22px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: clip;
-        pointer-events: none;
-    }
-    .project-pin:hover { z-index: 500 !important; }
-    .project-pin:hover svg { filter: brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,0.35)); }
-
-    /* Leaflet popup styling to match site */
-    .leaflet-popup-content-wrapper {
-        border-radius: 10px;
-        box-shadow: 0 14px 34px rgba(15,23,42,0.22);
-    }
-    .leaflet-popup-content { margin: 0; width: 220px !important; }
-    .popup-card { font-family: 'Poppins', sans-serif; }
-    .popup-card .popup-title {
-        font-size: 12.5px;
-        font-weight: 600;
-        color: #0f172a;
-        text-transform: uppercase;
-        letter-spacing: 0.01em;
-        padding: 10px 12px 4px;
-        line-height: 1.3;
-    }
-    .popup-card .popup-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 3px 12px;
-        font-size: 10.5px;
-        color: #475569;
-    }
-    .popup-card .popup-row span:first-child { color: #94a3b8; font-weight: 500; text-transform: uppercase; font-size: 9px; letter-spacing: 0.03em; }
-    .popup-card .popup-status {
-        display: inline-block;
-        margin: 6px 12px 10px;
-        padding: 3px 9px;
-        border-radius: 999px;
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: #fff;
-    }
-
-    #mapLoadingState {
-        position: absolute;
-        inset: 0;
-        z-index: 30;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        background: #e5e7eb;
-        color: #64748b;
-        font-size: 12px;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-    #mapLoadingState i { font-size: 22px; color: #d97706; }
-
-    #mapEmptyState {
-        position: absolute;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 15;
-        background: rgba(255,255,255,0.96);
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 16px 22px;
-        font-size: 12px;
-        color: #64748b;
-        text-align: center;
-        box-shadow: 0 10px 26px rgba(15,23,42,0.14);
-        display: none;
-    }
-
-    @media (max-width: 640px) {
-        #filterPanel { width: 190px; top: 10px; left: 10px; }
-        #mapRoot.panel-open #leafletMap { left: 218px; }
-        #mapLegend { flex-direction: column; align-items: flex-start; gap: 6px; bottom: 10px; left: 10px; }
-    }
+@media(max-width:640px){
+#filterPanel{width:190px;top:10px;left:10px}
+#mapRoot.panel-open #leafletMap{left:218px;width:calc(100% - 218px)}
+#filterToggleBtn{top:110px;left:10px}
+#mapLegend{flex-direction:column;align-items:flex-start;gap:6px;bottom:10px;left:10px}
+#mapRoot.panel-open #mapLegend{left:228px}
+.google-controls{right:10px;bottom:65px}
+}
 </style>
 </head>
 <body>
 
 <div id="mapRoot">
-    <div id="leafletMap"></div>
+<div id="leafletMap"></div>
 
-    <div id="mapLoadingState">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        <span>Loading project locations...</span>
-    </div>
+<div id="mapLoadingState">
+<i class="fa-solid fa-spinner fa-spin"></i>
+<span>Loading project locations...</span>
+</div>
 
-    <div id="mapEmptyState">No projects match the selected filters.</div>
+<div id="mapEmptyState">No projects match the selected filters.</div>
 
-    <!-- Collapsed-state toggle button -->
-    <button id="filterToggleBtn" onclick="toggleFilterPanel()" title="Show filters">
-        <i class="fa-solid fa-sliders"></i>
-    </button>
+<button id="filterToggleBtn" onclick="toggleFilterPanel()" title="Show filters">
+<i class="fa-solid fa-sliders"></i>
+</button>
 
-    <!-- Filter Panel -->
-    <div id="filterPanel">
-        <div id="filterPanelHeader">
-            <h3><i class="fa-solid fa-filter"></i>&nbsp; Filter Projects</h3>
-            <button onclick="toggleFilterPanel()" title="Hide filters"><i class="fa-solid fa-chevron-left"></i></button>
-        </div>
-        <div id="filterPanelBody">
-            <div class="filter-group">
-                <div class="filter-group-title"><i class="fa-solid fa-layer-group"></i> Category</div>
-                <select id="filterCategory" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Categories</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <div class="filter-group-title"><i class="fa-solid fa-circle-notch"></i> Status</div>
-                <select id="filterStatus" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Statuses</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Upcoming">Upcoming</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <div class="filter-group-title"><i class="fa-solid fa-building"></i> Organization</div>
-                <select id="filterOrganization" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Organizations</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <div class="filter-group-title"><i class="fa-solid fa-earth-asia"></i> Donated Country</div>
-                <select id="filterCountry" class="filter-select" onchange="applyFilters()">
-                    <option value="">All Countries</option>
-                </select>
-            </div>
+<div id="filterPanel" class="collapsed">
+<div id="filterPanelHeader">
+<h3><i class="fa-solid fa-filter"></i>&nbsp; Filter Projects</h3>
+<button onclick="toggleFilterPanel()" title="Hide filters"><i class="fa-solid fa-xmark"></i></button>
+</div>
 
-            <button id="filterResetBtn" onclick="resetFilters()">Reset Filters</button>
-            <div id="filterCount"><strong>0</strong> of <strong>0</strong> projects shown</div>
-        </div>
-    </div>
+<div id="filterPanelBody">
+<div class="filter-group">
+<div class="filter-group-title"><i class="fa-solid fa-layer-group"></i> Category</div>
+<select id="filterCategory" class="filter-select" onchange="applyFilters()">
+<option value="">All Categories</option>
+</select>
+</div>
 
-    <!-- Legend -->
-    <div id="mapLegend">
-        <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Ongoing</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span> Completed</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> Upcoming</div>
-    </div>
+<div class="filter-group">
+<div class="filter-group-title"><i class="fa-solid fa-circle-notch"></i> Status</div>
+<select id="filterStatus" class="filter-select" onchange="applyFilters()">
+<option value="">All Statuses</option>
+<option value="Ongoing">Ongoing</option>
+<option value="Completed">Completed</option>
+<option value="Upcoming">Upcoming</option>
+</select>
+</div>
+
+<div class="filter-group">
+<div class="filter-group-title"><i class="fa-solid fa-building"></i> Organization</div>
+<select id="filterOrganization" class="filter-select" onchange="applyFilters()">
+<option value="">All Organizations</option>
+</select>
+</div>
+
+<div class="filter-group">
+<div class="filter-group-title"><i class="fa-solid fa-earth-asia"></i> Donated Country</div>
+<select id="filterCountry" class="filter-select" onchange="applyFilters()">
+<option value="">All Countries</option>
+</select>
+</div>
+
+<button id="filterResetBtn" onclick="resetFilters()">Reset Filters</button>
+
+<div id="filterCount">
+<strong>0</strong> of <strong>0</strong> projects shown
+</div>
+</div>
+</div>
+
+<div class="google-controls">
+<button class="google-control-btn" onclick="zoomIn()" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
+<button class="google-control-btn" onclick="zoomOut()" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
+</div>
+
+<div id="mapLegend">
+<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Ongoing</div>
+<div class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span> Completed</div>
+<div class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> Upcoming</div>
+</div>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const SUPABASE_URL='https://zjbvnwawdgdncthktqtx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
-    const STATUS_COLORS = {
-        'Ongoing': '#f59e0b',
-        'Completed': '#16a34a',
-        'Upcoming': '#2563eb'
-    };
-    const DEFAULT_COLOR = '#64748b';
+const STATUS_COLORS={Ongoing:'#f59e0b',Completed:'#16a34a',Upcoming:'#2563eb'};
+const DEFAULT_COLOR='#64748b';
+let leafletMap=null,allProjects=[],markerLayer=null;
 
-    let leafletMap = null;
-    let allProjects = [];   // full dataset with parsed coords
-    let markerLayer = null; // L.layerGroup
+function escapeHtml(str){
+if(str===null||str===undefined)return'';
+return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
-    function escapeHtml(str) {
-        if (str === null || str === undefined) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
+function parseLatLngFromLink(link){
+if(!link||typeof link!=='string')return null;
+try{
+const decoded=decodeURIComponent(link);
+let m=decoded.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+m=decoded.match(/[?&](?:q|query)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+m=decoded.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
+if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+m=decoded.match(/[?&]ll=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+m=decoded.match(/(-?\d{1,3}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/);
+if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+}catch(e){console.warn('Failed to parse location_link:',link,e)}
+return null;
+}
 
-    /* ---------------- Parse lat/lng out of a Google Maps link ---------------- */
-    function parseLatLngFromLink(link) {
-        if (!link || typeof link !== 'string') return null;
+function buildShortCode(name){
+if(!name)return'?';
+const words=String(name).trim().split(/\s+/).filter(Boolean);
+if(!words.length)return'?';
+if(words.length===1)return words[0].substring(0,3).toUpperCase();
+return words.map(w=>w[0]).join('').toUpperCase().substring(0,4);
+}
 
-        try {
-            const decoded = decodeURIComponent(link);
+function pinSvg(color){
+return`<svg viewBox="0 0 34 40" xmlns="http://www.w3.org/2000/svg"><path d="M17 0C7.6 0 0 7.6 0 17c0 12.4 17 23 17 23s17-10.6 17-23C34 7.6 26.4 0 17 0z" fill="${color}" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/><circle cx="17" cy="16.5" r="10.5" fill="rgba(255,255,255,0.18)"/></svg>`;
+}
 
-            // Pattern: @lat,lng,  (most common share-link format)
-            let m = decoded.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-            if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+function createPinIcon(project){
+const color=STATUS_COLORS[project.status]||DEFAULT_COLOR;
+const code=buildShortCode(project.project_name);
+return L.divIcon({
+html:`<div class="project-pin">${pinSvg(color)}<div class="pin-label">${escapeHtml(code)}</div></div>`,
+className:'',
+iconSize:[34,40],
+iconAnchor:[17,40],
+popupAnchor:[0,-38]
+});
+}
 
-            // Pattern: q=lat,lng or query=lat,lng
-            m = decoded.match(/[?&](?:q|query)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-            if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+function buildPopupHtml(project){
+const color=STATUS_COLORS[project.status]||DEFAULT_COLOR;
+return`<div class="popup-card">
+<div class="popup-title">${escapeHtml(project.project_name||'Untitled Project')}</div>
+${project.district?`<div class="popup-row"><span>Location</span><span>${escapeHtml(project.district)}</span></div>`:''}
+${project.project_type?`<div class="popup-row"><span>Category</span><span>${escapeHtml(project.project_type)}</span></div>`:''}
+${project.organization?`<div class="popup-row"><span>Org</span><span>${escapeHtml(project.organization)}</span></div>`:''}
+${project.donated_country?`<div class="popup-row"><span>Country</span><span>${escapeHtml(project.donated_country)}</span></div>`:''}
+${project.bd_number?`<div class="popup-row"><span>Code</span><span>${escapeHtml(project.bd_number)}</span></div>`:''}
+<span class="popup-status" style="background:${color};">${escapeHtml(project.status||'N/A')}</span>
+</div>`;
+}
 
-            // Pattern: !3dlat!4dlng (embedded place links)
-            m = decoded.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
-            if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+function populateFilterOptions(projects){
+const categories=new Set(),organizations=new Set(),countries=new Set();
+projects.forEach(p=>{
+if(p.project_type)categories.add(p.project_type);
+if(p.organization)organizations.add(p.organization);
+if(p.donated_country)countries.add(p.donated_country);
+});
+fillSelect('filterCategory',categories,'All Categories');
+fillSelect('filterOrganization',organizations,'All Organizations');
+fillSelect('filterCountry',countries,'All Countries');
+}
 
-            // Pattern: ll=lat,lng
-            m = decoded.match(/[?&]ll=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-            if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+function fillSelect(id,valuesSet,allLabel){
+const select=document.getElementById(id),current=select.value;
+const sorted=Array.from(valuesSet).sort((a,b)=>a.localeCompare(b));
+select.innerHTML=`<option value="">${allLabel}</option>`+sorted.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+if(sorted.includes(current))select.value=current;
+}
 
-            // Fallback: any bare "lat,lng" pair in the string
-            m = decoded.match(/(-?\d{1,3}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/);
-            if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+function applyFilters(){
+const category=document.getElementById('filterCategory').value;
+const status=document.getElementById('filterStatus').value;
+const organization=document.getElementById('filterOrganization').value;
+const country=document.getElementById('filterCountry').value;
 
-        } catch (e) {
-            console.warn('Failed to parse location_link:', link, e);
-        }
-        return null;
-    }
+const filtered=allProjects.filter(p=>{
+if(category&&p.project_type!==category)return false;
+if(status&&p.status!==status)return false;
+if(organization&&p.organization!==organization)return false;
+if(country&&p.donated_country!==country)return false;
+return true;
+});
 
-    /* ---------------- Build a short pin code from the project name ---------------- */
-    function buildShortCode(name) {
-        if (!name) return '?';
-        const words = String(name).trim().split(/\s+/).filter(Boolean);
-        if (words.length === 0) return '?';
-        if (words.length === 1) {
-            return words[0].substring(0, 3).toUpperCase();
-        }
-        const code = words.map(w => w[0]).join('').toUpperCase();
-        return code.substring(0, 4);
-    }
+renderMarkers(filtered);
 
-    function pinSvg(color) {
-        return `
-        <svg viewBox="0 0 34 40" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17 0C7.6 0 0 7.6 0 17c0 12.4 17 23 17 23s17-10.6 17-23C34 7.6 26.4 0 17 0z" fill="${color}" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/>
-            <circle cx="17" cy="16.5" r="10.5" fill="rgba(255,255,255,0.18)"/>
-        </svg>`;
-    }
+const count=document.querySelectorAll('#filterCount strong');
+if(count.length>=2){
+count[0].textContent=filtered.length;
+count[1].textContent=allProjects.length;
+}
 
-    function createPinIcon(project) {
-        const color = STATUS_COLORS[project.status] || DEFAULT_COLOR;
-        const code = buildShortCode(project.project_name);
-        const html = `
-            <div class="project-pin">
-                ${pinSvg(color)}
-                <div class="pin-label">${escapeHtml(code)}</div>
-            </div>`;
-        return L.divIcon({
-            html: html,
-            className: '',
-            iconSize: [34, 40],
-            iconAnchor: [17, 40],
-            popupAnchor: [0, -38]
-        });
-    }
+document.getElementById('mapEmptyState').style.display=filtered.length===0?'block':'none';
+}
 
-    function buildPopupHtml(project) {
-        const color = STATUS_COLORS[project.status] || DEFAULT_COLOR;
-        return `
-        <div class="popup-card">
-            <div class="popup-title">${escapeHtml(project.project_name || 'Untitled Project')}</div>
-            ${project.district ? `<div class="popup-row"><span>Location</span><span>${escapeHtml(project.district)}</span></div>` : ''}
-            ${project.project_type ? `<div class="popup-row"><span>Category</span><span>${escapeHtml(project.project_type)}</span></div>` : ''}
-            ${project.organization ? `<div class="popup-row"><span>Org</span><span>${escapeHtml(project.organization)}</span></div>` : ''}
-            ${project.donated_country ? `<div class="popup-row"><span>Country</span><span>${escapeHtml(project.donated_country)}</span></div>` : ''}
-            ${project.bd_number ? `<div class="popup-row"><span>Code</span><span>${escapeHtml(project.bd_number)}</span></div>` : ''}
-            <span class="popup-status" style="background:${color};">${escapeHtml(project.status || 'N/A')}</span>
-        </div>`;
-    }
+function resetFilters(){
+document.getElementById('filterCategory').value='';
+document.getElementById('filterStatus').value='';
+document.getElementById('filterOrganization').value='';
+document.getElementById('filterCountry').value='';
+applyFilters();
+}
 
-    /* ---------------- Populate filter dropdowns from live data ---------------- */
-    function populateFilterOptions(projects) {
-        const categories = new Set();
-        const organizations = new Set();
-        const countries = new Set();
+function renderMarkers(projects){
+if(!leafletMap)return;
+if(markerLayer)markerLayer.clearLayers();
+else markerLayer=L.layerGroup().addTo(leafletMap);
 
-        projects.forEach(p => {
-            if (p.project_type) categories.add(p.project_type);
-            if (p.organization) organizations.add(p.organization);
-            if (p.donated_country) countries.add(p.donated_country);
-        });
+const bounds=[];
+projects.forEach(project=>{
+const marker=L.marker([project._lat,project._lng],{icon:createPinIcon(project)});
+marker.bindPopup(buildPopupHtml(project));
+marker.addTo(markerLayer);
+bounds.push([project._lat,project._lng]);
+});
 
-        fillSelect('filterCategory', categories, 'All Categories');
-        fillSelect('filterOrganization', organizations, 'All Organizations');
-        fillSelect('filterCountry', countries, 'All Countries');
-    }
+if(bounds.length){
+leafletMap.fitBounds(bounds,{padding:[45,45],maxZoom:12,animate:true});
+}
+}
 
-    function fillSelect(id, valuesSet, allLabel) {
-        const select = document.getElementById(id);
-        const current = select.value;
-        const sorted = Array.from(valuesSet).sort((a, b) => a.localeCompare(b));
-        select.innerHTML = `<option value="">${allLabel}</option>` +
-            sorted.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-        if (sorted.includes(current)) select.value = current;
-    }
+function toggleFilterPanel(){
+const panel=document.getElementById('filterPanel');
+const toggleBtn=document.getElementById('filterToggleBtn');
+const mapRoot=document.getElementById('mapRoot');
+const isClosed=panel.classList.contains('collapsed');
 
-    /* ---------------- Render markers based on current filter selection ---------------- */
-    function applyFilters() {
-        const category = document.getElementById('filterCategory').value;
-        const status = document.getElementById('filterStatus').value;
-        const organization = document.getElementById('filterOrganization').value;
-        const country = document.getElementById('filterCountry').value;
+if(isClosed){
+panel.classList.remove('collapsed');
+toggleBtn.classList.remove('show');
+mapRoot.classList.add('panel-open');
+}else{
+panel.classList.add('collapsed');
+toggleBtn.classList.add('show');
+mapRoot.classList.remove('panel-open');
+}
 
-        const filtered = allProjects.filter(p => {
-            if (category && p.project_type !== category) return false;
-            if (status && p.status !== status) return false;
-            if (organization && p.organization !== organization) return false;
-            if (country && p.donated_country !== country) return false;
-            return true;
-        });
+if(leafletMap){
+setTimeout(()=>leafletMap.invalidateSize({animate:false}),400);
+}
+}
 
-        renderMarkers(filtered);
+function zoomIn(){
+if(leafletMap)leafletMap.zoomIn();
+}
 
-        document.querySelector('#filterCount strong:first-child').textContent = filtered.length;
-        document.querySelector('#filterCount strong:last-child').textContent = allProjects.length;
+function zoomOut(){
+if(leafletMap)leafletMap.zoomOut();
+}
 
-        const emptyState = document.getElementById('mapEmptyState');
-        emptyState.style.display = filtered.length === 0 ? 'block' : 'none';
-    }
+function initMap(){
+leafletMap=L.map('leafletMap',{
+zoomControl:false,
+attributionControl:true,
+doubleClickZoom:true,
+scrollWheelZoom:true,
+dragging:true,
+touchZoom:true,
+boxZoom:true
+}).setView([23.8103,90.4125],8);
 
-    function resetFilters() {
-        document.getElementById('filterCategory').value = '';
-        document.getElementById('filterStatus').value = '';
-        document.getElementById('filterOrganization').value = '';
-        document.getElementById('filterCountry').value = '';
-        applyFilters();
-    }
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{
+attribution:'&copy; Esri &mdash; Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, and the GIS User Community',
+maxZoom:19
+}).addTo(leafletMap);
 
-    function renderMarkers(projects) {
-        if (!leafletMap) return;
-        if (markerLayer) markerLayer.clearLayers();
-        else markerLayer = L.layerGroup().addTo(leafletMap);
+markerLayer=L.layerGroup().addTo(leafletMap);
 
-        const bounds = [];
+document.getElementById('filterPanel').classList.add('collapsed');
+document.getElementById('filterToggleBtn').classList.add('show');
+document.getElementById('mapRoot').classList.remove('panel-open');
 
-        projects.forEach(project => {
-            const marker = L.marker([project._lat, project._lng], {
-                icon: createPinIcon(project)
-            });
-            marker.bindPopup(buildPopupHtml(project));
-            marker.addTo(markerLayer);
-            bounds.push([project._lat, project._lng]);
-        });
+loadMapData();
+}
 
-        if (bounds.length > 0) {
-            leafletMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
-        }
-    }
+async function loadMapData(){
+const loadingState=document.getElementById('mapLoadingState');
 
-    /* Toggling the filter panel now also toggles a class on #mapRoot so the
-       map's #leafletMap element animates its "left" offset in sync with the
-       panel's slide transition — this is what makes the map visibly grow
-       into the freed-up space (and shrink again when reopened) instead of
-       the panel just floating over/off the map with no map-side animation. */
-    function toggleFilterPanel() {
-        const panel = document.getElementById('filterPanel');
-        const toggleBtn = document.getElementById('filterToggleBtn');
-        const mapRoot = document.getElementById('mapRoot');
-        const collapsing = !panel.classList.contains('collapsed');
+const{data,error}=await supabaseClient.from('projects').select('*');
 
-        panel.classList.toggle('collapsed', collapsing);
-        toggleBtn.classList.toggle('show', collapsing);
-        mapRoot.classList.toggle('panel-open', !collapsing);
+loadingState.style.display='none';
 
-        // Leaflet needs to be told its container size changed so tiles
-        // repaint correctly once the CSS transition finishes.
-        if (leafletMap) {
-            setTimeout(() => leafletMap.invalidateSize({ animate: true }), 360);
-        }
-    }
+if(error){
+console.error('Failed to load projects:',error);
+const emptyState=document.getElementById('mapEmptyState');
+emptyState.textContent='Failed to load project locations.';
+emptyState.style.display='block';
+return;
+}
 
-    function initMap() {
-        leafletMap = L.map('leafletMap', {
-            zoomControl: true,
-            attributionControl: true
-        }).setView([23.8103, 90.4125], 8); // default center: Dhaka, Bangladesh
+allProjects=(data||[]).map(project=>{
+const coords=parseLatLngFromLink(project.location_link);
+if(!coords)return null;
+return Object.assign({},project,{_lat:coords.lat,_lng:coords.lng});
+}).filter(Boolean);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 19
-        }).addTo(leafletMap);
+populateFilterOptions(allProjects);
+applyFilters();
 
-        markerLayer = L.layerGroup().addTo(leafletMap);
+try{
+window.parent.postMessage({
+type:'ynad-map-loaded',
+plotted:allProjects.length,
+total:(data||[]).length
+},'*');
+}catch(e){}
+}
 
-        // Panel starts open, so the map starts in the "panel-open" (shrunk) state.
-        document.getElementById('mapRoot').classList.add('panel-open');
-
-        loadMapData();
-    }
-
-    async function loadMapData() {
-        const loadingState = document.getElementById('mapLoadingState');
-
-        const { data, error } = await supabaseClient
-            .from('projects')
-            .select('*');
-
-        loadingState.style.display = 'none';
-
-        if (error) {
-            console.error('Failed to load projects for map:', error);
-            document.getElementById('mapEmptyState').textContent = 'Failed to load project locations.';
-            document.getElementById('mapEmptyState').style.display = 'block';
-            return;
-        }
-
-        allProjects = (data || [])
-            .map(project => {
-                const coords = parseLatLngFromLink(project.location_link);
-                if (!coords) return null;
-                return Object.assign({}, project, { _lat: coords.lat, _lng: coords.lng });
-            })
-            .filter(Boolean);
-
-        populateFilterOptions(allProjects);
-        applyFilters();
-
-        // Let the parent page know how many pins were actually plotted vs total.
-        try {
-            window.parent.postMessage({
-                type: 'ynad-map-loaded',
-                plotted: allProjects.length,
-                total: (data || []).length
-            }, '*');
-        } catch (e) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', initMap);
+document.addEventListener('DOMContentLoaded',initMap);
 </script>
 </body>
 </html>
