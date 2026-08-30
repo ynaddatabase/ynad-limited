@@ -15,56 +15,60 @@ html,body{margin:0!important;padding:0!important;width:100%;height:100%;overflow
 body{background:#fff}
 iframe{display:block!important;width:100%;border:0!important;margin:0!important;padding:0!important}
 #mapRoot{position:relative;width:100%;height:100%;min-height:100%;margin:0!important;padding:0!important;overflow:hidden;background:#fff}
-#leafletMap{position:absolute;inset:0;left:0;width:100%;height:100%;z-index:1;transition:left .38s cubic-bezier(.4,0,.2,1),width .38s cubic-bezier(.4,0,.2,1)}
-#mapRoot.panel-open #leafletMap{left:258px;width:calc(100% - 258px)}
+#leafletMap{position:absolute;inset:0;left:0;width:100%;height:100%;z-index:1}
 .leaflet-marker-pane{z-index:600!important}
 .leaflet-shadow-pane{z-index:500!important}
 .leaflet-popup-pane{z-index:700!important}
 .leaflet-control-container{z-index:800!important}
 
-#filterPanel{position:absolute;top:14px;left:14px;width:230px;max-width:calc(100% - 28px);z-index:1000;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s}
+#filterPanel{position:absolute;top:60px;left:14px;width:230px;max-width:calc(100% - 28px);z-index:1000;background:#fff;border:1px solid #eef0f3;border-radius:16px;box-shadow:0 14px 36px rgba(15,23,42,.16);overflow:hidden;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s}
 #filterPanel.collapsed{transform:translateX(-270px);opacity:0;pointer-events:none}
-#filterPanelHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #eee}
-#filterPanelHeader h3{margin:0;color:#d97706;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-#filterPanelHeader button{width:28px;height:28px;border:0;border-radius:50%;background:#f1f5f9;color:#64748b;cursor:pointer}
-#filterPanelHeader button:hover{background:#d97706;color:#fff}
-#filterPanelBody{max-height:62vh;overflow:auto;padding:12px}
-.filter-group{margin-bottom:14px}
-.filter-group-title{margin-bottom:6px;color:#64748b;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.filter-group-title i{color:#d97706;margin-right:4px}
-.filter-select{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #dce2e8;border-radius:5px;background:#f8fafc;color:#1e293b;font-family:inherit;font-size:11.5px;outline:0;cursor:pointer}
-.filter-select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.12)}
-#filterResetBtn{width:100%;padding:7px;border:1.5px solid #d97706;border-radius:5px;background:transparent;color:#d97706;font-family:inherit;font-size:10.5px;font-weight:600;cursor:pointer}
-#filterResetBtn:hover{background:#d97706;color:#fff}
-#filterCount{margin-top:8px;color:#94a3b8;font-size:10px;text-align:center}
+#filterPanelHeader{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;background:linear-gradient(135deg,#fff7ed,#ffffff);border-bottom:1px solid #fde9c8}
+#filterPanelHeader h3{margin:0;color:#b45309;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+#filterPanelHeader button{width:26px;height:26px;border:0;border-radius:50%;background:#fff;color:#94a3b8;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);transition:background .15s,color .15s,transform .15s}
+#filterPanelHeader button:hover{background:#d97706;color:#fff;transform:rotate(90deg)}
+#filterPanelBody{max-height:62vh;overflow:auto;padding:16px 15px}
+.filter-group{margin-bottom:16px}
+.filter-group-title{display:flex;align-items:center;gap:6px;margin-bottom:7px;color:#64748b;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.filter-group-title i{display:flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:5px;background:#fff3e0;color:#d97706;font-size:9px}
+.filter-select{width:100%;box-sizing:border-box;padding:9px 30px 9px 11px;border:1.5px solid #e6eaef;border-radius:9px;background:#f8fafc url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 9px center/12px 12px;color:#1e293b;font-family:inherit;font-size:11.5px;outline:0;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s,background-color .15s}
+.filter-select:hover{border-color:#d1d8e0;background-color:#f1f5f9}
+.filter-select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.14)}
+#filterResetBtn{width:100%;padding:10px;border:0;border-radius:9px;background:linear-gradient(135deg,#f59e0b,#b45309);color:#fff;font-family:inherit;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 14px rgba(217,119,6,.3);transition:opacity .15s,transform .15s}
+#filterResetBtn:hover{opacity:.92;transform:translateY(-1px)}
+#filterResetBtn:active{transform:translateY(0)}
+#filterCount{margin-top:11px;color:#94a3b8;font-size:10px;text-align:center;padding:7px;background:#f8fafc;border:1px solid #eef0f3;border-radius:999px}
 #filterCount strong{color:#334155}
 
-#filterToggleBtn{position:absolute;top:78px;left:14px;z-index:1000;width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:#d97706;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+#filterToggleBtn{position:absolute;top:60px;left:14px;z-index:1000;width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:#d97706;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.22)}
 #filterToggleBtn.show{display:flex}
 #filterToggleBtn:hover{background:#d97706;color:#fff}
 
-.map-style{position:absolute;top:14px;left:14px;z-index:900;display:flex;background:#fff;border-radius:3px;box-shadow:0 2px 7px rgba(0,0,0,.2);overflow:hidden}
-.map-style button{border:0;background:#fff;color:#555;padding:9px 15px;font-size:14px;cursor:pointer}
-.map-style button.active{color:#111;font-weight:600}
-.map-style button:hover{background:#f1f3f4}
+.map-style{position:absolute;top:14px;left:14px;z-index:900;display:flex;align-items:center;width:150px;background:#eef1f5;border-radius:999px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.map-style button{position:relative;z-index:2;flex:1;border:0;background:transparent;color:#64748b;padding:8px 0;font-size:11px;font-weight:600;letter-spacing:.02em;border-radius:999px;cursor:pointer;transition:color .25s}
+.map-style button.active{color:#fff}
+.map-style button:hover:not(.active){color:#334155}
+#mapStyleThumb{position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 6px);background:linear-gradient(135deg,#d97706,#b45309);border-radius:999px;transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 6px rgba(217,119,6,.35);z-index:1}
+.map-style.sat #mapStyleThumb{transform:translateX(100%)}
 
 .fullscreen-btn{position:absolute;top:14px;right:14px;z-index:1001;width:40px;height:40px;border:0;border-radius:4px;background:#fff;color:#555;box-shadow:0 2px 7px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
 .fullscreen-btn:hover{background:#f5f5f5;color:#222}
 
-.map-controls{position:absolute;right:14px;bottom:14px;z-index:1000;width:116px;height:170px}
+.map-controls{position:absolute;right:14px;bottom:56px;z-index:1000;width:178px;height:128px}
+.map-controls .ctrl{transition:opacity .25s ease,transform .25s ease,background .15s,color .15s,box-shadow .15s}
+.map-controls.collapsed .ctrl:not(.map-open):not(.street-btn){opacity:0;transform:scale(.55);pointer-events:none}
 .ctrl{position:absolute;width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#555;box-shadow:0 2px 7px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;padding:0;transition:background .15s,color .15s,box-shadow .15s}
 .ctrl:hover{background:#f5f5f5;color:#222;box-shadow:0 3px 10px rgba(0,0,0,.24)}
-.pan-up{top:0;left:18px}
-.zoom-in{top:0;right:0}
-.pan-left{top:44px;left:-2px}
-.map-open{top:44px;left:38px}
-.pan-right{top:44px;left:78px}
-.pan-down{top:88px;left:18px}
-.zoom-out{top:88px;right:0}
-.street-btn{top:132px;right:0;width:40px;height:40px;border-radius:4px;color:#e2a600;font-size:19px}
+.pan-up{top:0;left:44px}
+.pan-left{top:44px;left:0}
+.map-open{top:44px;left:44px}
+.pan-right{top:44px;left:88px}
+.pan-down{top:88px;left:44px}
+.zoom-in{top:0;left:138px}
+.zoom-out{top:44px;left:138px}
+.street-btn{top:88px;left:138px;width:40px;height:40px;border-radius:4px;color:#e2a600;font-size:19px}
 
-#mapLegend{position:absolute;left:14px;bottom:12px;z-index:1000;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #ddd;border-radius:7px;box-shadow:0 4px 15px rgba(0,0,0,.12);display:flex;gap:12px;font-size:10px;transition:left .38s cubic-bezier(.4,0,.2,1)}
-#mapRoot.panel-open #mapLegend{left:272px}
+#mapLegend{position:absolute;left:14px;bottom:12px;z-index:1000;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #ddd;border-radius:7px;box-shadow:0 4px 15px rgba(0,0,0,.12);display:flex;gap:12px;font-size:10px}
 .legend-item{display:flex;align-items:center;gap:5px;color:#334155}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 
@@ -83,15 +87,13 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 #mapLoadingState{position:absolute;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;background:#fff;color:#64748b;font-size:12px}
 #mapLoadingState i{margin-right:8px;color:#d97706}
 
-.map-expanded{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:99999!important;background:#fff}
+#zoomHint{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:900;padding:5px 12px;background:rgba(255,255,255,.92);border:1px solid #eee;border-radius:999px;color:#64748b;font-size:10.5px;box-shadow:0 2px 8px rgba(0,0,0,.1);pointer-events:none;white-space:nowrap}
 
 @media(max-width:640px){
 #filterPanel{width:190px}
-#mapRoot.panel-open #leafletMap{left:218px;width:calc(100% - 218px)}
-#filterToggleBtn{top:75px}
-#mapRoot.panel-open #mapLegend{left:228px}
+#filterToggleBtn{top:60px}
 .fullscreen-btn{top:8px;right:8px}
-.map-controls{right:8px;bottom:8px;transform:scale(.9);transform-origin:bottom right}
+.map-controls{right:8px;bottom:48px;transform:scale(.9);transform-origin:bottom right}
 }
 </style>
 </head>
@@ -104,7 +106,10 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 <i class="fa-solid fa-spinner fa-spin"></i>Loading project locations...
 </div>
 
-<div class="map-style">
+<div id="zoomHint">Use Ctrl + Scroll to zoom the map</div>
+
+<div class="map-style" id="mapStyleSwitch">
+<div id="mapStyleThumb"></div>
 <button id="mapBtn" class="active" onclick="setMapType('map')">Map</button>
 <button id="satBtn" onclick="setMapType('sat')">Satellite</button>
 </div>
@@ -160,33 +165,33 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 </div>
 </div>
 
-<div class="map-controls">
+<div class="map-controls" id="mapControls">
 
-<button class="ctrl pan-up" onclick="panMap(0,1)" title="Move Up">
+<button class="ctrl pan-up" data-dx="0" data-dy="-1" title="Move Up">
 <i class="fa-solid fa-chevron-up"></i>
 </button>
 
-<button class="ctrl zoom-in" onclick="zoomIn()" title="Zoom In">
+<button class="ctrl zoom-in" title="Zoom In">
 <i class="fa-solid fa-plus"></i>
 </button>
 
-<button class="ctrl pan-left" onclick="panMap(-1,0)" title="Move Left">
+<button class="ctrl pan-left" data-dx="-1" data-dy="0" title="Move Left">
 <i class="fa-solid fa-chevron-left"></i>
 </button>
 
-<button class="ctrl map-open" onclick="toggleMapView()" title="Open / Minimize">
+<button class="ctrl map-open" onclick="toggleControls()" title="Minimize / Expand controls">
 <i id="mapOpenIcon" class="fa-solid fa-up-right-and-down-left-from-center"></i>
 </button>
 
-<button class="ctrl pan-right" onclick="panMap(1,0)" title="Move Right">
+<button class="ctrl pan-right" data-dx="1" data-dy="0" title="Move Right">
 <i class="fa-solid fa-chevron-right"></i>
 </button>
 
-<button class="ctrl pan-down" onclick="panMap(0,-1)" title="Move Down">
+<button class="ctrl pan-down" data-dx="0" data-dy="1" title="Move Down">
 <i class="fa-solid fa-chevron-down"></i>
 </button>
 
-<button class="ctrl zoom-out" onclick="zoomOut()" title="Zoom Out">
+<button class="ctrl zoom-out" title="Zoom Out">
 <i class="fa-solid fa-minus"></i>
 </button>
 
@@ -209,6 +214,25 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const COLORS={Ongoing:'#f59e0b',Completed:'#16a34a',Upcoming:'#2563eb'};
 let map,markerLayer,allProjects=[],mapLayer,satLayer;
+
+const BD_BOUNDARY=[[22.041239,92.672721],[21.324048,92.652257],[21.475485,92.303234],[20.670883,92.368554],[21.192195,92.082886],[21.70157,92.025215],[22.182936,91.834891],[22.765019,91.417087],[22.805017,90.496006],[22.392794,90.586957],[21.836368,90.272971],[22.039146,89.847467],[21.857116,89.70205],[21.966179,89.418863],[22.055708,89.031961],[22.879146,88.876312],[23.631142,88.52977],[24.233715,88.69994],[24.501657,88.084422],[24.866079,88.306373],[25.238692,88.931554],[25.768066,88.209789],[26.446526,88.563049],[26.014407,89.355094],[25.965082,89.832481],[25.26975,89.920693],[25.132601,90.872211],[25.147432,91.799596],[24.976693,92.376202],[24.130414,91.915093],[24.072639,91.46773],[23.503527,91.158963],[22.985264,91.706475],[23.624346,91.869928],[23.627499,92.146035]];
+
+function addBangladeshHighlight(){
+const worldRing=[[85,-190],[85,190],[-85,190],[-85,-190]];
+L.polygon([worldRing,BD_BOUNDARY],{
+stroke:false,
+fillColor:'#eef2f6',
+fillOpacity:0.62,
+interactive:false
+}).addTo(map);
+L.polygon([BD_BOUNDARY],{
+fill:false,
+color:'#d97706',
+weight:1.6,
+opacity:0.6,
+interactive:false
+}).addTo(map);
+}
 
 function esc(s){
 return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -299,18 +323,46 @@ applyFilters();
 
 function toggleFilterPanel(){
 const panel=document.getElementById('filterPanel');
-const root=document.getElementById('mapRoot');
 const btn=document.getElementById('filterToggleBtn');
 const open=panel.classList.contains('collapsed');
 panel.classList.toggle('collapsed',!open);
 btn.classList.toggle('show',!open);
-root.classList.toggle('panel-open',open);
-setTimeout(()=>map.invalidateSize({animate:false}),400);
 }
 
 function zoomIn(){map.zoomIn()}
 function zoomOut(){map.zoomOut()}
-function panMap(x,y){map.panBy([x*100,y*100])}
+function panMap(x,y){
+const size=map.getSize();
+const amtX=size.x*0.28;
+const amtY=size.y*0.28;
+map.panBy([x*amtX,y*amtY],{animate:true,duration:0.4,easeLinearity:0.4});
+}
+
+let panHoldInterval=null;
+function bindHold(el,action,interval){
+let timer=null;
+const start=(e)=>{
+e.preventDefault();
+if(timer)clearInterval(timer);
+action();
+timer=setInterval(action,interval);
+};
+const stop=()=>{if(timer){clearInterval(timer);timer=null;}};
+el.addEventListener('pointerdown',start);
+el.addEventListener('pointerup',stop);
+el.addEventListener('pointerleave',stop);
+el.addEventListener('pointercancel',stop);
+}
+function setupPanHold(){
+document.querySelectorAll('.map-controls .ctrl[data-dx]').forEach(btn=>{
+const dx=parseFloat(btn.dataset.dx),dy=parseFloat(btn.dataset.dy);
+bindHold(btn,()=>panMap(dx,dy),260);
+});
+const zin=document.querySelector('.zoom-in');
+const zout=document.querySelector('.zoom-out');
+if(zin)bindHold(zin,()=>map.zoomIn(),350);
+if(zout)bindHold(zout,()=>map.zoomOut(),350);
+}
 
 function locateMap(){
 if(allProjects.length){
@@ -339,16 +391,11 @@ else icon.className='fa-solid fa-expand';
 setTimeout(()=>map.invalidateSize(),300);
 });
 
-function toggleMapView(){
-const root=document.getElementById('mapRoot');
+function toggleControls(){
+const controls=document.getElementById('mapControls');
 const icon=document.getElementById('mapOpenIcon');
-root.classList.toggle('map-expanded');
-if(root.classList.contains('map-expanded')){
-icon.className='fa-solid fa-down-left-and-up-right-to-center';
-}else{
-icon.className='fa-solid fa-up-right-and-down-left-from-center';
-}
-setTimeout(()=>map.invalidateSize({animate:true}),400);
+const collapsed=controls.classList.toggle('collapsed');
+icon.className=collapsed?'fa-solid fa-up-right-and-down-left-from-center':'fa-solid fa-down-left-and-up-right-to-center';
 }
 
 function openGoogleMaps(){
@@ -357,16 +404,19 @@ window.open(`https://www.google.com/maps/@${c.lat},${c.lng},15z`,'_blank');
 }
 
 function setMapType(type){
+const switchEl=document.getElementById('mapStyleSwitch');
 if(type==='sat'){
 map.removeLayer(mapLayer);
 satLayer.addTo(map);
 document.getElementById('satBtn').classList.add('active');
 document.getElementById('mapBtn').classList.remove('active');
+switchEl.classList.add('sat');
 }else{
 map.removeLayer(satLayer);
 mapLayer.addTo(map);
 document.getElementById('mapBtn').classList.add('active');
 document.getElementById('satBtn').classList.remove('active');
+switchEl.classList.remove('sat');
 }
 }
 
@@ -394,12 +444,22 @@ function init(){
 map=L.map('leafletMap',{
 zoomControl:false,
 attributionControl:true,
-scrollWheelZoom:true,
+scrollWheelZoom:false,
 doubleClickZoom:true,
 dragging:true,
 touchZoom:true,
 boxZoom:true
 }).setView([23.8103,90.4125],8);
+
+const mapEl=document.getElementById('leafletMap');
+mapEl.addEventListener('wheel',function(e){
+if(!(e.ctrlKey||e.metaKey))return;
+e.preventDefault();
+const point=map.mouseEventToContainerPoint(e);
+const latlng=map.containerPointToLatLng(point);
+const newZoom=e.deltaY<0?map.getZoom()+1:map.getZoom()-1;
+map.setZoomAround(latlng,newZoom,{animate:true});
+},{passive:false});
 
 mapLayer=L.tileLayer(
 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
@@ -417,13 +477,15 @@ attribution:'&copy; Esri, Maxar, Earthstar Geographics, GIS User Community'
 
 mapLayer.addTo(map);
 markerLayer=L.layerGroup().addTo(map);
+addBangladeshHighlight();
 
 document.getElementById('filterPanel').classList.add('collapsed');
 document.getElementById('filterToggleBtn').classList.add('show');
-document.getElementById('mapRoot').classList.remove('panel-open');
+document.getElementById('mapControls').classList.add('collapsed');
 
 loadData();
 setTimeout(()=>map.invalidateSize({animate:false}),300);
+setupPanHold();
 }
 
 document.addEventListener('DOMContentLoaded',init);
