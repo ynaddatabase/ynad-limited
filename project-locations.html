@@ -2,80 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Project Locations Map</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:'Poppins',sans-serif}body{background:#fff}
-#mapRoot{position:relative;width:100%;height:100%;min-height:100%;overflow:hidden;background:#e5e7eb}
-#leafletMap{position:absolute;inset:0;left:0;width:100%;height:100%;z-index:0;transition:left .38s cubic-bezier(.4,0,.2,1),width .38s cubic-bezier(.4,0,.2,1)}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Poppins,sans-serif}
+#mapRoot{position:relative;width:100%;height:100%;overflow:hidden}
+#leafletMap{position:absolute;inset:0;width:100%;height:100%;transition:left .38s ease,width .38s ease}
 #mapRoot.panel-open #leafletMap{left:258px;width:calc(100% - 258px)}
-#leafletMap .leaflet-tile-pane{filter:none}
 
-#filterPanel{position:absolute;top:14px;left:14px;width:230px;max-width:calc(100% - 28px);z-index:20;background:rgba(255,255,255,.98);border:1px solid #dfe3e8;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;transform:translateX(0);opacity:1;pointer-events:auto;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
-#filterPanel.collapsed{transform:translateX(calc(-100% - 25px));opacity:0;pointer-events:none}
-#filterPanelHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border-bottom:1px solid #e5e7eb}
-#filterPanelHeader h3{margin:0;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#d97706}
-#filterPanelHeader button{width:28px;height:28px;border:0;border-radius:50%;background:#f1f5f9;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+#filterPanel{position:absolute;top:14px;left:14px;width:230px;z-index:20;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;transition:.35s}
+#filterPanel.collapsed{transform:translateX(-270px);opacity:0;pointer-events:none}
+#filterPanelHeader{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #eee}
+#filterPanelHeader h3{margin:0;color:#d97706;font-size:11px;font-weight:600;text-transform:uppercase}
+#filterPanelHeader button{width:28px;height:28px;border:0;border-radius:50%;background:#f1f5f9;color:#64748b;cursor:pointer}
 #filterPanelHeader button:hover{background:#d97706;color:#fff}
-#filterPanelBody{max-height:62vh;overflow-y:auto;padding:12px}
-#filterPanelBody::-webkit-scrollbar{width:5px}
-#filterPanelBody::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-.filter-group{margin-bottom:14px}.filter-group:last-child{margin-bottom:4px}
-.filter-group-title{display:flex;align-items:center;gap:5px;margin-bottom:6px;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#64748b;text-transform:uppercase}
-.filter-group-title i{color:#d97706;font-size:9px}
-.filter-select{width:100%;box-sizing:border-box;font-family:inherit;font-size:11.5px;padding:7px 8px;border:1px solid #dce2e8;border-radius:5px;background:#f8fafc;color:#1e293b;outline:0;cursor:pointer;transition:border-color .2s,box-shadow .2s}
-.filter-select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.12)}
-#filterResetBtn{width:100%;margin-top:4px;padding:7px 0;border:1.5px solid #d97706;border-radius:5px;background:transparent;color:#d97706;font-family:inherit;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+#filterPanelBody{max-height:62vh;overflow:auto;padding:12px}
+.filter-group{margin-bottom:14px}
+.filter-group-title{margin-bottom:6px;color:#64748b;font-size:9.5px;font-weight:700;text-transform:uppercase}
+.filter-group-title i{color:#d97706;margin-right:4px}
+.filter-select{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #dce2e8;border-radius:5px;background:#f8fafc;font-size:11.5px;outline:0}
+#filterResetBtn{width:100%;padding:7px;border:1.5px solid #d97706;border-radius:5px;background:none;color:#d97706;font-size:10.5px;cursor:pointer}
 #filterResetBtn:hover{background:#d97706;color:#fff}
-#filterCount{margin-top:8px;color:#94a3b8;font-size:10px;text-align:center}
+#filterCount{text-align:center;margin-top:8px;color:#94a3b8;font-size:10px}
 #filterCount strong{color:#334155}
 
-#filterToggleBtn{position:absolute;top:125px;left:14px;z-index:21;width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:#d97706;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:transform .2s,background .2s,color .2s}
+#filterToggleBtn{position:absolute;top:125px;left:14px;z-index:21;width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:#d97706;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.22)}
 #filterToggleBtn.show{display:flex}
-#filterToggleBtn:hover{background:#d97706;color:#fff;transform:scale(1.04)}
+#filterToggleBtn:hover{background:#d97706;color:#fff}
 
-.google-controls{position:absolute;right:14px;bottom:78px;z-index:15;display:flex;flex-direction:column;box-shadow:0 2px 7px rgba(0,0,0,.22)}
-.google-control-btn{width:40px;height:40px;border:0;background:#fff;color:#555;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s}
-.google-control-btn+.google-control-btn{border-top:1px solid #ddd}
-.google-control-btn:hover{background:#f1f3f4;color:#222}
-.google-control-btn:active{background:#e8eaed}
+.map-style{position:absolute;top:14px;left:14px;z-index:15;display:flex;background:#fff;border-radius:3px;box-shadow:0 2px 7px rgba(0,0,0,.2);overflow:hidden}
+.map-style button{border:0;background:#fff;padding:9px 15px;color:#555;font-size:14px;cursor:pointer}
+.map-style button.active{color:#111;font-weight:600}
+.map-style button:hover{background:#f1f3f4}
 
-#mapLegend{position:absolute;bottom:14px;left:14px;z-index:20;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #e2e8f0;border-radius:7px;box-shadow:0 5px 18px rgba(15,23,42,.14);display:flex;align-items:center;gap:12px;font-size:10.5px;transition:left .38s cubic-bezier(.4,0,.2,1)}
+.map-controls{position:absolute;right:14px;bottom:60px;z-index:15;display:flex;flex-direction:column;align-items:center;gap:8px}
+.ctrl{width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#555;box-shadow:0 2px 7px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+.ctrl:hover{background:#f1f3f4;color:#222}
+.pan-grid{display:grid;grid-template-columns:40px 40px 40px;grid-template-rows:40px 40px 40px;gap:3px}
+.pan-grid .ctrl{border-radius:50%}
+.pan-center{background:#fff}
+
+#mapLegend{position:absolute;bottom:12px;left:14px;z-index:15;padding:8px 12px;background:rgba(255,255,255,.96);border:1px solid #ddd;border-radius:7px;box-shadow:0 4px 15px rgba(0,0,0,.12);display:flex;gap:12px;font-size:10px}
 #mapRoot.panel-open #mapLegend{left:272px}
-.legend-item{display:flex;align-items:center;gap:5px;color:#334155;font-weight:500}
-.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 0 3px rgba(0,0,0,.08)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:9px;height:9px;border-radius:50%}
 
 .project-pin{position:relative;width:34px;height:40px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%)}
-.project-pin svg{position:absolute;top:0;left:0;width:34px;height:40px}
-.project-pin .pin-label{position:relative;top:-6px;font-size:8.5px;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.4);max-width:22px;overflow:hidden;white-space:nowrap;pointer-events:none}
-.project-pin:hover{z-index:500!important}
-.project-pin:hover svg{filter:brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+.project-pin svg{position:absolute;width:34px;height:40px}
+.pin-label{position:relative;top:-6px;color:#fff;font-size:8.5px;font-weight:800;text-shadow:0 1px 2px #333;pointer-events:none}
 
-.leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.22)}
+.leaflet-popup-content-wrapper{border-radius:8px}
 .leaflet-popup-content{margin:0;width:220px!important}
-.popup-card{font-family:'Poppins',sans-serif}
-.popup-card .popup-title{padding:10px 12px 4px;font-size:12.5px;font-weight:600;color:#0f172a;text-transform:uppercase;line-height:1.3}
-.popup-card .popup-row{display:flex;justify-content:space-between;gap:8px;padding:3px 12px;font-size:10.5px;color:#475569}
-.popup-card .popup-row span:first-child{color:#94a3b8;font-weight:500;font-size:9px;text-transform:uppercase}
-.popup-card .popup-status{display:inline-block;margin:6px 12px 10px;padding:3px 9px;border-radius:999px;font-size:9px;font-weight:700;color:#fff;text-transform:uppercase}
+.popup-title{padding:10px 12px 4px;font-size:12px;font-weight:600;color:#0f172a}
+.popup-row{display:flex;justify-content:space-between;padding:3px 12px;font-size:10px;color:#475569}
+.popup-row span:first-child{color:#94a3b8;font-size:9px}
+.popup-status{display:inline-block;margin:6px 12px 10px;padding:3px 9px;border-radius:999px;color:#fff;font-size:9px;font-weight:700}
 
-#mapLoadingState{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#f3f4f6;color:#64748b;font-size:12px;text-transform:uppercase}
-#mapLoadingState i{font-size:22px;color:#d97706}
-#mapEmptyState{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:15;background:rgba(255,255,255,.96);border:1px solid #e2e8f0;border-radius:8px;padding:16px 22px;font-size:12px;color:#64748b;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.14);display:none}
+#mapLoadingState{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:#fff;color:#64748b;font-size:12px}
+#mapLoadingState i{margin-right:8px;color:#d97706}
 
 @media(max-width:640px){
-#filterPanel{width:190px;top:10px;left:10px}
+#filterPanel{width:190px}
 #mapRoot.panel-open #leafletMap{left:218px;width:calc(100% - 218px)}
-#filterToggleBtn{top:110px;left:10px}
-#mapLegend{flex-direction:column;align-items:flex-start;gap:6px;bottom:10px;left:10px}
+#filterToggleBtn{top:110px}
 #mapRoot.panel-open #mapLegend{left:228px}
-.google-controls{right:10px;bottom:65px}
+.map-controls{right:8px}
 }
 </style>
 </head>
@@ -85,71 +81,93 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:
 <div id="leafletMap"></div>
 
 <div id="mapLoadingState">
-<i class="fa-solid fa-spinner fa-spin"></i>
-<span>Loading project locations...</span>
+<i class="fa-solid fa-spinner fa-spin"></i>Loading project locations...
 </div>
 
-<div id="mapEmptyState">No projects match the selected filters.</div>
+<div class="map-style">
+<button id="mapBtn" class="active" onclick="setMapType('map')">Map</button>
+<button id="satBtn" onclick="setMapType('sat')">Satellite</button>
+</div>
 
-<button id="filterToggleBtn" onclick="toggleFilterPanel()" title="Show filters">
+<button id="filterToggleBtn" onclick="toggleFilterPanel()" title="Filter">
 <i class="fa-solid fa-sliders"></i>
 </button>
 
 <div id="filterPanel" class="collapsed">
 <div id="filterPanelHeader">
-<h3><i class="fa-solid fa-filter"></i>&nbsp; Filter Projects</h3>
-<button onclick="toggleFilterPanel()" title="Hide filters"><i class="fa-solid fa-xmark"></i></button>
+<h3><i class="fa-solid fa-filter"></i> Filter Projects</h3>
+<button onclick="toggleFilterPanel()"><i class="fa-solid fa-xmark"></i></button>
 </div>
-
 <div id="filterPanelBody">
+
 <div class="filter-group">
-<div class="filter-group-title"><i class="fa-solid fa-layer-group"></i> Category</div>
-<select id="filterCategory" class="filter-select" onchange="applyFilters()">
-<option value="">All Categories</option>
-</select>
+<div class="filter-group-title"><i class="fa-solid fa-layer-group"></i>Category</div>
+<select id="filterCategory" class="filter-select" onchange="applyFilters()"><option value="">All Categories</option></select>
 </div>
 
 <div class="filter-group">
-<div class="filter-group-title"><i class="fa-solid fa-circle-notch"></i> Status</div>
+<div class="filter-group-title"><i class="fa-solid fa-circle-notch"></i>Status</div>
 <select id="filterStatus" class="filter-select" onchange="applyFilters()">
 <option value="">All Statuses</option>
-<option value="Ongoing">Ongoing</option>
-<option value="Completed">Completed</option>
-<option value="Upcoming">Upcoming</option>
+<option>Ongoing</option>
+<option>Completed</option>
+<option>Upcoming</option>
 </select>
 </div>
 
 <div class="filter-group">
-<div class="filter-group-title"><i class="fa-solid fa-building"></i> Organization</div>
-<select id="filterOrganization" class="filter-select" onchange="applyFilters()">
-<option value="">All Organizations</option>
-</select>
+<div class="filter-group-title"><i class="fa-solid fa-building"></i>Organization</div>
+<select id="filterOrganization" class="filter-select" onchange="applyFilters()"><option value="">All Organizations</option></select>
 </div>
 
 <div class="filter-group">
-<div class="filter-group-title"><i class="fa-solid fa-earth-asia"></i> Donated Country</div>
-<select id="filterCountry" class="filter-select" onchange="applyFilters()">
-<option value="">All Countries</option>
-</select>
+<div class="filter-group-title"><i class="fa-solid fa-earth-asia"></i>Donated Country</div>
+<select id="filterCountry" class="filter-select" onchange="applyFilters()"><option value="">All Countries</option></select>
 </div>
 
 <button id="filterResetBtn" onclick="resetFilters()">Reset Filters</button>
-
-<div id="filterCount">
-<strong>0</strong> of <strong>0</strong> projects shown
-</div>
+<div id="filterCount"><strong>0</strong> of <strong>0</strong> projects shown</div>
 </div>
 </div>
 
-<div class="google-controls">
-<button class="google-control-btn" onclick="zoomIn()" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
-<button class="google-control-btn" onclick="zoomOut()" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
+<div class="map-controls">
+
+<button class="ctrl" onclick="zoomIn()" title="Zoom in">
+<i class="fa-solid fa-plus"></i>
+</button>
+
+<button class="ctrl" onclick="zoomOut()" title="Zoom out">
+<i class="fa-solid fa-minus"></i>
+</button>
+
+<div class="pan-grid">
+<div></div>
+<button class="ctrl" onclick="panMap(0,1)"><i class="fa-solid fa-chevron-up"></i></button>
+<div></div>
+
+<button class="ctrl" onclick="panMap(-1,0)"><i class="fa-solid fa-chevron-left"></i></button>
+<button class="ctrl pan-center" onclick="locateMap()"><i class="fa-solid fa-crosshairs"></i></button>
+<button class="ctrl" onclick="panMap(1,0)"><i class="fa-solid fa-chevron-right"></i></button>
+
+<div></div>
+<button class="ctrl" onclick="panMap(0,-1)"><i class="fa-solid fa-chevron-down"></i></button>
+<div></div>
+</div>
+
+<button class="ctrl" onclick="fullscreenMap()" title="Fullscreen">
+<i class="fa-solid fa-expand"></i>
+</button>
+
+<button class="ctrl" onclick="openGoogleMaps()" title="Open in Google Maps">
+<i class="fa-solid fa-street-view"></i>
+</button>
+
 </div>
 
 <div id="mapLegend">
-<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Ongoing</div>
-<div class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span> Completed</div>
-<div class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> Upcoming</div>
+<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Ongoing</div>
+<div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Completed</div>
+<div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Upcoming</div>
 </div>
 </div>
 
@@ -158,228 +176,188 @@ const SUPABASE_URL='https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
-const STATUS_COLORS={Ongoing:'#f59e0b',Completed:'#16a34a',Upcoming:'#2563eb'};
-const DEFAULT_COLOR='#64748b';
-let leafletMap=null,allProjects=[],markerLayer=null;
+const COLORS={Ongoing:'#f59e0b',Completed:'#16a34a',Upcoming:'#2563eb'};
+let map,markerLayer,allProjects=[],mapLayer,satLayer,currentType='map';
 
-function escapeHtml(str){
-if(str===null||str===undefined)return'';
-return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function esc(s){
+return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function parseLatLngFromLink(link){
+function getCoords(link){
 if(!link||typeof link!=='string')return null;
 try{
-const decoded=decodeURIComponent(link);
-let m=decoded.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
-m=decoded.match(/[?&](?:q|query)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
-m=decoded.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
-if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
-m=decoded.match(/[?&]ll=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
-m=decoded.match(/(-?\d{1,3}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/);
-if(m)return{lat:parseFloat(m[1]),lng:parseFloat(m[2])};
-}catch(e){console.warn('Failed to parse location_link:',link,e)}
+let s=decodeURIComponent(link),m;
+const patterns=[
+/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+/[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/
+];
+for(const p of patterns){
+m=s.match(p);
+if(m)return{lat:+m[1],lng:+m[2]};
+}
+}catch(e){}
 return null;
 }
 
-function buildShortCode(name){
-if(!name)return'?';
-const words=String(name).trim().split(/\s+/).filter(Boolean);
-if(!words.length)return'?';
-if(words.length===1)return words[0].substring(0,3).toUpperCase();
-return words.map(w=>w[0]).join('').toUpperCase().substring(0,4);
+function shortCode(n){
+if(!n)return'?';
+const w=String(n).trim().split(/\s+/);
+return w.length===1?w[0].slice(0,3).toUpperCase():w.map(x=>x[0]).join('').slice(0,4).toUpperCase();
 }
 
-function pinSvg(color){
-return`<svg viewBox="0 0 34 40" xmlns="http://www.w3.org/2000/svg"><path d="M17 0C7.6 0 0 7.6 0 17c0 12.4 17 23 17 23s17-10.6 17-23C34 7.6 26.4 0 17 0z" fill="${color}" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/><circle cx="17" cy="16.5" r="10.5" fill="rgba(255,255,255,0.18)"/></svg>`;
-}
-
-function createPinIcon(project){
-const color=STATUS_COLORS[project.status]||DEFAULT_COLOR;
-const code=buildShortCode(project.project_name);
+function pin(project){
+const c=COLORS[project.status]||'#64748b';
 return L.divIcon({
-html:`<div class="project-pin">${pinSvg(color)}<div class="pin-label">${escapeHtml(code)}</div></div>`,
 className:'',
-iconSize:[34,40],
-iconAnchor:[17,40],
-popupAnchor:[0,-38]
+html:`<div class="project-pin"><svg viewBox="0 0 34 40"><path d="M17 0C7.6 0 0 7.6 0 17c0 12.4 17 23 17 23s17-10.6 17-23C34 7.6 26.4 0 17 0z" fill="${c}"/><circle cx="17" cy="16.5" r="10.5" fill="rgba(255,255,255,.18)"/></svg><div class="pin-label">${esc(shortCode(project.project_name))}</div></div>`,
+iconSize:[34,40],iconAnchor:[17,40],popupAnchor:[0,-38]
 });
 }
 
-function buildPopupHtml(project){
-const color=STATUS_COLORS[project.status]||DEFAULT_COLOR;
-return`<div class="popup-card">
-<div class="popup-title">${escapeHtml(project.project_name||'Untitled Project')}</div>
-${project.district?`<div class="popup-row"><span>Location</span><span>${escapeHtml(project.district)}</span></div>`:''}
-${project.project_type?`<div class="popup-row"><span>Category</span><span>${escapeHtml(project.project_type)}</span></div>`:''}
-${project.organization?`<div class="popup-row"><span>Org</span><span>${escapeHtml(project.organization)}</span></div>`:''}
-${project.donated_country?`<div class="popup-row"><span>Country</span><span>${escapeHtml(project.donated_country)}</span></div>`:''}
-${project.bd_number?`<div class="popup-row"><span>Code</span><span>${escapeHtml(project.bd_number)}</span></div>`:''}
-<span class="popup-status" style="background:${color};">${escapeHtml(project.status||'N/A')}</span>
+function popup(p){
+const c=COLORS[p.status]||'#64748b';
+return`<div>
+<div class="popup-title">${esc(p.project_name||'Project')}</div>
+${p.district?`<div class="popup-row"><span>Location</span><span>${esc(p.district)}</span></div>`:''}
+${p.project_type?`<div class="popup-row"><span>Category</span><span>${esc(p.project_type)}</span></div>`:''}
+${p.organization?`<div class="popup-row"><span>Org</span><span>${esc(p.organization)}</span></div>`:''}
+${p.donated_country?`<div class="popup-row"><span>Country</span><span>${esc(p.donated_country)}</span></div>`:''}
+${p.bd_number?`<div class="popup-row"><span>Code</span><span>${esc(p.bd_number)}</span></div>`:''}
+<span class="popup-status" style="background:${c}">${esc(p.status||'N/A')}</span>
 </div>`;
 }
 
-function populateFilterOptions(projects){
-const categories=new Set(),organizations=new Set(),countries=new Set();
-projects.forEach(p=>{
-if(p.project_type)categories.add(p.project_type);
-if(p.organization)organizations.add(p.organization);
-if(p.donated_country)countries.add(p.donated_country);
-});
-fillSelect('filterCategory',categories,'All Categories');
-fillSelect('filterOrganization',organizations,'All Organizations');
-fillSelect('filterCountry',countries,'All Countries');
+function fill(id,set,label){
+const e=document.getElementById(id),v=e.value;
+const a=[...set].sort((x,y)=>x.localeCompare(y));
+e.innerHTML=`<option value="">${label}</option>`+a.map(x=>`<option>${esc(x)}</option>`).join('');
+if(a.includes(v))e.value=v;
 }
 
-function fillSelect(id,valuesSet,allLabel){
-const select=document.getElementById(id),current=select.value;
-const sorted=Array.from(valuesSet).sort((a,b)=>a.localeCompare(b));
-select.innerHTML=`<option value="">${allLabel}</option>`+sorted.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-if(sorted.includes(current))select.value=current;
+function filters(){
+const c=document.getElementById('filterCategory').value;
+const s=document.getElementById('filterStatus').value;
+const o=document.getElementById('filterOrganization').value;
+const d=document.getElementById('filterCountry').value;
+return allProjects.filter(p=>
+(!c||p.project_type===c)&&
+(!s||p.status===s)&&
+(!o||p.organization===o)&&
+(!d||p.donated_country===d)
+);
 }
 
 function applyFilters(){
-const category=document.getElementById('filterCategory').value;
-const status=document.getElementById('filterStatus').value;
-const organization=document.getElementById('filterOrganization').value;
-const country=document.getElementById('filterCountry').value;
-
-const filtered=allProjects.filter(p=>{
-if(category&&p.project_type!==category)return false;
-if(status&&p.status!==status)return false;
-if(organization&&p.organization!==organization)return false;
-if(country&&p.donated_country!==country)return false;
-return true;
+const data=filters();
+markerLayer.clearLayers();
+const b=[];
+data.forEach(p=>{
+const m=L.marker([p._lat,p._lng],{icon:pin(p)}).bindPopup(popup(p)).addTo(markerLayer);
+b.push([p._lat,p._lng]);
 });
-
-renderMarkers(filtered);
-
-const count=document.querySelectorAll('#filterCount strong');
-if(count.length>=2){
-count[0].textContent=filtered.length;
-count[1].textContent=allProjects.length;
-}
-
-document.getElementById('mapEmptyState').style.display=filtered.length===0?'block':'none';
+document.querySelectorAll('#filterCount strong')[0].textContent=data.length;
+document.querySelectorAll('#filterCount strong')[1].textContent=allProjects.length;
+if(b.length)map.fitBounds(b,{padding:[40,40],maxZoom:12});
 }
 
 function resetFilters(){
-document.getElementById('filterCategory').value='';
-document.getElementById('filterStatus').value='';
-document.getElementById('filterOrganization').value='';
-document.getElementById('filterCountry').value='';
+['filterCategory','filterStatus','filterOrganization','filterCountry'].forEach(id=>document.getElementById(id).value='');
 applyFilters();
-}
-
-function renderMarkers(projects){
-if(!leafletMap)return;
-if(markerLayer)markerLayer.clearLayers();
-else markerLayer=L.layerGroup().addTo(leafletMap);
-
-const bounds=[];
-projects.forEach(project=>{
-const marker=L.marker([project._lat,project._lng],{icon:createPinIcon(project)});
-marker.bindPopup(buildPopupHtml(project));
-marker.addTo(markerLayer);
-bounds.push([project._lat,project._lng]);
-});
-
-if(bounds.length){
-leafletMap.fitBounds(bounds,{padding:[45,45],maxZoom:12,animate:true});
-}
 }
 
 function toggleFilterPanel(){
 const panel=document.getElementById('filterPanel');
-const toggleBtn=document.getElementById('filterToggleBtn');
-const mapRoot=document.getElementById('mapRoot');
-const isClosed=panel.classList.contains('collapsed');
+const root=document.getElementById('mapRoot');
+const btn=document.getElementById('filterToggleBtn');
+const open=panel.classList.contains('collapsed');
+panel.classList.toggle('collapsed',!open);
+btn.classList.toggle('show',!open);
+root.classList.toggle('panel-open',open);
+setTimeout(()=>map.invalidateSize(),400);
+}
 
-if(isClosed){
-panel.classList.remove('collapsed');
-toggleBtn.classList.remove('show');
-mapRoot.classList.add('panel-open');
+function zoomIn(){map.zoomIn()}
+function zoomOut(){map.zoomOut()}
+
+function panMap(x,y){
+const s=120;
+map.panBy([x*s,y*s]);
+}
+
+function locateMap(){
+if(allProjects.length){
+const p=allProjects[0];
+map.setView([p._lat,p._lng],map.getZoom());
+}
+}
+
+function fullscreenMap(){
+const el=document.getElementById('mapRoot');
+if(!document.fullscreenElement)el.requestFullscreen?.();
+else document.exitFullscreen?.();
+}
+
+function openGoogleMaps(){
+const c=map.getCenter();
+window.open(`https://www.google.com/maps/@${c.lat},${c.lng},15z`,'_blank');
+}
+
+function setMapType(type){
+currentType=type;
+if(type==='sat'){
+map.removeLayer(mapLayer);
+satLayer.addTo(map);
+document.getElementById('satBtn').classList.add('active');
+document.getElementById('mapBtn').classList.remove('active');
 }else{
-panel.classList.add('collapsed');
-toggleBtn.classList.add('show');
-mapRoot.classList.remove('panel-open');
-}
-
-if(leafletMap){
-setTimeout(()=>leafletMap.invalidateSize({animate:false}),400);
+map.removeLayer(satLayer);
+mapLayer.addTo(map);
+document.getElementById('mapBtn').classList.add('active');
+document.getElementById('satBtn').classList.remove('active');
 }
 }
 
-function zoomIn(){
-if(leafletMap)leafletMap.zoomIn();
+async function loadData(){
+const loading=document.getElementById('mapLoadingState');
+const{data,error}=await supabaseClient.from('projects').select('*');
+loading.style.display='none';
+if(error){console.error(error);return;}
+
+allProjects=(data||[]).map(p=>{
+const c=getCoords(p.location_link);
+return c?{...p,_lat:c.lat,_lng:c.lng}:null;
+}).filter(Boolean);
+
+fill('filterCategory',new Set(allProjects.map(p=>p.project_type).filter(Boolean)),'All Categories');
+fill('filterOrganization',new Set(allProjects.map(p=>p.organization).filter(Boolean)),'All Organizations');
+fill('filterCountry',new Set(allProjects.map(p=>p.donated_country).filter(Boolean)),'All Countries');
+applyFilters();
 }
 
-function zoomOut(){
-if(leafletMap)leafletMap.zoomOut();
-}
+function init(){
+map=L.map('leafletMap',{zoomControl:false,attributionControl:true}).setView([23.8103,90.4125],8);
 
-function initMap(){
-leafletMap=L.map('leafletMap',{
-zoomControl:false,
-attributionControl:true,
-doubleClickZoom:true,
-scrollWheelZoom:true,
-dragging:true,
-touchZoom:true,
-boxZoom:true
-}).setView([23.8103,90.4125],8);
+mapLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{
+maxZoom:19,
+attribution:'&copy; Esri, HERE, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors, GIS User Community'
+});
 
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{
-attribution:'&copy; Esri &mdash; Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, and the GIS User Community',
-maxZoom:19
-}).addTo(leafletMap);
+satLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+maxZoom:19,
+attribution:'&copy; Esri, Maxar, Earthstar Geographics, GIS User Community'
+});
 
-markerLayer=L.layerGroup().addTo(leafletMap);
+mapLayer.addTo(map);
+markerLayer=L.layerGroup().addTo(map);
 
 document.getElementById('filterPanel').classList.add('collapsed');
 document.getElementById('filterToggleBtn').classList.add('show');
-document.getElementById('mapRoot').classList.remove('panel-open');
 
-loadMapData();
+loadData();
 }
 
-async function loadMapData(){
-const loadingState=document.getElementById('mapLoadingState');
-
-const{data,error}=await supabaseClient.from('projects').select('*');
-
-loadingState.style.display='none';
-
-if(error){
-console.error('Failed to load projects:',error);
-const emptyState=document.getElementById('mapEmptyState');
-emptyState.textContent='Failed to load project locations.';
-emptyState.style.display='block';
-return;
-}
-
-allProjects=(data||[]).map(project=>{
-const coords=parseLatLngFromLink(project.location_link);
-if(!coords)return null;
-return Object.assign({},project,{_lat:coords.lat,_lng:coords.lng});
-}).filter(Boolean);
-
-populateFilterOptions(allProjects);
-applyFilters();
-
-try{
-window.parent.postMessage({
-type:'ynad-map-loaded',
-plotted:allProjects.length,
-total:(data||[]).length
-},'*');
-}catch(e){}
-}
-
-document.addEventListener('DOMContentLoaded',initMap);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
