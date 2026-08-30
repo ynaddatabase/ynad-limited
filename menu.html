@@ -326,22 +326,22 @@ function openEditor(e){
     #about-editor .ae-header,
     #about-editor .ae-body,
     #about-editor .ae-actions{
-      transition:opacity .3s ease, transform .3s ease
+      transition:opacity .45s ease, transform .45s ease
     }
     #about-editor.ae-content-closing .ae-header,
     #about-editor.ae-content-closing .ae-body,
     #about-editor.ae-content-closing .ae-actions{
       opacity:0;
-      transform:translateY(18px);
+      transform:translateY(24px);
     }
-    #about-editor.ae-content-closing .ae-body{transition-delay:.03s}
-    #about-editor.ae-content-closing .ae-actions{transition-delay:.06s}
+    #about-editor.ae-content-closing .ae-body{transition-delay:.06s}
+    #about-editor.ae-content-closing .ae-actions{transition-delay:.12s}
 
     #about-editor .ae-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:20px 24px;border-bottom:1px solid #e2e8f0;
       position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;
-      transition:background-color .25s ease, border-color .25s ease, opacity .3s ease, transform .3s ease
+      transition:background-color .25s ease, border-color .25s ease, opacity .45s ease, transform .45s ease
     }
     #about-editor h3{margin:0;color:#0f172a;font-size:19px;font-weight:600}
     #about-editor .ae-body{padding:22px 24px 6px}
@@ -584,8 +584,8 @@ function openEditor(e){
     const bgEl = s.querySelector('.ae-bg');
     const boxEl = s.querySelector('.ae-box');
 
-    const CONTENT_FADE_MS = 300;   // matches .ae-header/.ae-body/.ae-actions transition
-    const CONTENT_LAST_DELAY_MS = 60; // matches .ae-actions transition-delay
+    const CONTENT_FADE_MS = 450;   // matches .ae-header/.ae-body/.ae-actions transition
+    const CONTENT_LAST_DELAY_MS = 120; // matches .ae-actions transition-delay
     const BOX_CLOSE_MS = 280;      // matches ae-box-close animation duration
 
     const close=()=>{
