@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YNAD Construction — Footer</title>
+<style>
+  :root{
+    --footer-bg:#1b1d1d;
+    --bottom-bg:#484848;
+    --text-hi:#ffffff;
+    --text-mid:#c7c5c2;
+    --text-lo:#8a8886;
+    --icon-bg:#3a3c3c;
+    --icon-line:#55575a;
+    --amber:#d98c3c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#0a0a0a;font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
+
+  .map-context{
+    height:220px;
+    background:#eef0e6;
+    display:flex;align-items:center;justify-content:center;
+    color:#9a9686;font-size:13px;letter-spacing:.04em;
+  }
+
+  /* ================= FOOTER ================= */
+  footer{
+    position:relative;
+    background:var(--footer-bg);
+    outline:none;
+  }
+  footer:focus-visible{
+    box-shadow:inset 0 0 0 1px rgba(217,140,60,.4);
+  }
+
+  .edit-icon-btn{
+    position:absolute;
+    top:18px; right:22px;
+    width:36px;height:36px;
+    border-radius:50%;
+    border:1px solid var(--icon-line);
+    background:var(--icon-bg);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(-6px) scale(.85);
+    transition:opacity .2s ease, transform .2s ease, border-color .2s ease;
+    z-index:5;
+  }
+  .edit-icon-btn.visible{opacity:1; pointer-events:auto; transform:translateY(0) scale(1);}
+  .edit-icon-btn:hover{border-color:var(--amber);}
+  .edit-icon-btn svg{width:15px;height:15px;stroke:var(--text-hi);}
+
+  .footer-inner{
+    max-width:1920px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:32px;
+    padding:44px 96px 56px;
+  }
+
+  /* --- brand block --- */
+  .footer-brand h2{
+    margin:0 0 20px;
+    font-size:32px;
+    line-height:1;
+  }
+  .footer-brand h2 .ynad{font-weight:700; color:var(--text-hi);}
+  .footer-brand h2 .construction{font-weight:300; color:var(--text-hi); margin-left:6px;}
+
+  .footer-location{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .footer-location .pin{
+    width:22px;height:22px;flex:none;margin-top:1px;
+    cursor:pointer;
+    display:block;
+  }
+  .footer-location .pin svg{width:100%;height:100%; fill:var(--text-hi); pointer-events:none; transition:fill .12s ease;}
+  .footer-location .pin:hover svg{fill:var(--amber);}
+  .footer-location p{
+    margin:0;
+    color:var(--text-mid);
+    font-size:15px;
+    font-weight:300;
+    line-height:1.55;
+  }
+
+  /* --- contact / social block --- */
+  .footer-contact{
+    position:relative;
+    width:300px;
+    height:26px;
+    display:flex;
+    align-items:center;
+  }
+  .contact-label{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    height:26px;
+    font-size:20px;
+    color:#5a5c5c;
+    font-weight:300;
+    user-select:none;
+  }
+  .contact-label span{
+    display:inline-flex;
+    width:26px;
+    justify-content:center;
+    opacity:1;
+    transform:translateY(0);
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .footer-contact.active .contact-label span{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+  /* letters fade out left-to-right */
+  .contact-label span:nth-child(1){transition-delay:.00s;}
+  .contact-label span:nth-child(2){transition-delay:.03s;}
+  .contact-label span:nth-child(3){transition-delay:.06s;}
+  .contact-label span:nth-child(4){transition-delay:.09s;}
+  .contact-label span:nth-child(5){transition-delay:.12s;}
+  .contact-label span:nth-child(6){transition-delay:.15s;}
+  .contact-label span:nth-child(7){transition-delay:.18s;}
+
+  .social-icons{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:26px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    pointer-events:none;
+  }
+  .footer-contact.active .social-icons{
+    pointer-events:auto;
+  }
+  .social-icons a{
+    width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;
+  }
+  .social-icons a .circle{
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--icon-bg);
+    display:flex;align-items:center;justify-content:center;
+    color:#d8d6d3;
+    opacity:0;
+    transform:translateY(12px) scale(.6);
+    transition:background .08s ease, color .08s ease,
+               opacity .3s cubic-bezier(.2,.8,.3,1),
+               transform .3s cubic-bezier(.2,.8,.3,1);
+  }
+  .social-icons a svg{width:12px;height:12px;}
+  /* icons fade in left-to-right, entering just after their letter has left */
+  .footer-contact.active .social-icons a:nth-child(1) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.16s;}
+  .footer-contact.active .social-icons a:nth-child(2) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.19s;}
+  .footer-contact.active .social-icons a:nth-child(3) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.22s;}
+  .footer-contact.active .social-icons a:nth-child(4) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.25s;}
+  .footer-contact.active .social-icons a:nth-child(5) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.28s;}
+  .footer-contact.active .social-icons a:nth-child(6) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.31s;}
+  .footer-contact.active .social-icons a:nth-child(7) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.34s;}
+  /* icons leave right-to-left when closing, mirroring the entrance */
+  .social-icons a:nth-child(1) .circle{transition-delay:.24s;}
+  .social-icons a:nth-child(2) .circle{transition-delay:.20s;}
+  .social-icons a:nth-child(3) .circle{transition-delay:.16s;}
+  .social-icons a:nth-child(4) .circle{transition-delay:.12s;}
+  .social-icons a:nth-child(5) .circle{transition-delay:.08s;}
+  .social-icons a:nth-child(6) .circle{transition-delay:.04s;}
+  .social-icons a:nth-child(7) .circle{transition-delay:.00s;}
+  .social-icons a:hover .circle{background:var(--amber); color:#1b1d1d;}
+
+  /* --- developer credit block --- */
+  .footer-dev{
+    display:flex;
+    align-items:center;
+    padding-right:18px;
+  }
+  .dev-by{
+    display:flex;
+    align-items:center;
+    color:#5f6161;
+    font-size:16px;
+    font-weight:400;
+    white-space:nowrap;
+  }
+  .dev-d-letter{
+    position:relative;
+    width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;
+    margin-right:1px;
+    flex:none;
+  }
+  .dev-d-letter svg{
+    width:100%;height:100%;
+    display:block;
+  }
+  .dev-d-letter .d-ring{
+    stroke:#5f6161;
+    fill:none;
+    stroke-width:2.2;
+    stroke-linejoin:round;
+  }
+  .dev-d-letter .gear{
+    stroke:#5f6161;
+    fill:none;
+    stroke-width:1.5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    transform-origin:center;
+    transform-box:fill-box;
+  }
+  .footer-dev:hover .dev-d-letter .gear{animation:gearSpin .7s ease;}
+  @keyframes gearSpin{
+    from{transform:rotate(0deg);}
+    to{transform:rotate(360deg);}
+  }
+  .dev-name{
+    position:relative;
+    margin-left:14px;
+    padding:9px 26px 9px 20px;
+    background:#5c5e5e;
+    color:#dcdad7;
+    font-size:15px;
+    font-weight:400;
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    height:100%;
+    border-radius:15px 0 0 15px;
+  }
+  .dev-name::after{
+    content:"";
+    position:absolute;
+    top:0; right:-13px;
+    width:26px; height:100%;
+    background:#5c5e5e;
+    clip-path:polygon(0 0, 45% 0, 100% 100%, 55% 100%);
+  }
+
+  .footer-bottom{
+    background:var(--bottom-bg);
+    text-align:center;
+    padding:18px 24px;
+    font-size:15px;
+    font-weight:300;
+    color:var(--text-hi);
+  }
+
+  @media (max-width:900px){
+    .footer-inner{padding:36px 28px 44px; gap:28px;}
+    .footer-contact{order:3; width:100%;}
+    .footer-dev{order:2;}
+  }
+
+  /* ================= MODAL ================= */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(5,5,5,.6);
+    backdrop-filter:blur(2px);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity .18s ease;
+    z-index:50;
+  }
+  .modal-overlay.open{opacity:1; pointer-events:auto;}
+  .modal-box{
+    width:min(480px,90vw);
+    max-height:86vh;
+    overflow:auto;
+    background:#232525;
+    border:1px solid #3a3c3c;
+    border-radius:14px;
+    padding:26px;
+    transform:translateY(10px);
+    transition:transform .18s ease;
+    font-family:'Segoe UI',system-ui,sans-serif;
+  }
+  .modal-overlay.open .modal-box{transform:translateY(0);}
+  .modal-box h3{margin:0 0 18px; color:#fff; font-size:18px; font-weight:600;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12px; color:#a8a6a3; margin-bottom:6px;}
+  .field input, .field textarea{
+    width:100%; background:#151616; border:1px solid #3a3c3c; border-radius:8px;
+    color:#fff; padding:9px 11px; font-size:13px; font-family:inherit; resize:vertical;
+  }
+  .field input:disabled{color:#77756f; cursor:not-allowed; opacity:.7;}
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--amber);}
+  .social-edit-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .social-edit-row .icon-tag{
+    width:32px;height:32px;flex:none;border-radius:50%;
+    background:#151616;border:1px solid #3a3c3c;
+    display:flex;align-items:center;justify-content:center;color:#c7c5c2;
+  }
+  .social-edit-row .icon-tag svg{width:14px;height:14px; color:#c7c5c2;}
+  .social-edit-row input{
+    flex:1; background:#151616;border:1px solid #3a3c3c;border-radius:8px;
+    color:#fff;padding:8px 10px;font-size:12px;
+  }
+  .social-edit-row input:focus{outline:none;border-color:var(--amber);}
+  .map-row{display:flex; gap:8px;}
+  .map-row input{flex:1;}
+  .map-open-btn{
+    flex:none; width:38px; border-radius:8px; border:1px solid #3a3c3c;
+    background:#151616; color:var(--amber); cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .map-open-btn:hover{border-color:var(--amber);}
+  .map-open-btn svg{width:16px;height:16px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
+  .btn{
+    padding:9px 16px; border-radius:8px; font-size:13px; cursor:pointer;
+    border:1px solid #3a3c3c; background:transparent; color:#c7c5c2; transition:all .15s ease;
+  }
+  .btn:hover{color:#fff; border-color:#c7c5c2;}
+  .btn.primary{background:var(--amber); border-color:var(--amber); color:#1b1d1d; font-weight:600;}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .hint{font-size:11px; color:#77756f; text-align:center; margin-top:14px; line-height:1.5;}
+</style>
+</head>
+<body>
+
+  <div class="map-context">Map area (for reference — not part of this file)</div>
+
+  <footer id="siteFooter" tabindex="0">
+    <button class="edit-icon-btn" id="editToggleBtn" title="Edit footer" aria-label="Edit footer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+      </svg>
+    </button>
+
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h2><span class="ynad">YNAD</span><span class="construction">CONSTRUCTION</span></h2>
+        <div class="footer-location">
+          <a class="pin" id="mapPinLink" href="https://www.google.com/maps" target="_blank" rel="noopener" title="Open in Google Maps" aria-label="Open in Google Maps">
+            <svg viewBox="0 0 24 24"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"/></svg>
+          </a>
+          <p id="footerLocationText">Level - 05, House - 04, Road - 33, Sector - 07<br>Uttara, Dhaka-1230</p>
+        </div>
+      </div>
+
+      <div class="footer-contact" id="contactWrap" tabindex="0">
+        <span class="contact-label">
+          <span>C</span><span>O</span><span>N</span><span>T</span><span>A</span><span>C</span><span>T</span>
+        </span>
+        <div class="social-icons" id="socialIcons"></div>
+      </div>
+
+      <div class="footer-dev">
+        <span class="dev-by">
+          <span class="dev-d-letter">
+            <svg viewBox="0 0 32 32">
+              <path class="d-ring" d="M7 4 h7.5 a12 12 0 0 1 0 24 H7 Z"/>
+              <g class="gear">
+                <circle cx="16.5" cy="16" r="4.4"/>
+                <path d="M16.5 9v2.2M16.5 20.8v2.2M9.7 16h2.2M21.1 16h2.2M12.1 10.9l1.55 1.55M19.35 19.55l1.55 1.55M12.1 21.1l1.55-1.55M19.35 12.45l1.55-1.55"/>
+              </g>
+            </svg>
+          </span>eveloped by
+        </span>
+        <span class="dev-name">Md. Abu Sayeed</span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">© 2026 YNAD Construction. All Rights Reserved.</div>
+  </footer>
+
+  <!-- ================= EDIT MODAL ================= -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <h3>Edit footer information</h3>
+
+      <div class="field">
+        <label>Company name (fixed)</label>
+        <input type="text" value="YNAD CONSTRUCTION" disabled>
+      </div>
+
+      <div class="field">
+        <label>Location</label>
+        <textarea id="inputLocation" rows="2"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Social links</label>
+        <div id="socialEditList"></div>
+      </div>
+
+      <div class="field">
+        <label>Google Maps link</label>
+        <div class="map-row">
+          <input type="text" id="inputMapLink" placeholder="https://maps.google.com/...">
+          <button class="map-open-btn" id="openMapBtn" title="Open in Google Maps" aria-label="Open map">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn primary" id="saveBtn">Save changes</button>
+      </div>
+
+      <p class="hint">Click anywhere in the footer, then press <strong>Alt + Shift + D</strong> to show or hide the edit icon.</p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const ICONS = {
+    facebook:  { vb:"0 0 320 512", d:'<path fill="currentColor" d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/>' },
+    instagram: { vb:"0 0 24 24", d:'<rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>' },
+    twitter:   { vb:"0 0 512 512", d:'<path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/>' },
+    linkedin:  { vb:"0 0 448 512", d:'<path fill="currentColor" d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/>' },
+    telegram:  { vb:"0 0 496 512", d:'<path fill="currentColor" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zM362 176.7c-3.7 39.2-19.9 134.4-28.1 178.3-3.5 18.6-10.3 24.8-16.9 25.4-14.4 1.3-25.3-9.5-39.3-18.7-21.8-14.3-34.2-23.2-55.3-37.2-24.5-16.1-8.6-25 5.3-39.5 3.7-3.8 67.1-61.5 68.3-66.7.2-.7.3-3.1-1.2-4.4s-3.6-.8-5.1-.5q-3.3.7-104.6 69.1-14.8 10.2-26.9 9.9c-8.9-.2-25.9-5-38.6-9.1-15.5-5-27.9-7.7-26.8-16.3q.8-6.7 18.5-13.7 108.4-47.2 144.6-62.3c68.9-28.6 83.2-33.6 92.5-33.8 2.1 0 6.6.5 9.6 2.9a10.4 10.4 0 0 1 3.5 6.7A43.8 43.8 0 0 1 362 176.7z"/>' },
+    youtube:   { vb:"0 0 576 512", d:'<path fill="currentColor" d="M549.7 124.1c-6.3-23.7-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5c-23.5 6.3-42 24.9-48.3 48.6-11.4 42.9-11.4 132.3-11.4 132.3s0 89.4 11.4 132.3c6.3 23.7 24.8 41.5 48.3 47.8C117.2 448 288 448 288 448s170.8 0 213.4-11.5c23.5-6.3 42-24.1 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232 337.6V174.4L361 256z"/>' },
+    whatsapp:  { vb:"0 0 448 512", d:'<path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.6-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.4-6.6z"/>' }
+  };
+
+  const state = {
+    location: "Level - 05, House - 04, Road - 33, Sector - 07\nUttara, Dhaka-1230",
+    mapLink: "https://www.google.com/maps",
+    socials: [
+      { name:"facebook",  url:"https://facebook.com/ynadconstruction" },
+      { name:"instagram", url:"https://instagram.com/ynadconstruction" },
+      { name:"twitter",   url:"https://x.com/ynadconstruction" },
+      { name:"linkedin",  url:"https://linkedin.com/company/ynadconstruction" },
+      { name:"telegram",  url:"https://t.me/ynadconstruction" },
+      { name:"youtube",   url:"https://youtube.com/@ynadconstruction" },
+      { name:"whatsapp",  url:"https://wa.me/8800000000" }
+    ]
+  };
+
+  const svgIcon = (name) => {
+    const i = ICONS[name];
+    return `<svg viewBox="${i.vb}">${i.d}</svg>`;
+  };
+
+  const locationEl = document.getElementById('footerLocationText');
+  const socialWrap = document.getElementById('socialIcons');
+  const mapPinLink = document.getElementById('mapPinLink');
+
+  function renderFooter(){
+    locationEl.innerHTML = state.location.replace(/\n/g, '<br>');
+    mapPinLink.href = state.mapLink;
+    socialWrap.innerHTML = state.socials.map(s =>
+      `<a href="${s.url}" target="_blank" rel="noopener" title="${s.name}"><span class="circle">${svgIcon(s.name)}</span></a>`
+    ).join('');
+  }
+
+  const footerEl = document.getElementById('siteFooter');
+  const editBtn = document.getElementById('editToggleBtn');
+
+  footerEl.addEventListener('keydown', (e) => {
+    if (e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+      e.preventDefault();
+      editBtn.classList.toggle('visible');
+    }
+  });
+
+  // ---- contact hover: stays open through a click, only closes when the
+  // pointer truly leaves the contact area (with a short grace period so a
+  // click that briefly blurs focus/hover doesn't collapse it) ----
+  const contactWrap = document.getElementById('contactWrap');
+  let contactHideTimer = null;
+
+  function showContact(){
+    clearTimeout(contactHideTimer);
+    contactWrap.classList.add('active');
+  }
+  function scheduleHideContact(){
+    clearTimeout(contactHideTimer);
+    contactHideTimer = setTimeout(() => {
+      contactWrap.classList.remove('active');
+    }, 250);
+  }
+
+  contactWrap.addEventListener('mouseenter', showContact);
+  contactWrap.addEventListener('mouseleave', scheduleHideContact);
+  contactWrap.addEventListener('focusin', showContact);
+  contactWrap.addEventListener('focusout', scheduleHideContact);
+  contactWrap.addEventListener('touchstart', showContact, { passive:true });
+
+  const modal = document.getElementById('editModal');
+  const inputLocation = document.getElementById('inputLocation');
+  const inputMapLink = document.getElementById('inputMapLink');
+  const socialEditList = document.getElementById('socialEditList');
+
+  function renderSocialEdit(){
+    socialEditList.innerHTML = state.socials.map((s,i) => `
+      <div class="social-edit-row">
+        <span class="icon-tag">${svgIcon(s.name)}</span>
+        <input type="text" data-idx="${i}" value="${s.url}">
+      </div>
+    `).join('');
+  }
+
+  function openModal(){
+    inputLocation.value = state.location;
+    inputMapLink.value = state.mapLink;
+    renderSocialEdit();
+    modal.classList.add('open');
+  }
+  function closeModal(){ modal.classList.remove('open'); }
+
+  editBtn.addEventListener('click', openModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  document.getElementById('openMapBtn').addEventListener('click', () => {
+    const link = inputMapLink.value.trim();
+    if (link) window.open(link, '_blank');
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    state.location = inputLocation.value;
+    state.mapLink = inputMapLink.value.trim() || state.mapLink;
+    socialEditList.querySelectorAll('input[data-idx]').forEach(inp => {
+      state.socials[Number(inp.dataset.idx)].url = inp.value.trim();
+    });
+    renderFooter();
+    closeModal();
+  });
+
+  renderFooter();
+})();
+</script>
+
+</body>
+</html>
