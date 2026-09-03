@@ -718,7 +718,7 @@ body.theme-light #about {
             background-color: #111827 !important;
         }
 
-        body.theme-effective-dark .hover\:bg-slate-100:hover {
+        body.theme-effective-dark .hover\\:bg-slate-100:hover {
             background-color: #1e293b !important;
         }
 
@@ -1555,16 +1555,13 @@ body.theme-effective-dark #ae-x:hover {
     overflow: hidden;
     position: relative;
     contain: layout paint;
-    overscroll-behavior: contain;
-    isolation: isolate;
 }
+
 #projectLocationMapWrap iframe {
     width: 100%;
     height: 680px;
     border: 0;
     display: block;
-    vertical-align: top;
-    overscroll-behavior: contain;
 }
         @media (max-width: 768px) {
             #projectLocationMapWrap { height: 440px; }
@@ -1862,7 +1859,7 @@ body.theme-effective-dark #ae-x:hover {
         <section id="contact" class="pt-12 md:pt-16 pb-0 bg-white text-center relative">
             <h2 id="projectLocationHeading" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">Our Project Location</h2>
 
-                        <div id="projectLocationMapWrap">
+            <div id="projectLocationMapWrap">
                 <iframe id="projectLocationFrame" src="project-locations.html" title="Project Locations Map"></iframe>
             </div>
         </section>
@@ -2147,12 +2144,20 @@ body.theme-effective-dark #ae-x:hover {
     return;
 }
 
-if (currentScrollY <= 4) {
+const mapSection = document.getElementById('contact');
+const mapTop = mapSection ? mapSection.offsetTop : Infinity;
+
+/* Once the Project Location section is reached,
+   keep the header stable instead of reacting to tiny
+   up/down scroll changes caused around the iframe. */
+if (currentScrollY >= mapTop - nav.offsetHeight) {
+    nav.classList.remove('nav-hidden');
+} else if (currentScrollY <= 4) {
     nav.classList.remove('nav-hidden');
 } else if (currentScrollY > lastScrollY) {
-    nav.classList.add('nav-hidden'); // নিচের দিকে scroll করলে header hide থাকবে, map সেকশনেও
+    nav.classList.add('nav-hidden');
 } else if (currentScrollY < lastScrollY) {
-    nav.classList.remove('nav-hidden'); // উপরের দিকে scroll করলেই শুধু header আসবে
+    nav.classList.remove('nav-hidden');
 }
 
                 lastScrollY = currentScrollY;
@@ -2640,7 +2645,7 @@ if (currentScrollY <= 4) {
         // Respond to the menu iframe asking for the current theme right
         // after it loads (covers dark mode already being on before the
         // menu/About editor is opened).
-                window.addEventListener('message', function(e) {
+        window.addEventListener('message', function(e) {
             if (!e.data || typeof e.data !== 'object') return;
             if (e.data.type === 'ynad-request-theme') {
                 const isEffectiveDark = document.body.classList.contains('theme-effective-dark');
@@ -2650,19 +2655,6 @@ if (currentScrollY <= 4) {
                         menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
                     }
                 } catch (err) {}
-            }
-            if (e.data.type === 'ynad-map-wheel') {
-                if (window.__ynadMapWheelPending) {
-                    window.__ynadMapWheelDelta = (window.__ynadMapWheelDelta || 0) + (e.data.deltaY || 0);
-                    return;
-                }
-                window.__ynadMapWheelPending = true;
-                window.__ynadMapWheelDelta = (e.data.deltaY || 0);
-                requestAnimationFrame(function() {
-                    window.scrollBy(0, window.__ynadMapWheelDelta || 0);
-                    window.__ynadMapWheelDelta = 0;
-                    window.__ynadMapWheelPending = false;
-                });
             }
         });
 
@@ -3405,15 +3397,9 @@ function closeMenuWithEffect() {
             initHeroCounterReplay();
 
             /* Start the top loading bar, then complete and hide it after the
-               browser has finished loading the page resources. A safety
-               timeout guarantees it always reaches 100% even if the
-               window 'load' event is delayed or never fires cleanly
-               (e.g. a slow/failed external resource). */
+               browser has finished loading the page resources. */
             const loadingProgress = document.getElementById('pageLoadingProgress');
-            let pageLoadFinished = false;
             const finishPageLoad = () => {
-                if (pageLoadFinished) return;
-                pageLoadFinished = true;
                 if (!loadingProgress) return;
                 loadingProgress.style.width = '100%';
                 setTimeout(() => {
@@ -3435,8 +3421,6 @@ function closeMenuWithEffect() {
                 finishPageLoad();
             } else {
                 window.addEventListener('load', finishPageLoad, { once: true });
-                // Safety net: force completion even if 'load' never fires.
-                setTimeout(finishPageLoad, 4000);
             }
         });
     </script>
