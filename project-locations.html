@@ -570,7 +570,15 @@ boxZoom:true
 
 const mapEl=document.getElementById('leafletMap');
 mapEl.addEventListener('wheel',function(e){
-if(!(e.ctrlKey||e.metaKey))return;
+if(!(e.ctrlKey||e.metaKey)){
+  try{
+    if(window.parent && window.parent!==window){
+      e.preventDefault();
+      window.parent.postMessage({type:'ynad-map-wheel',deltaY:e.deltaY,deltaX:e.deltaX},'*');
+    }
+  }catch(err){}
+  return;
+}
 e.preventDefault();
 const point=map.mouseEventToContainerPoint(e);
 const latlng=map.containerPointToLatLng(point);
