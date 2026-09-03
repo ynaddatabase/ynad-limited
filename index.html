@@ -2645,7 +2645,7 @@ if (currentScrollY >= mapTop - nav.offsetHeight) {
         // Respond to the menu iframe asking for the current theme right
         // after it loads (covers dark mode already being on before the
         // menu/About editor is opened).
-        window.addEventListener('message', function(e) {
+                window.addEventListener('message', function(e) {
             if (!e.data || typeof e.data !== 'object') return;
             if (e.data.type === 'ynad-request-theme') {
                 const isEffectiveDark = document.body.classList.contains('theme-effective-dark');
@@ -2655,6 +2655,9 @@ if (currentScrollY >= mapTop - nav.offsetHeight) {
                         menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
                     }
                 } catch (err) {}
+            }
+            if (e.data.type === 'ynad-map-wheel') {
+                window.scrollBy(0, e.data.deltaY || 0);
             }
         });
 
