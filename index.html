@@ -2144,19 +2144,15 @@ body.theme-effective-dark #ae-x:hover {
     return;
 }
 
-const mapSection = document.getElementById('contact');
-const mapTop = mapSection ? mapSection.offsetTop : Infinity;
-
-/* Once the Project Location section is reached,
-   keep the header stable instead of reacting to tiny
-   up/down scroll changes caused around the iframe. */
-if (currentScrollY >= mapTop - nav.offsetHeight) {
-    nav.classList.remove('nav-hidden');
-} else if (currentScrollY <= 4) {
+/* Header visibility follows scroll direction everywhere,
+   including the Project Location / Map section. */
+if (currentScrollY <= 4) {
     nav.classList.remove('nav-hidden');
 } else if (currentScrollY > lastScrollY) {
+    // Scrolling DOWN -> hide header
     nav.classList.add('nav-hidden');
 } else if (currentScrollY < lastScrollY) {
+    // Scrolling UP -> show header
     nav.classList.remove('nav-hidden');
 }
 
