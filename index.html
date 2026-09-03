@@ -1563,6 +1563,19 @@ body.theme-effective-dark #ae-x:hover {
     border: 0;
     display: block;
 }
+
+/* Blocks the map iframe from capturing the mouse wheel until clicked,
+   so scrolling the page past the map no longer makes it shake/jitter. */
+#projectLocationMapClickGuard {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: transparent;
+    cursor: pointer;
+}
+#projectLocationMapClickGuard.unlocked {
+    display: none;
+}
         @media (max-width: 768px) {
             #projectLocationMapWrap { height: 440px; }
         }
@@ -1860,6 +1873,7 @@ body.theme-effective-dark #ae-x:hover {
             <h2 id="projectLocationHeading" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">Our Project Location</h2>
 
             <div id="projectLocationMapWrap">
+                <div id="projectLocationMapClickGuard"></div>
                 <iframe id="projectLocationFrame" src="project-locations.html" title="Project Locations Map"></iframe>
             </div>
         </section>
@@ -2172,6 +2186,27 @@ if (currentScrollY >= mapTop - nav.offsetHeight) {
             }, { passive: true });
 
             handleNavScroll();
+        })();
+
+        /* ---- Project Location map click-guard ----
+           Prevents the embedded map from grabbing the mouse wheel while the
+           user is just scrolling the page past it (which caused the map to
+           jitter/shake). The map only responds to scroll/zoom once the user
+           has clicked into it; clicking anywhere else re-locks it. */
+        (function () {
+            const guard = document.getElementById('projectLocationMapClickGuard');
+            const wrap = document.getElementById('projectLocationMapWrap');
+            if (!guard || !wrap) return;
+
+            guard.addEventListener('click', function () {
+                guard.classList.add('unlocked');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!wrap.contains(e.target)) {
+                    guard.classList.remove('unlocked');
+                }
+            });
         })();
 
         // ================================================================
