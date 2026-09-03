@@ -1865,44 +1865,43 @@ body.theme-effective-dark #ae-x:hover {
         </section>
 
         <!-- Footer Section -->
-        <footer class="bg-slate-900 text-slate-300 py-12 px-6 border-t border-slate-800">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div>
-                    <div class="text-xl font-bold tracking-widest text-white uppercase mb-4">
-                        YNAD <span class="text-amber-600 font-light">Construction</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Building a better future through quality craftsmanship, dedication, and professional structural development.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-xs">
-                        <li><a href="#" class="hover:text-amber-500 transition">Home</a></li>
-                        <li><a href="#projects" class="hover:text-amber-500 transition">Projects</a></li>
-                        <li><a href="#about" class="hover:text-amber-500 transition">About Us</a></li>
-                        <li><a href="#contact" class="hover:text-amber-500 transition">Project Location</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Services</h4>
-                    <ul class="space-y-2 text-xs">
-                        <li><span class="text-slate-400">Residential Construction</span></li>
-                        <li><span class="text-slate-400">Commercial Buildings</span></li>
-                        <li><span class="text-slate-400">Philanthropic Projects</span></li>
-                        <li><span class="text-slate-400">Architectural Design</span></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Follow Us</h4>
-                    <div class="flex space-x-4 text-lg">
-                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-facebook-f"></i></a>
-                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-twitter"></i></a>
-                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-amber-600 hover:text-white transition cursor-pointer"><i class="fa-brands fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <div id="siteFooterContainer"></div>
+
+        <script>
+        (function(){
+            const container = document.getElementById('siteFooterContainer');
+            if (!container) return;
+
+            fetch('footer.html', { cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) throw new Error('Unable to load footer.html');
+                    return response.text();
+                })
+                .then(html => {
+                    const template = document.createElement('template');
+                    template.innerHTML = html;
+
+                    const scripts = Array.from(template.content.querySelectorAll('script'));
+                    scripts.forEach(script => script.remove());
+
+                    container.replaceChildren(template.content.cloneNode(true));
+
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        for (const attr of oldScript.attributes) {
+                            newScript.setAttribute(attr.name, attr.value);
+                        }
+                        newScript.textContent = oldScript.textContent;
+                        document.body.appendChild(newScript);
+                        newScript.remove();
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    container.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;background:#0f172a;">Footer failed to load.</div>';
+                });
+        })();
+        </script>
 
     </div>
 
