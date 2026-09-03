@@ -1555,43 +1555,16 @@ body.theme-effective-dark #ae-x:hover {
     overflow: hidden;
     position: relative;
     contain: layout paint;
-}
-#projectLocationMapGate {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    cursor: pointer;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 24px;
-    background: transparent;
-}
-#projectLocationMapGate .map-gate-hint {
-    padding: 8px 16px;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, 0.78);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-}
-#projectLocationMapGate:hover .map-gate-hint {
-    opacity: 1;
-    transform: translateY(0);
-}
-#projectLocationMapGate.gate-off {
-    display: none;
+    overscroll-behavior: contain;
+    isolation: isolate;
 }
 #projectLocationMapWrap iframe {
     width: 100%;
     height: 680px;
     border: 0;
     display: block;
+    vertical-align: top;
+    overscroll-behavior: contain;
 }
         @media (max-width: 768px) {
             #projectLocationMapWrap { height: 440px; }
@@ -1891,9 +1864,6 @@ body.theme-effective-dark #ae-x:hover {
 
                         <div id="projectLocationMapWrap">
                 <iframe id="projectLocationFrame" src="project-locations.html" title="Project Locations Map"></iframe>
-                <div id="projectLocationMapGate">
-                    <span class="map-gate-hint"><i class="fa-solid fa-arrow-pointer"></i> Click to interact with the map</span>
-                </div>
             </div>
         </section>
 
@@ -3372,39 +3342,6 @@ function closeMenuWithEffect() {
             animateAllVisibleCounters();
         }
 
-        // Map "click to interact" gate: clicking the hint lets the iframe
-        // capture mouse/wheel input; moving the mouse off the map, or the
-        // page scrolling on its own, re-locks it so page scroll stays smooth.
-        // (Previously this was nested inside initHeroCounterReplay(), which
-        // meant it never actually existed in the global scope that
-        // DOMContentLoaded calls it from — so the gate never activated and
-        // the map stayed permanently locked.)
-        function initProjectLocationGate() {
-            const wrap = document.getElementById('projectLocationMapWrap');
-            const gate = document.getElementById('projectLocationMapGate');
-            if (!wrap || !gate) return;
-
-            let justUnlocked = false;
-
-            gate.addEventListener('click', function () {
-                gate.classList.add('gate-off'); // map-এ interact করতে দিন
-                // Briefly ignore the scroll listener right after unlocking so
-                // the click itself doesn't immediately re-lock the gate and
-                // cause a flicker.
-                justUnlocked = true;
-                setTimeout(function () { justUnlocked = false; }, 300);
-            });
-
-            wrap.addEventListener('mouseleave', function () {
-                gate.classList.remove('gate-off'); // cursor সরে গেলে আবার scroll normal হয়ে যাবে
-            });
-
-            window.addEventListener('scroll', function () {
-                if (justUnlocked) return;
-                gate.classList.remove('gate-off');
-            }, { passive: true });
-        }
-
         function initHeroCounterReplay() {
             const hero = document.getElementById('heroSection');
             if (!hero || !('IntersectionObserver' in window)) return;
@@ -3462,7 +3399,6 @@ function closeMenuWithEffect() {
             loadHeroSlides();
             loadHeroStats();
             loadAboutContent();
-            initProjectLocationGate();
             animateAllVisibleCounters();
             observeRevealTargets(document);
             initAuthState();
