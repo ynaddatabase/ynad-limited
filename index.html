@@ -3371,6 +3371,23 @@ function closeMenuWithEffect() {
         }
 
         function initHeroCounterReplay() {
+                    function initProjectLocationGate() {
+            const wrap = document.getElementById('projectLocationMapWrap');
+            const gate = document.getElementById('projectLocationMapGate');
+            if (!wrap || !gate) return;
+
+            gate.addEventListener('click', function () {
+                gate.classList.add('gate-off'); // map-এ interact করতে দিন
+            });
+
+            wrap.addEventListener('mouseleave', function () {
+                gate.classList.remove('gate-off'); // cursor সরে গেলে আবার scroll normal হয়ে যাবে
+            });
+
+            window.addEventListener('scroll', function () {
+                gate.classList.remove('gate-off');
+            }, { passive: true });
+        }
             const hero = document.getElementById('heroSection');
             if (!hero || !('IntersectionObserver' in window)) return;
 
