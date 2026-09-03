@@ -1,9 +1,5 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YNAD Construction — Footer</title>
+<div class="ynad-footer-component">
+
 <style>
   :root{
     --footer-bg:#1b1d1d;
@@ -15,15 +11,9 @@
     --icon-line:#55575a;
     --amber:#d98c3c;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:#0a0a0a;font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
+  .ynad-footer-component *{box-sizing:border-box;}
+  .ynad-footer-component{font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
 
-  .map-context{
-    height:220px;
-    background:#eef0e6;
-    display:flex;align-items:center;justify-content:center;
-    color:#9a9686;font-size:13px;letter-spacing:.04em;
-  }
 
   /* ================= FOOTER ================= */
   footer{
@@ -331,10 +321,7 @@
   .btn.primary:hover{filter:brightness(1.08);}
   .hint{font-size:11px; color:#77756f; text-align:center; margin-top:14px; line-height:1.5;}
 </style>
-</head>
-<body>
 
-  <div class="map-context">Map area (for reference — not part of this file)</div>
 
   <footer id="siteFooter" tabindex="0">
     <button class="edit-icon-btn" id="editToggleBtn" title="Edit footer" aria-label="Edit footer">
@@ -542,5 +529,4 @@
 })();
 </script>
 
-</body>
-</html>
+</div>
