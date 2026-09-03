@@ -718,7 +718,7 @@ body.theme-light #about {
             background-color: #111827 !important;
         }
 
-        body.theme-effective-dark .hover\\:bg-slate-100:hover {
+        body.theme-effective-dark .hover\:bg-slate-100:hover {
             background-color: #1e293b !important;
         }
 
@@ -2682,7 +2682,17 @@ if (currentScrollY <= 4) {
                 } catch (err) {}
             }
             if (e.data.type === 'ynad-map-wheel') {
-                window.scrollBy(0, e.data.deltaY || 0);
+                if (window.__ynadMapWheelPending) {
+                    window.__ynadMapWheelDelta = (window.__ynadMapWheelDelta || 0) + (e.data.deltaY || 0);
+                    return;
+                }
+                window.__ynadMapWheelPending = true;
+                window.__ynadMapWheelDelta = (e.data.deltaY || 0);
+                requestAnimationFrame(function() {
+                    window.scrollBy(0, window.__ynadMapWheelDelta || 0);
+                    window.__ynadMapWheelDelta = 0;
+                    window.__ynadMapWheelPending = false;
+                });
             }
         });
 
@@ -3362,14 +3372,27 @@ function closeMenuWithEffect() {
             animateAllVisibleCounters();
         }
 
-        function initHeroCounterReplay() {
-                    function initProjectLocationGate() {
+        // Map "click to interact" gate: clicking the hint lets the iframe
+        // capture mouse/wheel input; moving the mouse off the map, or the
+        // page scrolling on its own, re-locks it so page scroll stays smooth.
+        // (Previously this was nested inside initHeroCounterReplay(), which
+        // meant it never actually existed in the global scope that
+        // DOMContentLoaded calls it from — so the gate never activated and
+        // the map stayed permanently locked.)
+        function initProjectLocationGate() {
             const wrap = document.getElementById('projectLocationMapWrap');
             const gate = document.getElementById('projectLocationMapGate');
             if (!wrap || !gate) return;
 
+            let justUnlocked = false;
+
             gate.addEventListener('click', function () {
                 gate.classList.add('gate-off'); // map-এ interact করতে দিন
+                // Briefly ignore the scroll listener right after unlocking so
+                // the click itself doesn't immediately re-lock the gate and
+                // cause a flicker.
+                justUnlocked = true;
+                setTimeout(function () { justUnlocked = false; }, 300);
             });
 
             wrap.addEventListener('mouseleave', function () {
@@ -3377,9 +3400,12 @@ function closeMenuWithEffect() {
             });
 
             window.addEventListener('scroll', function () {
+                if (justUnlocked) return;
                 gate.classList.remove('gate-off');
             }, { passive: true });
         }
+
+        function initHeroCounterReplay() {
             const hero = document.getElementById('heroSection');
             if (!hero || !('IntersectionObserver' in window)) return;
 
@@ -3443,9 +3469,15 @@ function closeMenuWithEffect() {
             initHeroCounterReplay();
 
             /* Start the top loading bar, then complete and hide it after the
-               browser has finished loading the page resources. */
+               browser has finished loading the page resources. A safety
+               timeout guarantees it always reaches 100% even if the
+               window 'load' event is delayed or never fires cleanly
+               (e.g. a slow/failed external resource). */
             const loadingProgress = document.getElementById('pageLoadingProgress');
+            let pageLoadFinished = false;
             const finishPageLoad = () => {
+                if (pageLoadFinished) return;
+                pageLoadFinished = true;
                 if (!loadingProgress) return;
                 loadingProgress.style.width = '100%';
                 setTimeout(() => {
@@ -3467,6 +3499,8 @@ function closeMenuWithEffect() {
                 finishPageLoad();
             } else {
                 window.addEventListener('load', finishPageLoad, { once: true });
+                // Safety net: force completion even if 'load' never fires.
+                setTimeout(finishPageLoad, 4000);
             }
         });
     </script>
