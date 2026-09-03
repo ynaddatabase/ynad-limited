@@ -2177,20 +2177,12 @@ body.theme-effective-dark #ae-x:hover {
     return;
 }
 
-const mapSection = document.getElementById('contact');
-const mapTop = mapSection ? mapSection.offsetTop : Infinity;
-
-/* Once the Project Location section is reached,
-   keep the header stable instead of reacting to tiny
-   up/down scroll changes caused around the iframe. */
-if (currentScrollY >= mapTop - nav.offsetHeight) {
-    nav.classList.remove('nav-hidden');
-} else if (currentScrollY <= 4) {
+if (currentScrollY <= 4) {
     nav.classList.remove('nav-hidden');
 } else if (currentScrollY > lastScrollY) {
-    nav.classList.add('nav-hidden');
+    nav.classList.add('nav-hidden'); // নিচের দিকে scroll করলে header hide থাকবে, map সেকশনেও
 } else if (currentScrollY < lastScrollY) {
-    nav.classList.remove('nav-hidden');
+    nav.classList.remove('nav-hidden'); // উপরের দিকে scroll করলেই শুধু header আসবে
 }
 
                 lastScrollY = currentScrollY;
