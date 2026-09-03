@@ -1554,13 +1554,15 @@ body.theme-effective-dark #ae-x:hover {
     height: 680px;
     overflow: hidden;
     position: relative;
+    contain: layout paint;
 }
-        #projectLocationMapWrap iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
+
+#projectLocationMapWrap iframe {
+    width: 100%;
+    height: 680px;
+    border: 0;
+    display: block;
+}
         @media (max-width: 768px) {
             #projectLocationMapWrap { height: 440px; }
         }
