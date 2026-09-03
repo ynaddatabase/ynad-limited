@@ -2138,19 +2138,27 @@ body.theme-effective-dark #ae-x:hover {
                    keep the header locked in its current hidden state so it never
                    briefly drops in from the top and then hides again. */
                 if (nav.dataset.scrollLock === 'true') {
-                    nav.classList.add('nav-hidden');
-                    lastScrollY = currentScrollY;
-                    ticking = false;
-                    return;
-                }
+    nav.classList.add('nav-hidden');
+    lastScrollY = currentScrollY;
+    ticking = false;
+    return;
+}
 
-                if (currentScrollY <= 4) {
-                    nav.classList.remove('nav-hidden');
-                } else if (currentScrollY > lastScrollY) {
-                    nav.classList.add('nav-hidden');
-                } else if (currentScrollY < lastScrollY) {
-                    nav.classList.remove('nav-hidden');
-                }
+const mapSection = document.getElementById('contact');
+const mapTop = mapSection ? mapSection.offsetTop : Infinity;
+
+/* Once the Project Location section is reached,
+   keep the header stable instead of reacting to tiny
+   up/down scroll changes caused around the iframe. */
+if (currentScrollY >= mapTop - nav.offsetHeight) {
+    nav.classList.remove('nav-hidden');
+} else if (currentScrollY <= 4) {
+    nav.classList.remove('nav-hidden');
+} else if (currentScrollY > lastScrollY) {
+    nav.classList.add('nav-hidden');
+} else if (currentScrollY < lastScrollY) {
+    nav.classList.remove('nav-hidden');
+}
 
                 lastScrollY = currentScrollY;
                 ticking = false;
