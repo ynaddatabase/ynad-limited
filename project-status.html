@@ -131,17 +131,579 @@
             opacity: 1;
             transform: translateY(0);
         }
+            /* ================================================================
+           RECENT PROJECTS — matched to the supplied 4-card reference
+           Desktop: 4 cards visible together
+           Image/action proportions preserved from the supplied card spec
+           ================================================================ */
+        .recent-projects-carousel {
+            position: relative;
+            width: min(100%, 1700px);
+            margin: 0 auto;
+        }
+
+        /* The main projects rail is controlled by JS in fixed two-card steps.
+           Disable native snap so there is no snap-back / spring-like correction. */
+        #mainProjectSlider {
+            scroll-snap-type: none !important;
+            scroll-behavior: auto !important;
+            overscroll-behavior-x: contain;
+        }
+
+        .recent-project-card {
+            width: calc(25% - 18px);
+            min-width: calc(25% - 18px);
+            height: 417.8708px;
+            min-height: 417.8708px;
+            flex: 0 0 calc(25% - 18px);
+            scroll-snap-align: start;
+            position: relative;
+            overflow: visible;
+            background: #ffffff;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10),
+                        0 10px 12px -12px rgba(15, 23, 42, 0.42);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: left;
+        }
+
+        .recent-project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
+        }
+
+        /* Keep the bottom edge visible even though the fixed image + content heights
+           consume the card height. This does not alter the card dimensions. */
+        .recent-project-card::after {
+            content: "";
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: -10px;
+            height: 10px;
+            background: transparent;
+            pointer-events: none;
+            z-index: 40;
+            box-shadow: 0 7px 12px -10px rgba(15, 23, 42, 0.55);
+        }
+
+        .recent-project-image {
+            position: relative;
+            width: 100%;
+            height: 299.141px;
+            overflow: hidden;
+            background: #e5e7eb;
+            flex: 0 0 299.141px;
+        }
+
+        .recent-project-image-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .recent-project-image-track > .zoom-wrapper {
+            width: 100%;
+            min-width: 100%;
+            height: 299.141px;
+            min-height: 299.141px;
+        }
+
+        .recent-project-image-track img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .recent-project-bottom {
+            width: 100%;
+            height: 118.7298px;
+            min-height: 118.7298px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .recent-project-info {
+            height: 72px;
+            min-height: 72px;
+            padding: 10px 19px 8px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .recent-project-info-left {
+            min-width: 0;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .recent-project-title {
+            margin: 0 0 2px;
+            font-size: 15px;
+            line-height: 20px;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            color: #111827;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-project-location {
+            margin-top: 0;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: rgba(0, 0, 0, 0.7);
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-project-code {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: rgba(0, 0, 0, 0.4);
+            white-space: nowrap;
+        }
+
+        .recent-project-code .code-divider {
+            width: 1px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            flex: 0 0 auto;
+        }
+
+        .recent-project-actions {
+            height: 46.7298px;
+            min-height: 46.7298px;
+            border-top: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            box-sizing: border-box;
+            gap: 0;
+        }
+
+        .recent-project-action {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0 3px;
+            border-radius: 4px;
+            font-size: 10px;
+            line-height: 1;
+            font-weight: 600;
+            letter-spacing: 0.015em;
+            white-space: nowrap;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .recent-project-action.docs {
+            color: rgba(37, 99, 235, 0.70);
+        }
+
+        .recent-project-action.docs:hover {
+            color: #fff;
+            background: #2563eb;
+        }
+
+        .recent-project-action.media {
+            color: rgba(217, 119, 6, 0.72);
+            border: none;
+            background: transparent;
+        }
+
+        .recent-project-action.media:hover {
+            color: #fff;
+            background: #d97706;
+        }
+
+        .recent-project-action.location {
+            color: rgba(71, 85, 105, 0.78);
+        }
+
+        .recent-project-action.location:hover {
+            color: #fff;
+            background: #334155;
+        }
+
+        /* Reference-style side arrows: simple thin chevrons, no circular button. */
+        .recent-project-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #a5a5a5;
+            cursor: pointer;
+            z-index: 30;
+            padding: 0;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .recent-project-nav:hover {
+            color: #7c7c7c;
+        }
+
+        .recent-project-nav.left {
+            left: -28.8px;
+        }
+
+        .recent-project-nav.right {
+            right: -28.8px;
+        }
+
+        .recent-project-nav svg {
+            width: 22px;
+            height: 15px;
+            display: block;
+        }
+
+        /* Dots: tightened to sit directly under the heading, matching the
+           reference mock (small gap under "OUR RECENT PROJECTS...", not the
+           large gap that used to separate them from the carousel below). */
+        /* Recent Projects divider/stroke is visible only in dark mode. */
+        #projects::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 1px;
+            background: transparent;
+            pointer-events: none;
+        }
+        body.theme-effective-dark #projects::before {
+            background: rgba(148, 163, 184, 0.28);
+        }
+body.theme-effective-dark #projectLocationHeading {
+    color: #f8fafc !important;
+}
+        .recent-project-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 6px auto 0;
+        }
+
+        .recent-project-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #d1d5db;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.25s ease;
+        }
+
+        .recent-project-dot:hover {
+            background: #a5a5a5;
+        }
+
+        .recent-project-dot.active {
+            background: #4b5563;
+            transform: scale(1.15);
+        }
+
+
+        /* ================================================================
+           INDEX-MATCHED HEADER / THEME / RECENT PROJECTS
+           ================================================================ */
+        #mainNav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255,255,255,.94);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e5e7eb;
+            transition: transform .35s cubic-bezier(.4,0,.2,1),
+                        background-color .35s ease,
+                        border-color .35s ease,
+                        box-shadow .35s ease;
+        }
+        #mainNav.nav-hidden { transform: translateY(-100%); }
+        #mainNav.nav-solid {
+            background-color: #ffffff;
+            border-bottom-color: #e5e7eb;
+            box-shadow: 0 6px 18px rgba(15,23,42,.08);
+        }
+        #mainNav .nav-adaptive { color:#1b1d1d; transition:color .35s ease; }
+        #mainNav .nav-adaptive-muted { color:#3a3c3c; transition:color .35s ease; }
+        #mainNav .nav-icon-btn {
+            background: #f1f5f9;
+            border:1px solid #e2e8f0;
+            transition: background-color .25s ease, color .25s ease, border-color .25s ease,
+                        transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+        }
+        #mainNav .nav-icon-btn:hover {
+            background:#d97706; border-color:#d97706; color:#fff !important;
+            transform:translateY(-3px) scale(1.08);
+            box-shadow:0 8px 20px rgba(217,119,6,.35);
+        }
+        .theme-mode-switch {
+            --theme-index:1;
+            position:relative; display:flex; align-items:center; gap:2px; padding:3px;
+            border:1px solid currentColor; border-radius:999px; opacity:.9;
+        }
+        .theme-mode-switch::before {
+            content:""; position:absolute; top:3px; left:3px;
+            width:28px; height:28px; border-radius:999px;
+            background:#d97706;
+            transform:translateX(calc(var(--theme-index) * 30px));
+            transition:transform .3s cubic-bezier(.4,0,.2,1);
+        }
+        .theme-mode-btn {
+            position:relative; z-index:1; width:28px; height:28px;
+            display:flex; align-items:center; justify-content:center;
+            border-radius:999px; border:none; background:transparent;
+            color:inherit; opacity:.7; cursor:pointer; font-size:.72rem;
+            transition:color .35s ease, opacity .25s ease, transform .25s ease;
+        }
+        .theme-mode-btn:hover { opacity:1; transform:scale(1.08); }
+        .theme-mode-btn.active { color:#fff !important; opacity:1; }
+
+        body.theme-light { background:#fff; color:#2a2c2c; }
+        body.theme-effective-dark {
+            background:#131414 !important; color:#e2e8f0 !important;
+        }
+        body.theme-effective-dark #mainNav,
+        body.theme-effective-dark #mainNav.nav-solid {
+            background:#131414 !important; border-bottom-color:#3a3c3c !important;
+        }
+        body.theme-effective-dark #mainNav .nav-adaptive { color:#fff !important; }
+        body.theme-effective-dark #mainNav .nav-adaptive-muted { color:#c7c5c2 !important; }
+        body.theme-effective-dark #mainNav .nav-icon-btn,
+        body.theme-effective-dark #mainNav .theme-mode-switch {
+            background:#2a2c2c; border-color:#3a3c3c;
+        }
+        body.theme-effective-dark .bg-white { background:#232525 !important; }
+        body.theme-effective-dark .bg-slate-50 { background:#232525 !important; }
+        body.theme-effective-dark .text-slate-900,
+        body.theme-effective-dark .text-slate-800,
+        body.theme-effective-dark .text-slate-700,
+        body.theme-effective-dark .text-gray-900,
+        body.theme-effective-dark .text-gray-800 {
+            color:#fff !important;
+        }
+        body.theme-effective-dark .text-slate-600,
+        body.theme-effective-dark .text-slate-500,
+        body.theme-effective-dark .text-slate-400 {
+            color:#c7c5c2 !important;
+        }
+        body.theme-effective-dark .border-slate-100,
+        body.theme-effective-dark .border-slate-200,
+        body.theme-effective-dark .border-slate-300 {
+            border-color:#3a3c3c !important;
+        }
+        body.theme-transition,
+        body.theme-transition * {
+            transition-property:color,background-color,border-color,fill,stroke !important;
+            transition-duration:.45s !important;
+            transition-timing-function:ease !important;
+        }
+        .overview-recent-section {
+            position:relative;
+            padding:48px 0 64px;
+            background:#fff;
+            text-align:center;
+        }
+        body.theme-effective-dark .overview-recent-section { background:#131414; }
+        .overview-recent-section::before {
+            content:""; position:absolute; left:0; right:0; top:0; height:1px;
+            background:transparent;
+        }
+        body.theme-effective-dark .overview-recent-section::before {
+            background:rgba(148,163,184,.28);
+        }
+        .overview-recent-section h2 {
+            color:rgba(0,0,0,.7);
+            margin:0 0 calc(.75rem + .3in);
+        }
+        body.theme-effective-dark .overview-recent-section h2 { color:#fff !important; }
+
+        #overviewRecentSlider {
+            scroll-snap-type:none !important;
+            scroll-behavior:auto !important;
+            overscroll-behavior-x:contain;
+        }
+        @media (max-width:900px) {
+            #overviewRecentSlider .recent-project-card { width:calc(50% - 12px); min-width:calc(50% - 12px); flex-basis:calc(50% - 12px); }
+        }
+        @media (max-width:560px) {
+            #overviewRecentSlider .recent-project-card { width:100%; min-width:100%; flex-basis:100%; }
+        }
+
+        /* Scroll-triggered fade-in, sliding left -> right into place */
+        .reveal-fade-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .reveal-fade-left.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @media (max-width: 1200px) {
+
+            transform-origin: left center;
+            transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        .nav-graph-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* MEDIA dropdown (card bottom bar): click opens OPENING / ONGOING /
+           PROPOSAL list; hovering (or clicking, for touch devices) any of
+           those rows flies out its VIDEO/RAW PHOTO/RAW VIDEO submenu to the
+           right. */
+        .media-menu-wrap { position: relative; }
+
+        .media-menu {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .18);
+            min-width: 140px;
+            padding: 6px;
+            z-index: 60;
+            text-align: left;
+        }
+        .media-menu.hidden { display: none; }
+
+        .media-menu-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 9px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: #334155;
+            border-radius: 5px;
+            cursor: default;
+            transition: background .15s ease, color .15s ease;
+        }
+        .media-menu-item:hover,
+        .media-menu-item.open {
+            background: #fffbeb;
+            color: #b45309;
+        }
+        .media-menu-item i {
+            font-size: 8px;
+            color: #94a3b8;
+        }
+        .media-menu-item:hover i,
+        .media-menu-item.open i {
+            color: #d97706;
+        }
+
+        .media-submenu {
+            position: absolute;
+            left: calc(100% + 6px);
+            top: -6px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .18);
+            min-width: 120px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 1px;
+            z-index: 61;
+        }
+        .media-menu-item:hover .media-submenu,
+        .media-menu-item.open .media-submenu {
+            display: flex;
+        }
+        /* If the submenu would run off the right edge of the viewport, this
+           class (applied by JS at open-time) flips it to fly out to the
+           LEFT of the row instead, so it's never cut off. */
+        .media-submenu.flip-left {
+            left: auto;
+            right: calc(100% + 6px);
+        }
+        .media-submenu a {
+            display: block;
+            padding: 6px 9px;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: .03em;
+            color: #475569;
+            border-radius: 5px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background .15s ease, color .15s ease;
+        }
+        .media-submenu a:hover {
+            background: #d97706;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800">
 
-    <nav class="bg-white sticky top-0 z-50 px-8 py-4 flex justify-between items-center border-b">
-        <a href="index.html" class="text-2xl font-bold tracking-widest text-slate-900 uppercase">
-            YNAD <span class="text-amber-600 font-light">Construction</span>
+    <nav id="mainNav" class="px-8 py-4 flex justify-between items-center nav-solid">
+        <a href="index.html" class="flex items-center gap-4">
+            <div class="text-2xl font-bold tracking-widest nav-adaptive uppercase">
+                YNAD <span class="text-amber-500 font-light">Construction</span>
+            </div>
         </a>
-        <a href="index.html" class="text-xs font-semibold tracking-widest uppercase text-slate-600 hover:text-amber-600 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> Back to Home
-        </a>
+        <div class="flex items-center gap-3 md:gap-4">
+            <a href="index.html" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-house text-sm"></i>
+            </a>
+            <a href="all-projects.html" title="All Projects" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-layer-group text-sm"></i>
+            </a>
+            <div id="themeModeSwitch" class="theme-mode-switch nav-adaptive" role="group" aria-label="Theme mode">
+                <button type="button" class="theme-mode-btn" data-mode="light" onclick="setThemeMode('light')" title="Light mode"><i class="fa-solid fa-sun"></i></button>
+                <button type="button" class="theme-mode-btn active" data-mode="dynamic" onclick="setThemeMode('dynamic')" title="Dynamic mode"><i class="fa-solid fa-circle-half-stroke"></i></button>
+                <button type="button" class="theme-mode-btn" data-mode="dark" onclick="setThemeMode('dark')" title="Dark mode"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </div>
     </nav>
 
     <div class="bg-slate-50 border-b px-6 py-10 text-center">
@@ -262,12 +824,56 @@
         </div>
     </section>
 
-    <footer class="bg-slate-900 text-slate-400 py-6 px-6 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] tracking-wide">
-            <span id="footerDevCredit">Developed by <a href="#" class="text-amber-500 hover:text-amber-400 transition">Your Company Name</a></span>
-            <span id="footerCopyright">&copy; <span id="footerYear"></span> YNAD Construction. All rights reserved.</span>
+
+    <!-- Recent Projects Section — matched to Index -->
+    <section id="overviewRecentProjects" class="overview-recent-section">
+        <h2 class="text-xl md:text-2xl font-light tracking-widest uppercase reveal-fade-left">OUR RECENT PROJECTS</h2>
+        <div class="recent-projects-carousel px-6" style="padding-left:36px;padding-right:36px;">
+            <button onclick="scrollOverviewRecent('left')" aria-label="Previous projects" class="recent-project-nav left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16" style="transform:scaleX(-1);">
+                    <path d="M23.962,82.508a.448.448,0,0,0-.109-.153l-8-7.529a.523.523,0,0,0-.707,0,.452.452,0,0,0,0,.665l7.146,6.726H.5a.471.471,0,1,0,0,.941H22.293l-7.146,6.726a.452.452,0,0,0,0,.665.525.525,0,0,0,.708,0l8-7.529a.5.5,0,0,0,.108-.153A.442.442,0,0,0,23.962,82.508Z" transform="translate(0 -74.688)" fill="currentColor"/>
+                </svg>
+            </button>
+            <button onclick="scrollOverviewRecent('right')" aria-label="Next projects" class="recent-project-nav right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16">
+                    <path d="M23.962,82.508a.448.448,0,0,0-.109-.153l-8-7.529a.523.523,0,0,0-.707,0,.452.452,0,0,0,0,.665l7.146,6.726H.5a.471.471,0,1,0,0,0.941H22.293l-7.146,6.726a.452.452,0,0,0,0,.665.525.525,0,0,0,.708,0l8-7.529a.5.5,0,0,0,.108-.153A.442.442,0,0,0,23.962,82.508Z" transform="translate(0 -74.688)" fill="currentColor"/>
+                </svg>
+            </button>
+            <div id="overviewRecentSlider" class="flex gap-6 overflow-x-auto no-scrollbar pb-6 justify-start">
+                <div id="overviewRecentLoading" class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+            </div>
         </div>
-    </footer>
+        <div id="overviewRecentDots" class="recent-project-dots mt-2"></div>
+    </section>
+
+    <!-- Footer Section -->
+    <div id="siteFooterContainer"></div>
+    <script>
+    (function(){
+        const container=document.getElementById('siteFooterContainer');
+        if(!container) return;
+        fetch('footer.html',{cache:'no-store'})
+            .then(r=>{if(!r.ok)throw new Error('Unable to load footer.html');return r.text();})
+            .then(html=>{
+                const template=document.createElement('template');
+                template.innerHTML=html;
+                const scripts=Array.from(template.content.querySelectorAll('script'));
+                scripts.forEach(s=>s.remove());
+                container.replaceChildren(template.content.cloneNode(true));
+                scripts.forEach(oldScript=>{
+                    const s=document.createElement('script');
+                    for(const attr of oldScript.attributes)s.setAttribute(attr.name,attr.value);
+                    s.textContent=oldScript.textContent;
+                    document.body.appendChild(s);
+                    s.remove();
+                });
+            })
+            .catch(error=>{
+                console.error(error);
+                container.innerHTML='<div style="padding:32px;text-align:center;color:#a8a6a3;background:#1b1d1d;">Footer failed to load.</div>';
+            });
+    })();
+    </script>
 
     <script>
         const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
@@ -685,7 +1291,9 @@
             }
 
             allProjects = data || [];
+            window.allProjects = allProjects;
             applyFilters();
+            if (window.renderOverviewRecentProjects) window.renderOverviewRecentProjects(allProjects);
         }
 
         function initPageTransitions() {
@@ -725,5 +1333,220 @@
             setTimeout(moveTabIndicator, 350);
         });
     </script>
+
+<script>
+(function(){
+    function escapeRecentHtml(str){
+        if (str === null || str === undefined) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function normalizeRecentPhotos(raw){
+        if(!raw) return [];
+        if(Array.isArray(raw)) return raw.filter(Boolean);
+        if(typeof raw==='string'){
+            try{
+                const p=JSON.parse(raw);
+                return Array.isArray(p)?p.filter(Boolean):[raw];
+            }catch(e){
+                return raw.includes(',')?raw.split(',').map(s=>s.trim()).filter(Boolean):[raw];
+            }
+        }
+        return [];
+    }
+    const RECENT_FALLBACK='https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80';
+    const recentImageIndices={};
+    function recentCard(project,index){
+        const photos=normalizeRecentPhotos(project.photo_urls);
+        const images=(photos.length?photos:[RECENT_FALLBACK]).map(url=>`<div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer"><img src="${escapeRecentHtml(url)}" class="project-img-item" alt="${escapeRecentHtml(project.project_name||'Project image')}" loading="lazy"></div>`).join('');
+        return `
+        <div id="overview-recent-card-${index}" class="recent-project-card reveal-fade-left" style="transition-delay:${Math.min(index,3)*.12}s;">
+            <div class="recent-project-image zoom-container">
+                <div id="overviewRecentImages-${index}" class="recent-project-image-track">${images}</div>
+            </div>
+            <div class="recent-project-bottom">
+                <div class="recent-project-info">
+                    <div class="recent-project-info-left">
+                        <h4 class="recent-project-title">${escapeRecentHtml(project.project_name||'')}</h4>
+                        <div class="recent-project-location">${escapeRecentHtml(project.district||'')}</div>
+                    </div>
+                    ${(project.bd_number||project.ho_number)?`<div class="recent-project-code">
+                        ${project.bd_number?`<span>${escapeRecentHtml(project.bd_number)}</span>`:''}
+                        ${(project.bd_number&&project.ho_number)?'<span class="code-divider"></span>':''}
+                        ${project.ho_number?`<span>HO-${escapeRecentHtml(project.ho_number)}</span>`:''}
+                    </div>`:''}
+                </div>
+                <div class="recent-project-actions">
+                    <a href="${project.documents_url?escapeRecentHtml(project.documents_url):'#'}" target="${project.documents_url?'_blank':'_self'}" class="recent-project-action docs" ${project.documents_url?'':'onclick="return false;"'}>
+                        <i class="fa-solid fa-file-lines"></i><span>DOCUMENTS</span>
+                    </a>
+                    <div class="media-menu-wrap relative">
+                        <button type="button" onclick="toggleOverviewMediaMenu(event,${index})" class="recent-project-action media w-full cursor-pointer">
+                            <i class="fa-solid fa-photo-film"></i><span>MEDIA</span>
+                        </button>
+                        <div id="overviewMediaMenu-${index}" class="media-menu hidden">
+                            <div class="media-menu-item"><span>OPENING</span><i class="fa-solid fa-chevron-right"></i><div class="media-submenu"><a href="#" onclick="return false;">VIDEO</a><a href="#" onclick="return false;">RAW PHOTO</a><a href="#" onclick="return false;">RAW VIDEO</a></div></div>
+                            <div class="media-menu-item"><span>ONGOING</span><i class="fa-solid fa-chevron-right"></i><div class="media-submenu"><a href="#" onclick="return false;">VIDEO</a><a href="#" onclick="return false;">RAW PHOTO</a><a href="#" onclick="return false;">RAW VIDEO</a></div></div>
+                            <div class="media-menu-item"><span>PROPOSAL</span><i class="fa-solid fa-chevron-right"></i><div class="media-submenu"><a href="#" onclick="return false;">VIDEO</a><a href="#" onclick="return false;">RAW PHOTO</a><a href="#" onclick="return false;">RAW VIDEO</a></div></div>
+                        </div>
+                    </div>
+                    <a href="${project.location_link?escapeRecentHtml(project.location_link):'#'}" target="${project.location_link?'_blank':'_self'}" class="recent-project-action location" ${project.location_link?'':'onclick="return false;"'}>
+                        <i class="fa-solid fa-location-dot"></i><span>LOCATION</span>
+                    </a>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function toggleOverviewMediaMenu(event,index){
+        event.stopPropagation();
+        const menu=document.getElementById('overviewMediaMenu-'+index);
+        if(!menu) return;
+        const wasOpen=!menu.classList.contains('hidden');
+        document.querySelectorAll('#overviewRecentProjects .media-menu').forEach(m=>m.classList.add('hidden'));
+        menu.classList.toggle('hidden',wasOpen);
+    }
+    window.toggleOverviewMediaMenu=toggleOverviewMediaMenu;
+
+    document.addEventListener('click',function(e){
+        const item=e.target.closest('#overviewRecentProjects .media-menu-item');
+        if(item && !e.target.closest('.media-submenu')){
+            e.stopPropagation();
+            item.parentElement.querySelectorAll('.media-menu-item.open').forEach(x=>{if(x!==item)x.classList.remove('open');});
+            item.classList.toggle('open');
+        }else if(!e.target.closest('#overviewRecentProjects .media-menu')){
+            document.querySelectorAll('#overviewRecentProjects .media-menu').forEach(m=>m.classList.add('hidden'));
+        }
+    });
+
+    function updateRecentDots(){
+        const slider=document.getElementById('overviewRecentSlider'), dots=document.getElementById('overviewRecentDots');
+        if(!slider||!dots) return;
+        const cards=slider.querySelectorAll('.recent-project-card');
+        if(!cards.length) return;
+        dots.innerHTML='';
+        for(let i=0;i<3;i++){
+            const d=document.createElement('button');
+            d.className='recent-project-dot'+(i===1?' active':'');
+            d.setAttribute('aria-label','Recent project indicator '+(i+1));
+            d.addEventListener('click',()=> {
+                const card=slider.querySelector('.recent-project-card');
+                if(!card) return;
+                const gap=parseFloat(getComputedStyle(slider).gap||'24')||24;
+                const step=card.getBoundingClientRect().width+gap;
+                const target=i===1?0:(i===2?step*2:step*4);
+                slider.scrollTo({left:Math.min(target,slider.scrollWidth-slider.clientWidth),behavior:'smooth'});
+            });
+            dots.appendChild(d);
+        }
+        slider.addEventListener('scroll',function(){
+            const card=slider.querySelector('.recent-project-card');
+            if(!card) return;
+            const gap=parseFloat(getComputedStyle(slider).gap||'24')||24;
+            const step=card.getBoundingClientRect().width+gap;
+            const group=Math.max(0,Math.round((slider.scrollLeft/Math.max(step,1))/2));
+            const active=(group+1)%3;
+            dots.querySelectorAll('.recent-project-dot').forEach((d,j)=>d.classList.toggle('active',j===active));
+        },{passive:true});
+    }
+
+    let overviewRecentAnim=null;
+    function scrollOverviewRecent(direction){
+        const slider=document.getElementById('overviewRecentSlider');
+        if(!slider) return;
+        const card=slider.querySelector('.recent-project-card');
+        if(!card) return;
+        const gap=parseFloat(getComputedStyle(slider).gap||'24')||24;
+        const step=card.getBoundingClientRect().width+gap;
+        const target=Math.max(0,Math.min(slider.scrollWidth-slider.clientWidth,slider.scrollLeft+(direction==='left'?-step*2:step*2)));
+        const start=slider.scrollLeft, dist=target-start, duration=950, startTime=performance.now();
+        if(overviewRecentAnim) cancelAnimationFrame(overviewRecentAnim);
+        function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+        function frame(now){
+            const t=Math.min((now-startTime)/duration,1);
+            slider.scrollLeft=start+dist*ease(t);
+            if(t<1) overviewRecentAnim=requestAnimationFrame(frame); else overviewRecentAnim=null;
+        }
+        overviewRecentAnim=requestAnimationFrame(frame);
+    }
+    window.scrollOverviewRecent=scrollOverviewRecent;
+
+    window.renderOverviewRecentProjects=function(projects){
+        const slider=document.getElementById('overviewRecentSlider');
+        if(!slider) return;
+        const recent=(projects||[]).slice(0,12);
+        slider.innerHTML=recent.length?recent.map((p,i)=>recentCard(p,i)).join(''):
+            '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects yet.</div>';
+        recent.forEach((p,i)=>recentImageIndices[i]=0);
+        updateRecentDots();
+        const targets=slider.querySelectorAll('.reveal-fade-left');
+        if('IntersectionObserver' in window){
+            const obs=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('revealed');obs.unobserve(entry.target);}}),{threshold:.12});
+            targets.forEach(t=>obs.observe(t));
+        }else targets.forEach(t=>t.classList.add('revealed'));
+    };
+
+    window.changeOverviewRecentImage=function(index,direction){
+        const slider=document.getElementById('overviewRecentImages-'+index);
+        if(!slider) return;
+        const total=slider.children.length;
+        recentImageIndices[index]=((recentImageIndices[index]||0)+direction+total)%total;
+        slider.style.transform=`translateX(-${recentImageIndices[index]*100}%)`;
+    };
+
+    window.setThemeMode=function(mode){
+        const valid=['light','dynamic','dark']; if(!valid.includes(mode)) mode='dynamic';
+        const indexMap={light:0,dynamic:1,dark:2};
+        const switcher=document.getElementById('themeModeSwitch');
+        document.querySelectorAll('.theme-mode-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));
+        if(switcher) switcher.style.setProperty('--theme-index',indexMap[mode]);
+        const body=document.body;
+        body.classList.add('theme-transition');
+        body.classList.remove('theme-light','theme-dynamic','theme-dark','theme-effective-dark');
+        body.classList.add('theme-'+mode);
+        const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark=mode==='dark'||(mode==='dynamic'&&prefersDark);
+        if(isDark) body.classList.add('theme-effective-dark');
+        document.documentElement.classList.toggle('dark',isDark);
+        clearTimeout(window.__overviewThemeTimer);
+        window.__overviewThemeTimer=setTimeout(()=>body.classList.remove('theme-transition'),500);
+        try{localStorage.setItem('ynad-theme-mode',mode);}catch(e){}
+    };
+
+    function initOverviewTheme(){
+        let saved='dynamic'; try{saved=localStorage.getItem('ynad-theme-mode')||'dynamic';}catch(e){}
+        setThemeMode(saved);
+        if(window.matchMedia){
+            const media=window.matchMedia('(prefers-color-scheme: dark)');
+            const sync=()=>{if(document.body.classList.contains('theme-dynamic'))setThemeMode('dynamic');};
+            if(media.addEventListener) media.addEventListener('change',sync); else if(media.addListener) media.addListener(sync);
+        }
+    }
+
+    function initOverviewNav(){
+        const nav=document.getElementById('mainNav');
+        if(!nav)return;
+        let lastY=window.scrollY;
+        window.addEventListener('scroll',()=>{
+            const y=window.scrollY;
+            if(y<=8){nav.classList.remove('nav-hidden');}
+            else if(y>lastY+5){nav.classList.add('nav-hidden');}
+            else if(y<lastY-5){nav.classList.remove('nav-hidden');}
+            if(y>12) nav.classList.add('nav-solid'); else nav.classList.add('nav-solid');
+            lastY=y;
+        },{passive:true});
+    }
+
+    const recentWait=setInterval(()=>{
+        if(Array.isArray(window.allProjects)){
+            clearInterval(recentWait);
+            window.renderOverviewRecentProjects(window.allProjects);
+        }
+    },200);
+    window.addEventListener('beforeunload',()=>clearInterval(recentWait));
+    document.addEventListener('DOMContentLoaded',initOverviewTheme);
+    window.addEventListener('load',initOverviewNav);
+})();
+</script>
+
 </body>
 </html>
