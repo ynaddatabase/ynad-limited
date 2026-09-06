@@ -2029,7 +2029,18 @@
             if (!project.location_link) return 'Location Not Finalized';
             if (!project.status) return 'Not Started';
             if (project.status === 'Completed') return 'On Time';
-            if (project.status === 'Upcoming') return 'Opening In';
+            if (project.status === 'Upcoming') {
+                // A project whose planned opening date has already passed is delayed.
+                if (project.opening_date) {
+                    const openingDate = new Date(project.opening_date + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (!Number.isNaN(openingDate.getTime()) && openingDate < today) {
+                        return 'Opening Delay';
+                    }
+                }
+                return 'Opening In';
+            }
             if (project.status === 'Ongoing') return 'Elapsed Delay';
             return 'Not Started';
         }
