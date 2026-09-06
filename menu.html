@@ -6,28 +6,24 @@
 <title>Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Montserrat,sans-serif;background:transparent}
 .menu-list{display:flex;flex-direction:column;gap:1.5rem;padding:4px}
 .menu-item{display:flex;align-items:center;gap:9px}
 .menu-link{
- opacity:0;
- transform:translateY(80px) scale(.94);
- filter:blur(5px);
- font-size:1rem;font-weight:500;letter-spacing:.02em;
- color:#0f172a;text-decoration:none;text-transform:uppercase;cursor:pointer;
- transition:color .25s ease
+    opacity:0;
+    transform:translateY(80px) scale(.94);
+    filter:blur(5px);
+    font-size:1rem;font-weight:500;letter-spacing:.02em;
+    color:#0f172a;text-decoration:none;text-transform:uppercase;cursor:pointer;
+    transition:color .25s ease
 }
 .menu-link:hover{color:#d97706}
-
 html.dark .menu-link{color:#f8fafc}
 html.dark .menu-link:hover{color:#d97706}
-
 html.dark .edit-icon{color:#cbd5e1}
 html.dark .edit-icon:hover{color:#d97706}
-
 .edit-icon{
     display:none;
     text-decoration:none;
@@ -39,65 +35,77 @@ html.dark .edit-icon:hover{color:#d97706}
 body.edit-mode .edit-icon{display:inline-block}
 @media(min-width:768px){.menu-link{font-size:1.125rem}}
 
+/* Faster float-in, single smooth ease-out curve (no mid-keyframe overshoot so there's no late jitter), shorter stagger between items */
 .menu-list.menu-open .menu-item .menu-link{
     animation:menuFloatIn .85s cubic-bezier(.22,1,.36,1) forwards;
 }
-
-.menu-list.menu-open .menu-item:nth-child(1) .menu-link{animation-delay:0s}
-.menu-list.menu-open .menu-item:nth-child(2) .menu-link{animation-delay:.16s}
-.menu-list.menu-open .menu-item:nth-child(3) .menu-link{animation-delay:.32s}
-.menu-list.menu-open .menu-item:nth-child(4) .menu-link{animation-delay:.48s}
-.menu-list.menu-open .menu-item:nth-child(5) .menu-link{animation-delay:.64s}
+.menu-list.menu-open .menu-item:nth-child(1) .menu-link{ animation-delay:0s; }
+.menu-list.menu-open .menu-item:nth-child(2) .menu-link{ animation-delay:.16s; }
+.menu-list.menu-open .menu-item:nth-child(3) .menu-link{ animation-delay:.32s; }
+.menu-list.menu-open .menu-item:nth-child(4) .menu-link{ animation-delay:.48s; }
+.menu-list.menu-open .menu-item:nth-child(5) .menu-link{ animation-delay:.64s; }
 
 @keyframes menuFloatIn{
-    0%{opacity:0;transform:translateY(55px);filter:blur(3px)}
-    100%{opacity:1;transform:translateY(0);filter:blur(0)}
+    0%{
+        opacity:0;
+        transform:translateY(55px);
+        filter:blur(3px);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0);
+        filter:blur(0);
+    }
 }
 
 .menu-list.menu-closing .menu-item .menu-link{
     animation:menuFloatOut .38s ease-in forwards !important;
 }
-.menu-list.menu-closing .menu-item:nth-child(1) .menu-link{animation-delay:0s !important}
-.menu-list.menu-closing .menu-item:nth-child(2) .menu-link{animation-delay:.04s !important}
-.menu-list.menu-closing .menu-item:nth-child(3) .menu-link{animation-delay:.08s !important}
-.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{animation-delay:.12s !important}
-.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{animation-delay:.16s !important}
+.menu-list.menu-closing .menu-item:nth-child(1) .menu-link{ animation-delay:0s !important; }
+.menu-list.menu-closing .menu-item:nth-child(2) .menu-link{ animation-delay:.04s !important; }
+.menu-list.menu-closing .menu-item:nth-child(3) .menu-link{ animation-delay:.08s !important; }
+.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{ animation-delay:.12s !important; }
+.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{ animation-delay:.16s !important; }
 
 @keyframes menuFloatOut{
-    0%{opacity:1;transform:translateY(0);filter:blur(0)}
-    100%{opacity:0;transform:translateY(55px);filter:blur(3px)}
+    0%{
+        opacity:1;
+        transform:translateY(0);
+        filter:blur(0);
+    }
+    100%{
+        opacity:0;
+        transform:translateY(55px);
+        filter:blur(3px);
+    }
 }
 </style>
 </head>
-
 <body tabindex="-1">
 
 <div class="menu-list">
-
-<div class="menu-item">
-<a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
-</div>
-
-<div class="menu-item">
-<a class="menu-link" onclick="goTo('about')">About</a>
-<a class="edit-icon" href="#" onclick="openEditor(event)">✎</a>
-</div>
-
-<div class="menu-item">
-<a class="menu-link" onclick="goTo('blog')">Blog</a>
-</div>
-
-<div class="menu-item">
-<a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
-</div>
-
-<div class="menu-item">
-<a class="menu-link" onclick="goTo('ynad-team')">YNAD Team</a>
-</div>
-
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
+    </div>
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('about')">About</a>
+        <a class="edit-icon" href="#" onclick="openEditor(event)">&#9998;</a>
+    </div>
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('blog')">Blog</a>
+    </div>
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
+    </div>
+    <div class="menu-item">
+        <a class="menu-link" onclick="goTo('ynad-team')">YNAD Team</a>
+    </div>
 </div>
 
 <script>
+/* ================================================================
+   THEME SYNC — mirrors the parent page's dark/light mode
+   ================================================================ */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
     if(e.data.type === 'ynad-menu-open'){
@@ -117,15 +125,14 @@ window.addEventListener('message', function(e){
     }
 });
 
+/* Menu closing animation */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
-
     if(e.data.type === 'ynad-menu-closing'){
         const list = document.querySelector('.menu-list');
-
         if(list){
+            /* Keep menu-open until the closing animation finishes */
             list.classList.add('menu-closing');
-
             setTimeout(() => {
                 list.classList.remove('menu-closing');
                 list.classList.remove('menu-open');
@@ -141,6 +148,9 @@ try{
     }
 }catch(e){}
 
+/* Supabase client — same project as index.html, used only to save the
+   About section's heading/text so it's visible to every visitor/device,
+   not just this browser's localStorage. */
 const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -155,9 +165,7 @@ setTimeout(focusMenuFrame, 350);
 
 function toggleEdit(){
     document.body.classList.toggle('edit-mode');
-    try{
-        parent.postMessage({ type: 'ynad-toggle-edit-mode' }, '*');
-    }catch(e){}
+    try{ parent.postMessage({ type: 'ynad-toggle-edit-mode' }, '*'); }catch(e){}
 }
 
 document.addEventListener('keydown', function(e){
@@ -174,19 +182,17 @@ window.addEventListener('message', function(e){
     }
 });
 
+/* About Editor */
 function openEditor(e){
     e.preventDefault();
-
     const d=parent.document,s=d.createElement('div');
     const about=d.getElementById('about');
     if(!about)return;
 
     const h=about.querySelector('h1,h2,h3,h4');
     const p=about.querySelector('p');
-
     const originalHeading = h ? h.textContent.trim() : '';
     const originalText = p ? p.textContent.trim() : '';
-
     let originalHeadingAlign = (h ? d.defaultView.getComputedStyle(h).textAlign : 'left');
     if(originalHeadingAlign === 'start') originalHeadingAlign = 'left';
     let originalTextAlign = (p ? d.defaultView.getComputedStyle(p).textAlign : 'left');
@@ -198,146 +204,152 @@ function openEditor(e){
     s.id='about-editor';
     s.innerHTML=`
     <div class="ae-bg">
-      <div class="ae-box">
-        <div class="ae-header">
-          <h3>Edit About</h3>
-          <button id="ae-x" aria-label="Close"><span class="ae-x-glyph">×</span></button>
-        </div>
+        <div class="ae-box">
+            <div class="ae-header">
+                <h3>Edit About</h3>
+                <button id="ae-x" aria-label="Close"><span class="ae-x-glyph">&times;</span></button>
+            </div>
+            <div class="ae-body">
+                <label>Heading <span class="ae-req">*</span></label>
+                <input id="ae-head" value="${originalHeading}" placeholder="e.g. About YNAD Construction">
+                <p class="ae-error" id="ae-head-err">Heading is required.</p>
 
-        <div class="ae-body">
-          <label>Heading <span class="ae-req">*</span></label>
-          <input id="ae-head" value="${originalHeading.replace(/"/g,'&quot;')}" placeholder="e.g. About YNAD Construction">
-          <p class="ae-error" id="ae-head-err">Heading is required.</p><label>
-            About Text <span class="ae-req">*</span>
-            <span class="ae-count" id="ae-count">0 / ${MIN_WORDS}\u2013${MAX_WORDS} words</span>
-          </label>
-          <textarea id="ae-text" placeholder="Write 60\u2013200 words about YNAD Construction...">${originalText}</textarea>
-          <p class="ae-error" id="ae-text-err">About Text must be between ${MIN_WORDS} and ${MAX_WORDS} words.</p>
+                <label>
+                    About Text <span class="ae-req">*</span>
+                    <span class="ae-count" id="ae-count">0 / ${MIN_WORDS}\u2013${MAX_WORDS} words</span>
+                </label>
+                <textarea id="ae-text" placeholder="Write 60\u2013200 words about YNAD Construction...">${originalText}</textarea>
+                <p class="ae-error" id="ae-text-err">About Text must be between ${MIN_WORDS} and ${MAX_WORDS} words.</p>
 
-          <label>Text Alignment <span id="ae-align-target" style="font-weight:500;color:#94a3b8;text-transform:none">Body</span></label>
-          <div class="ae-align" id="ae-align">
-            <span class="ae-align-fill" id="ae-align-fill"></span>
-            <button type="button" data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
-            <button type="button" data-a="center" title="Align center"><i class="ae-ic ae-ic-center"><span></span><span></span><span></span></i>Center</button>
-            <button type="button" data-a="right" title="Align right"><i class="ae-ic ae-ic-right"><span></span><span></span><span></span></i>Right</button>
-            <button type="button" data-a="justify" title="Justify"><i class="ae-ic ae-ic-justify"><span></span><span></span><span></span></i>Justify</button>
-          </div>
+                <label>Text Alignment <span id="ae-align-target" style="font-weight:500;color:#94a3b8;text-transform:none">Body</span></label>
+                <div class="ae-align" id="ae-align">
+                    <span class="ae-align-fill" id="ae-align-fill"></span>
+                    <button type="button" data-a="left" title="Align left"><i class="ae-ic ae-ic-left"><span></span><span></span><span></span></i>Left</button>
+                    <button type="button" data-a="center" title="Align center"><i class="ae-ic ae-ic-center"><span></span><span></span><span></span></i>Center</button>
+                    <button type="button" data-a="right" title="Align right"><i class="ae-ic ae-ic-right"><span></span><span></span><span></span></i>Right</button>
+                    <button type="button" data-a="justify" title="Justify"><i class="ae-ic ae-ic-justify"><span></span><span></span><span></span></i>Justify</button>
+                </div>
+            </div>
+            <div class="ae-actions">
+                <button id="ae-clear" type="button">Clear</button>
+                <button id="ae-save" type="button" disabled>Save Changes</button>
+            </div>
         </div>
-
-        <div class="ae-actions">
-          <button id="ae-clear" type="button">Clear</button>
-          <button id="ae-save" type="button" disabled>Save Changes</button>
-        </div>
-      </div>
     </div>`;
 
     const st=d.createElement('style');
     st.id='about-editor-style';
     st.textContent=`
     #about-editor .ae-bg{
-      position:fixed;inset:0;z-index:999999;
-      display:flex;align-items:center;justify-content:center;
-      padding:20px;background:rgba(15,23,42,.6);
-      backdrop-filter:blur(8px);
-      opacity:0;
-      animation:ae-fade .25s ease forwards
+        position:fixed;inset:0;z-index:999999;
+        display:flex;align-items:center;justify-content:center;
+        padding:20px;background:rgba(15,23,42,.6);
+        backdrop-filter:blur(8px);
+        opacity:0;
+        animation:ae-fade .25s ease forwards
     }
     #about-editor .ae-bg.ae-bg-closing{
-      animation:ae-fade-out .3s ease forwards
+        animation:ae-fade-out .3s ease forwards
     }
     @keyframes ae-fade{to{opacity:1}}
     @keyframes ae-fade-out{to{opacity:0}}
+
     #about-editor .ae-box{
-      position:relative;width:min(650px,100%);
-      max-height:90vh;overflow-y:auto;
-      background:#fff;border-radius:16px;
-      box-shadow:0 25px 70px rgba(0,0,0,.3);
-      font-family:Montserrat,sans-serif;
-      transform:translateY(14px) scale(.98);
-      opacity:0;
-      animation:ae-pop .35s cubic-bezier(.16,1,.3,1) .05s forwards;
-      transition:background-color .25s ease,color .25s ease,border-color .25s ease
+        position:relative;width:min(650px,100%);
+        max-height:90vh;overflow-y:auto;
+        background:#fff;border-radius:16px;
+        box-shadow:0 25px 70px rgba(0,0,0,.3);
+        font-family:Montserrat,sans-serif;
+        transform:translateY(14px) scale(.98);
+        opacity:0;
+        animation:ae-pop .35s cubic-bezier(.16,1,.3,1) .05s forwards;
+        transition:background-color .25s ease
     }
     @keyframes ae-pop{to{transform:translateY(0) scale(1);opacity:1}}
 
+    /* Closing sequence: box itself shrinks/fades slightly, timed to start
+       just after the inner content has finished dropping+fading down. */
     #about-editor .ae-box.ae-box-closing{
-      animation:ae-box-close .28s cubic-bezier(.4,0,1,1) forwards
+        animation:ae-box-close .28s cubic-bezier(.4,0,1,1) forwards
     }
     @keyframes ae-box-close{
-      to{transform:translateY(10px) scale(.97);opacity:0}
+        to{transform:translateY(10px) scale(.97);opacity:0}
     }
 
+    /* Content drop-down-and-fade before the box closes */
     #about-editor .ae-header,
     #about-editor .ae-body,
     #about-editor .ae-actions{
-      transition:opacity .45s ease, transform .45s ease
+        transition:opacity .45s ease, transform .45s ease
     }
     #about-editor.ae-content-closing .ae-header,
     #about-editor.ae-content-closing .ae-body,
     #about-editor.ae-content-closing .ae-actions{
-      opacity:0;
-      transform:translateY(24px);
+        opacity:0;
+        transform:translateY(24px);
     }
     #about-editor.ae-content-closing .ae-body{transition-delay:.06s}
     #about-editor.ae-content-closing .ae-actions{transition-delay:.12s}
 
     #about-editor .ae-header{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:20px 24px;border-bottom:1px solid #e2e8f0;
-      position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;
-      transition:background-color .25s ease, border-color .25s ease, opacity .45s ease, transform .45s ease
+        display:flex;align-items:center;justify-content:space-between;
+        padding:20px 24px;border-bottom:1px solid #e2e8f0;
+        position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;
+        transition:background-color .25s ease, border-color .25s ease, opacity .45s ease, transform .45s ease
     }
     #about-editor h3{margin:0;color:#0f172a;font-size:19px;font-weight:600}
     #about-editor .ae-body{padding:22px 24px 6px}
     #about-editor label{
-      display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-      margin:16px 0 8px;font-size:12px;font-weight:600;letter-spacing:.03em;
-      color:#475569;text-transform:uppercase
+        display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+        margin:16px 0 8px;font-size:12px;font-weight:600;letter-spacing:.03em;
+        color:#475569;text-transform:uppercase
     }
     #about-editor label:first-child{margin-top:0}
     #about-editor .ae-req{color:#d97706;text-transform:none;font-size:13px}
     #about-editor .ae-count{font-weight:600;letter-spacing:0;text-transform:none;color:#94a3b8;font-size:11.5px;white-space:nowrap}
     #about-editor .ae-count.ae-count-ok{color:#16a34a}
     #about-editor .ae-count.ae-count-bad{color:#dc2626}
+
     #about-editor input,#about-editor textarea{
-      width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;
-      border-radius:9px;outline:0;font:14px/1.55 Montserrat;
-      color:#0f172a;background:#fff;
-      transition:border-color .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, text-align .1s ease
+        width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;
+        border-radius:9px;outline:0;font:14px/1.55 Montserrat;
+        color:#0f172a;background:#fff;
+        transition:border-color .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, text-align .1s ease
     }
     #about-editor input:focus,#about-editor textarea:focus{
-      border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)
+        border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)
     }
     #about-editor input.ae-invalid,#about-editor textarea.ae-invalid{
-      border-color:#dc2626
+        border-color:#dc2626
     }
     #about-editor input.ae-invalid:focus,#about-editor textarea.ae-invalid:focus{
-      box-shadow:0 0 0 3px rgba(220,38,38,.14)
+        box-shadow:0 0 0 3px rgba(220,38,38,.14)
     }
     #about-editor textarea{height:170px;resize:vertical;line-height:1.65;transition:border-color .2s ease, box-shadow .2s ease, text-align .1s ease, background-color .2s ease, color .2s ease}
+
     #about-editor .ae-error{
-      display:none;margin:6px 2px 0;font-size:11.5px;color:#dc2626;font-weight:500
+        display:none;margin:6px 2px 0;font-size:11.5px;color:#dc2626;font-weight:500
     }
     #about-editor .ae-error.show{display:block}
 
     .ae-align{
-      position:relative;display:flex;gap:4px;padding:4px;
-      background:#f1f5f9;border-radius:11px;border:1.5px solid #e2e8f0;
-      transition:background-color .25s ease, border-color .25s ease
+        position:relative;display:flex;gap:4px;padding:4px;
+        background:#f1f5f9;border-radius:11px;border:1.5px solid #e2e8f0;
+        transition:background-color .25s ease, border-color .25s ease
     }
     .ae-align-fill{
-      position:absolute;top:4px;left:4px;bottom:4px;
-      width:calc(25% - 3px);border-radius:8px;
-      background:#d97706;
-      transition:transform .3s cubic-bezier(.65,0,.35,1);
-      z-index:0
+        position:absolute;top:4px;left:4px;bottom:4px;
+        width:calc(25% - 3px);border-radius:8px;
+        background:#d97706;
+        transition:transform .3s cubic-bezier(.65,0,.35,1);
+        z-index:0
     }
     .ae-align button{
-      position:relative;z-index:1;
-      flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;
-      padding:9px 6px;border:none;border-radius:8px;
-      background:transparent;color:#475569;font:12.5px/1 Montserrat;font-weight:600;
-      cursor:pointer;transition:color .25s ease
+        position:relative;z-index:1;
+        flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;
+        padding:9px 6px;border:none;border-radius:8px;
+        background:transparent;color:#475569;font:12.5px/1 Montserrat;font-weight:600;
+        cursor:pointer;transition:color .25s ease
     }
     .ae-align button.active{color:#fff}
     .ae-ic{width:15px;height:11px;display:inline-flex;flex-direction:column;justify-content:space-between;flex-shrink:0}
@@ -356,12 +368,12 @@ function openEditor(e){
     .ae-ic-justify span{width:100%}
 
     #about-editor .ae-actions{
-      display:flex;justify-content:flex-end;gap:10px;
-      padding:18px 24px 22px;
+        display:flex;justify-content:flex-end;gap:10px;
+        padding:18px 24px 22px;
     }
     #about-editor .ae-actions button{
-      padding:10px 20px;border-radius:9px;font:13.5px Montserrat;font-weight:600;
-      cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s ease,opacity .18s ease
+        padding:10px 20px;border-radius:9px;font:13.5px Montserrat;font-weight:600;
+        cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s ease,opacity .18s ease
     }
     #ae-clear{background:#fff;border:1.5px solid #e2e8f0;color:#64748b}
     #ae-clear:hover{border-color:#dc2626;color:#dc2626;background:#fef2f2}
@@ -369,152 +381,45 @@ function openEditor(e){
     #ae-save:hover:not(:disabled){background:#b45309;border-color:#b45309;transform:translateY(-1px)}
     #ae-save:disabled{background:#e2e8f0;border-color:#e2e8f0;color:#94a3b8;cursor:not-allowed;transform:none}
 
+    /* FIX: the outer #ae-x button (and its circular hit-area/background)
+       now stays perfectly still on hover. Only the &times; glyph inside it
+       rotates, via its own inner span. */
     #ae-x{
-      border:0;background:#f1f5f9;width:32px;height:32px;border-radius:50%;
-      font-size:20px;line-height:1;color:#64748b;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      transition:background .18s ease,color .18s ease
+        border:0;background:#f1f5f9;width:32px;height:32px;border-radius:50%;
+        font-size:20px;line-height:1;color:#64748b;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        transition:background .18s ease,color .18s ease
     }
     #ae-x:hover{background:#d97706;color:#ffffff}
     #ae-x .ae-x-glyph{
-      display:inline-block;
-      transition:transform .55s cubic-bezier(.34,1.56,.64,1)
+        display:inline-block;
+        transition:transform .55s cubic-bezier(.34,1.56,.64,1)
     }
     #ae-x:hover .ae-x-glyph{transform:rotate(180deg)}
 
-    /* ================================================================
-       ABOUT EDITOR — DARK MODE
-       Matches index.html dark palette:
-       page #0f172a
-       surface/card #111827
-       border #334155
-       primary text #f8fafc
-       secondary text #cbd5e1
-       muted text #94a3b8
-       accent #d97706
-       ================================================================ */
-
-    html.dark #about-editor .ae-bg{
-      background:rgba(2,6,23,.72);
+    /* ---- Dark mode (mirrors the main site's SYNCED DARK PALETTE:
+       #232525 / #3a3c3c / #131414 / #ffffff / #c7c5c2) ---- */
+    html.dark #about-editor .ae-box{background:#232525}
+    html.dark #about-editor .ae-header{background:#232525;border-bottom-color:#3a3c3c}
+    html.dark #about-editor h3{color:#ffffff}
+    html.dark #about-editor label{color:#c7c5c2}
+    html.dark #about-editor .ae-count{color:#a8a6a3}
+    html.dark #about-editor input,html.dark #about-editor textarea{
+        background:#131414;border-color:#3a3c3c;color:#ffffff
     }
-
-    html.dark #about-editor .ae-box{
-      background:#111827;
-      color:#e2e8f0;
+    html.dark #about-editor input::placeholder,html.dark #about-editor textarea::placeholder{color:#7a7876}
+    html.dark #about-editor input:focus,html.dark #about-editor textarea:focus{
+        border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.22)
     }
-
-    html.dark #about-editor .ae-header{
-      background:#111827;
-      border-bottom-color:#334155;
-    }
-
-    html.dark #about-editor h3{
-      color:#f8fafc;
-    }
-
-    html.dark #about-editor label{
-      color:#cbd5e1;
-    }
-
-    html.dark #about-editor .ae-req{
-      color:#f59e0b;
-    }
-
-    html.dark #about-editor .ae-count{
-      color:#94a3b8;
-    }
-
-    html.dark #about-editor .ae-count.ae-count-ok{
-      color:#4ade80;
-    }
-
-    html.dark #about-editor .ae-count.ae-count-bad{
-      color:#f87171;
-    }
-
-    html.dark #about-editor input,
-    html.dark #about-editor textarea{
-      background:#0f172a;
-      border-color:#334155;
-      color:#f8fafc;
-    }
-
-    html.dark #about-editor input::placeholder,
-    html.dark #about-editor textarea::placeholder{
-      color:#64748b;
-    }
-
-    html.dark #about-editor input:focus,
-    html.dark #about-editor textarea:focus{
-      background:#0f172a;
-      border-color:#d97706;
-      color:#f8fafc;
-      box-shadow:0 0 0 3px rgba(217,119,6,.22);
-    }
-
-    html.dark #about-editor .ae-error{
-      color:#f87171;
-    }
-
-    html.dark #about-editor .ae-align{
-      background:#0f172a;
-      border-color:#334155;
-    }
-
-    html.dark #about-editor .ae-align-fill{
-      background:#d97706;
-    }
-
-    html.dark #about-editor .ae-align button{
-      color:#94a3b8;
-    }
-
-    html.dark #about-editor .ae-align button:hover{
-      color:#f8fafc;
-    }
-
-    html.dark #about-editor .ae-align button.active{
-      color:#ffffff;
-    }
-
-    html.dark #about-editor #ae-clear{
-      background:#0f172a;
-      border-color:#334155;
-      color:#cbd5e1;
-    }
-
-    html.dark #about-editor #ae-clear:hover{
-      background:rgba(220,38,38,.10);
-      border-color:#dc2626;
-      color:#f87171;
-    }
-
-    html.dark #about-editor #ae-save{
-      background:#d97706;
-      border-color:#d97706;
-      color:#ffffff;
-    }
-
-    html.dark #about-editor #ae-save:hover:not(:disabled){
-      background:#b45309;
-      border-color:#b45309;
-    }
-
-    html.dark #about-editor #ae-save:disabled{
-      background:#334155;
-      border-color:#334155;
-      color:#64748b;
-    }
-
-    html.dark #about-editor #ae-x{
-      background:#0f172a;
-      color:#94a3b8;
-    }
-
-    html.dark #about-editor #ae-x:hover{
-      background:#d97706;
-      color:#ffffff;
-    }
+    html.dark .ae-align{background:#131414;border-color:#3a3c3c}
+    html.dark .ae-align-fill{background:#d97706}
+    html.dark .ae-align button{color:#c7c5c2}
+    html.dark .ae-align button.active{color:#fff}
+    html.dark #ae-clear{background:#131414;border-color:#3a3c3c;color:#c7c5c2}
+    html.dark #ae-clear:hover{border-color:#dc2626;color:#f87171;background:rgba(220,38,38,.1)}
+    html.dark #ae-save:disabled{background:#3a3c3c;border-color:#3a3c3c;color:#7a7876}
+    html.dark #ae-x{background:#131414;color:#c7c5c2}
+    html.dark #ae-x:hover{background:#d97706;color:#ffffff}
     `;
 
     d.head.appendChild(st);
@@ -526,7 +431,6 @@ function openEditor(e){
     const textErr = d.getElementById('ae-text-err');
     const countEl = d.getElementById('ae-count');
     const saveBtn = d.getElementById('ae-save');
-
     const textAlignWrap = d.getElementById('ae-align');
     const textAlignFill = d.getElementById('ae-align-fill');
     const alignTarget = d.getElementById('ae-align-target');
@@ -583,14 +487,19 @@ function openEditor(e){
     headInput.addEventListener('click',()=>selectAlignmentTarget('heading'));
     textarea.addEventListener('click',()=>selectAlignmentTarget('body'));
 
+    // Position the fills instantly on open (no slide-in from a stale spot).
     requestAnimationFrame(()=>{
         textAlignFill.style.transition='none';
         applyActiveAlignment();
         requestAnimationFrame(()=>{ textAlignFill.style.transition=''; });
     });
+
     textarea.style.textAlign = textAlign;
     headInput.style.textAlign = headAlign;
 
+    // ---- Validation + dirty-check: Save only enables once the form is
+    // both valid (required fields filled, word count in range) AND
+    // something has actually changed from the original saved values. ----
     function validate(){
         const headVal = headInput.value.trim();
         const textVal = textarea.value.trim();
@@ -611,15 +520,19 @@ function openEditor(e){
             countEl.classList.add(wordsValid ? 'ae-count-ok' : 'ae-count-bad');
         }
 
-        const hasChanged = headVal !== originalHeading || textVal !== originalText ||
-                            textAlign !== originalTextAlign || headAlign !== originalHeadingAlign;
-        const isValid = headValid && wordsValid;
+        const hasChanged =
+            headVal !== originalHeading ||
+            textVal !== originalText ||
+            textAlign !== originalTextAlign ||
+            headAlign !== originalHeadingAlign;
 
+        const isValid = headValid && wordsValid;
         saveBtn.disabled = !(isValid && hasChanged);
         return isValid;
     }
 
     let headTouched = false, textTouched = false;
+
     headInput.addEventListener('input', ()=>{ headTouched = true; validate(); });
     headInput.addEventListener('blur', ()=>{ headTouched = true; validate(); });
     textarea.addEventListener('input', ()=>{ textTouched = true; validate(); });
@@ -627,23 +540,30 @@ function openEditor(e){
 
     validate();
 
+    // ---- Close sequence: text/content drops+fades down first, then the
+    // box itself fades out, then the whole overlay is removed. ----
     const bgEl = s.querySelector('.ae-bg');
     const boxEl = s.querySelector('.ae-box');
-
-    const CONTENT_FADE_MS = 450;
-    const CONTENT_LAST_DELAY_MS = 120;
-    const BOX_CLOSE_MS = 280;
+    const CONTENT_FADE_MS = 450;   // matches .ae-header/.ae-body/.ae-actions transition
+    const CONTENT_LAST_DELAY_MS = 120; // matches .ae-actions transition-delay
+    const BOX_CLOSE_MS = 280;      // matches ae-box-close animation duration
 
     const close=()=>{
+        // Step 1: drop + fade the inner content downward — wait for this
+        // to fully finish (including the staggered .ae-actions delay)
+        // before touching the box itself.
         s.classList.add('ae-content-closing');
 
         const contentDoneMs = CONTENT_FADE_MS + CONTENT_LAST_DELAY_MS;
 
+        // Step 2: only once content has completely faded/dropped out,
+        // fade the box + overlay together.
         setTimeout(()=>{
             boxEl.classList.add('ae-box-closing');
             bgEl.classList.add('ae-bg-closing');
         }, contentDoneMs);
 
+        // Step 3: remove from DOM once everything has finished animating
         setTimeout(()=>{
             s.remove();
             st.remove();
@@ -652,6 +572,8 @@ function openEditor(e){
 
     d.getElementById('ae-x').onclick=close;
 
+    // Clear: wipes the heading/text fields and resets alignment to left,
+    // rather than closing the editor (that's what the &times; button is for).
     d.getElementById('ae-clear').onclick=()=>{
         headInput.value='';
         textarea.value='';
@@ -671,6 +593,8 @@ function openEditor(e){
         const newHeading = headInput.value.trim();
         const newText = textarea.value.trim();
 
+        // Show a saving state and disable the button while the Supabase
+        // write is in flight, so a second click can't fire mid-save.
         const originalLabel = saveBtn.textContent;
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving...';
@@ -689,15 +613,12 @@ function openEditor(e){
 
             if(error) throw error;
 
-            if(h){
-                h.textContent=newHeading;
-                h.style.textAlign=headAlign;
-            }
-            if(p){
-                p.textContent=newText;
-                p.style.textAlign=textAlign;
-            }
+            // Update the DOM immediately for this session.
+            if(h){ h.textContent=newHeading; h.style.textAlign=headAlign; }
+            if(p){ p.textContent=newText; p.style.textAlign=textAlign; }
 
+            // Tell the parent page (index.html) the About content changed,
+            // so it can reflect the update live without needing a reload.
             try{
                 parent.postMessage({
                     type: 'ynad-about-updated',
@@ -716,6 +637,7 @@ function openEditor(e){
             d.body.appendChild(notice);
             requestAnimationFrame(()=>{notice.style.opacity='1';notice.style.transform='translateY(0)'});
             setTimeout(()=>{notice.style.opacity='0';notice.style.transform='translateY(10px)';setTimeout(()=>notice.remove(),320)},1800);
+
             close();
         }catch(err){
             console.error('Failed to save About section to Supabase:', err);
@@ -727,15 +649,13 @@ function openEditor(e){
     };
 }
 
+/* Navigation */
 function goTo(id){
-    if(parent&&typeof parent.closeMenuWithEffect==='function')
-        parent.closeMenuWithEffect();
-
+    if(parent&&typeof parent.closeMenuWithEffect==='function') parent.closeMenuWithEffect();
     setTimeout(()=>{
         const el=parent.document.getElementById(id);
         if(el){
-            if(typeof parent.smoothScrollToElement==='function')
-                parent.smoothScrollToElement(el);
+            if(typeof parent.smoothScrollToElement==='function') parent.smoothScrollToElement(el);
             else el.scrollIntoView({behavior:'smooth',block:'start'});
         }
     },400);
