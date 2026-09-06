@@ -976,6 +976,66 @@
         @media (max-width: 560px) {
             .projects-grid { grid-template-columns: 1fr; }
         }
+
+        /* Sliding active-tab indicator (matches project-status.html behavior) */
+        #filterTabsContainer {
+            position: relative;
+        }
+        #filterTabIndicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            border-radius: 999px;
+            background-color: #d97706;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+            height: 0;
+        }
+        .filter-tab {
+            position: relative;
+            z-index: 20;
+            background-color: transparent !important;
+            color: #334155;
+        }
+        body.theme-effective-dark .filter-tab {
+            background-color: transparent !important;
+        }
+        .filter-tab.active-text {
+            color: #ffffff !important;
+        }
+
+        /* Advanced filter panel (ported from project-status.html) */
+        #advFilterPanel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #advFilterPanel.open {
+            grid-template-rows: 1fr;
+        }
+        #advFilterPanel > div {
+            overflow: hidden;
+        }
+        .filter-input-caps,
+        .filter-input-caps option {
+            text-transform: uppercase;
+        }
+        .filter-input-caps::placeholder {
+            text-transform: uppercase;
+        }
+        body.theme-effective-dark #advFilterPanel {
+            background-color: #0f172a !important;
+        }
+        body.theme-effective-dark #advFilterPanel input,
+        body.theme-effective-dark #advFilterPanel select {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+        body.theme-effective-dark #advFilterPanel label {
+            color: #94a3b8 !important;
+        }
     </style>
 </head>
 
@@ -1088,18 +1148,115 @@
 
         <!-- Page Header -->
         <section id="pageHeaderSection" class="py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
-            <h1 class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">All Projects</h1>
+            <h1 id="pageHeadingText" class="text-2xl md:text-4xl font-light tracking-widest uppercase text-slate-900 mb-8 md:mb-10">All Projects</h1>
 
-            <div class="flex flex-wrap justify-center gap-3">
-                <button onclick="setFilter('all')" data-filter="all" class="filter-tab active px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">All</button>
-                <button onclick="setFilter('Ongoing')" data-filter="Ongoing" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Ongoing</button>
-                <button onclick="setFilter('Completed')" data-filter="Completed" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Completed</button>
-                <button onclick="setFilter('Upcoming')" data-filter="Upcoming" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 cursor-pointer">Upcoming</button>
-            </div>
+            <div id="filterTabsContainer" class="flex flex-wrap justify-center gap-3 mb-6"></div>
+
+            <button onclick="toggleAdvFilterPanel()" id="advFilterToggleBtn" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 transition cursor-pointer">
+                <i class="fa-solid fa-sliders"></i> <span id="advFilterToggleLabel">Show Filters</span>
+            </button>
         </section>
 
+        <!-- Advanced Filter Panel (same fields/behavior as project-status.html) -->
+        <div id="advFilterPanel" class="bg-white border-b">
+            <div>
+                <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Category</label>
+                        <select id="filterCategory" onchange="applyAdvFilters()" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 bg-white">
+                            <option value="">All Categories</option>
+                            <option value="Masjid">Masjid</option>
+                            <option value="Madrasa">Madrasa</option>
+                            <option value="Markaz">Markaz</option>
+                            <option value="Orphanage">Orphanage</option>
+                            <option value="Ablution">Ablution</option>
+                            <option value="Water Well">Water Well</option>
+                            <option value="Clinic">Clinic</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Organization</label>
+                        <input type="text" id="filterOrganization" onkeyup="applyAdvFilters()" placeholder="e.g. WAMY" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donor Name / ID</label>
+                        <input type="text" id="filterDonor" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donated Country</label>
+                        <input type="text" id="filterCountry" list="worldCountryList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter country name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <datalist id="worldCountryList"></datalist>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
+                            <div class="relative inline-flex items-center">
+                                <select id="costMode" onchange="onCostModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                    <option value="exact" selected>Exact Cost</option>
+                                    <option value="range">Cost Range</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div id="costExactWrap">
+                            <input type="number" id="filterCostExact" onchange="applyAdvFilters()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div id="costRangeWrap" class="hidden items-center gap-2">
+                            <input type="number" id="filterCostMin" onchange="applyAdvFilters()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <span class="text-slate-400 text-xs">—</span>
+                            <input type="number" id="filterCostMax" onchange="applyAdvFilters()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">BD District</label>
+                        <input type="text" id="filterDistrict" list="bdDistrictList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter district name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <datalist id="bdDistrictList"></datalist>
+                    </div>
+
+                    <div class="sm:col-span-2 lg:col-span-2">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
+                            <div class="relative inline-flex items-center">
+                                <select id="dateMode" onchange="onDateModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                    <option value="exact" selected>Exact Date</option>
+                                    <option value="range">Date Range</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div id="dateExactWrap">
+                            <input type="date" id="filterDateExact" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div id="dateRangeWrap" class="hidden items-center gap-2">
+                            <input type="date" id="filterDateMin" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <span class="text-slate-400 text-xs">—</span>
+                            <input type="date" id="filterDateMax" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Engineer Name / ID</label>
+                        <input type="text" id="filterEngineer" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div class="flex items-end">
+                        <button onclick="resetAdvFilters()" class="text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-amber-600 transition cursor-pointer flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Filters
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <!-- Projects Grid (cards styled exactly like index.html Recent Projects cards) -->
-        <section class="py-12 px-6 md:px-10">
+        <section class="py-12 px-6">
             <div id="allProjectsGrid" class="projects-grid max-w-[1700px] mx-auto grid grid-cols-4 gap-6">
                 <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
             </div>
@@ -1874,36 +2031,288 @@
             </div>`;
         }
 
+        /* ================================================================
+           STATUS TABS (All / Ongoing / Completed / Upcoming) with sliding
+           orange indicator — same behavior as project-status.html's
+           status tab pills.
+           ================================================================ */
+        const FILTER_TAB_DEFS = [
+            { key: 'all',       label: 'All' },
+            { key: 'Ongoing',   label: 'Ongoing' },
+            { key: 'Completed', label: 'Completed' },
+            { key: 'Upcoming',  label: 'Upcoming' }
+        ];
+
+        const FILTER_HEADING_TEXT = {
+            all:       'All Projects',
+            Ongoing:   'Ongoing Projects',
+            Completed: 'Completed Projects',
+            Upcoming:  'Upcoming Projects'
+        };
+
+        function updatePageHeading() {
+            const headingEl = document.getElementById('pageHeadingText');
+            if (!headingEl) return;
+            const newText = FILTER_HEADING_TEXT[currentFilter] || 'All Projects';
+            if (headingEl.textContent === newText) return;
+
+            headingEl.style.transition = 'opacity 0.2s ease';
+            headingEl.style.opacity = '0';
+            setTimeout(() => {
+                headingEl.textContent = newText;
+                headingEl.style.opacity = '1';
+            }, 200);
+        }
+
+        let allProjectsData = [];
         let currentFilter = 'all';
+        let filterTabsBuilt = false;
 
-        async function loadAllProjects() {
+        function ensureFilterTabsBuilt() {
+            if (filterTabsBuilt) return;
+            const container = document.getElementById('filterTabsContainer');
+
+            const indicatorHtml = `<div id="filterTabIndicator"></div>`;
+            const buttonsHtml = FILTER_TAB_DEFS.map(t => `
+                <button data-filter="${escapeHtml(t.key)}" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">
+                    <span class="tab-label">${escapeHtml(t.label)}</span> <span class="tab-count">(0)</span>
+                </button>`).join('');
+
+            container.innerHTML = indicatorHtml + buttonsHtml;
+
+            container.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.addEventListener('click', () => setFilter(btn.getAttribute('data-filter')));
+            });
+
+            window.addEventListener('resize', moveFilterTabIndicator);
+            filterTabsBuilt = true;
+        }
+
+        const FILTER_TAB_TRANSITION_MS = 300;
+        let pendingFilterActiveTextTimeout = null;
+
+        function moveFilterTabIndicator() {
+            const container = document.getElementById('filterTabsContainer');
+            const indicator = document.getElementById('filterTabIndicator');
+            if (!container || !indicator) return;
+
+            const buttons = Array.from(container.querySelectorAll('.filter-tab'));
+            const activeBtn = buttons.find(b => b.getAttribute('data-filter') === currentFilter);
+            if (!activeBtn) return;
+
+            buttons.forEach(b => { if (b !== activeBtn) b.classList.remove('active-text'); });
+
+            indicator.style.width = activeBtn.offsetWidth + 'px';
+            indicator.style.height = activeBtn.offsetHeight + 'px';
+            indicator.style.transform = `translate(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px)`;
+
+            clearTimeout(pendingFilterActiveTextTimeout);
+            pendingFilterActiveTextTimeout = setTimeout(() => {
+                activeBtn.classList.add('active-text');
+            }, FILTER_TAB_TRANSITION_MS);
+        }
+
+        function updateFilterTabCounts(nonStatusFiltered) {
+            const counts = { all: nonStatusFiltered.length, Ongoing: 0, Completed: 0, Upcoming: 0 };
+            nonStatusFiltered.forEach(p => {
+                if (counts[p.status] !== undefined) counts[p.status]++;
+            });
+
+            const container = document.getElementById('filterTabsContainer');
+            container.querySelectorAll('.filter-tab').forEach(btn => {
+                const key = btn.getAttribute('data-filter');
+                const count = counts[key] !== undefined ? counts[key] : 0;
+                btn.querySelector('.tab-count').textContent = `(${count})`;
+            });
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            updatePageHeading();
+            moveFilterTabIndicator();
+            applyAdvFilters();
+        }
+
+        /* ================================================================
+           ADVANCED FILTER PANEL — ported field-for-field from
+           project-status.html (category, organization, donor, country,
+           cost, district, date, engineer).
+           ================================================================ */
+        const WORLD_COUNTRIES = [
+            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+            "Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium",
+            "Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria",
+            "Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad",
+            "Chile","China","Colombia","Comoros","Congo (Brazzaville)","Congo (DRC)","Costa Rica","Croatia","Cuba",
+            "Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador",
+            "Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia",
+            "Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti",
+            "Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+            "Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan",
+            "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+            "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar",
+            "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea",
+            "North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay",
+            "Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis",
+            "Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe",
+            "Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia",
+            "Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan",
+            "Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste",
+            "Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine",
+            "United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu",
+            "Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+        ];
+
+        const BD_DISTRICTS = [
+            "Bagerhat","Bandarban","Barguna","Barishal","Bhola","Bogura","Brahmanbaria","Chandpur","Chattogram",
+            "Chuadanga","Cox's Bazar","Cumilla","Dhaka","Dinajpur","Faridpur","Feni","Gaibandha","Gazipur",
+            "Gopalganj","Habiganj","Jamalpur","Jashore","Jhalokati","Jhenaidah","Joypurhat","Khagrachhari","Khulna",
+            "Kishoreganj","Kurigram","Kushtia","Lakshmipur","Lalmonirhat","Madaripur","Magura","Manikganj",
+            "Meherpur","Moulvibazar","Munshiganj","Mymensingh","Naogaon","Narail","Narayanganj","Narsingdi",
+            "Natore","Netrokona","Nilphamari","Noakhali","Pabna","Panchagarh","Patuakhali","Pirojpur","Rajbari",
+            "Rajshahi","Rangamati","Rangpur","Satkhira","Shariatpur","Sherpur","Sirajganj","Sunamganj","Sylhet",
+            "Tangail","Thakurgaon"
+        ];
+
+        function populateReferenceLists() {
+            const countryList = document.getElementById('worldCountryList');
+            if (countryList) countryList.innerHTML = WORLD_COUNTRIES.map(c => `<option value="${escapeHtml(c)}">`).join('');
+
+            const districtList = document.getElementById('bdDistrictList');
+            if (districtList) districtList.innerHTML = BD_DISTRICTS.map(d => `<option value="${escapeHtml(d)}">`).join('');
+        }
+
+        function toggleAdvFilterPanel() {
+            const panel = document.getElementById('advFilterPanel');
+            const label = document.getElementById('advFilterToggleLabel');
+            panel.classList.toggle('open');
+            label.textContent = panel.classList.contains('open') ? 'Hide Filters' : 'Show Filters';
+        }
+
+        function onCostModeChange() {
+            const mode = document.getElementById('costMode').value;
+            const exactWrap = document.getElementById('costExactWrap');
+            const rangeWrap = document.getElementById('costRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden');
+                rangeWrap.classList.add('hidden');
+                rangeWrap.classList.remove('flex');
+                document.getElementById('filterCostMin').value = '';
+                document.getElementById('filterCostMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden');
+                rangeWrap.classList.remove('hidden');
+                rangeWrap.classList.add('flex');
+                document.getElementById('filterCostExact').value = '';
+            }
+            applyAdvFilters();
+        }
+
+        function onDateModeChange() {
+            const mode = document.getElementById('dateMode').value;
+            const exactWrap = document.getElementById('dateExactWrap');
+            const rangeWrap = document.getElementById('dateRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden');
+                rangeWrap.classList.add('hidden');
+                rangeWrap.classList.remove('flex');
+                document.getElementById('filterDateMin').value = '';
+                document.getElementById('filterDateMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden');
+                rangeWrap.classList.remove('hidden');
+                rangeWrap.classList.add('flex');
+                document.getElementById('filterDateExact').value = '';
+            }
+            applyAdvFilters();
+        }
+
+        function resetAdvFilters() {
+            ['filterCategory','filterOrganization','filterDonor','filterCountry','filterCostExact','filterCostMin',
+             'filterCostMax','filterDistrict','filterDateExact','filterDateMin','filterDateMax','filterEngineer'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('costMode').value = 'exact';
+            document.getElementById('dateMode').value = 'exact';
+            document.getElementById('costExactWrap').classList.remove('hidden');
+            document.getElementById('costRangeWrap').classList.add('hidden');
+            document.getElementById('costRangeWrap').classList.remove('flex');
+            document.getElementById('dateExactWrap').classList.remove('hidden');
+            document.getElementById('dateRangeWrap').classList.add('hidden');
+            document.getElementById('dateRangeWrap').classList.remove('flex');
+            applyAdvFilters();
+        }
+
+        function getNonStatusFilteredProjects() {
+            const category = document.getElementById('filterCategory').value.toLowerCase();
+            const organization = document.getElementById('filterOrganization').value.toLowerCase();
+            const donor = document.getElementById('filterDonor').value.toLowerCase();
+            const country = document.getElementById('filterCountry').value.toLowerCase();
+            const district = document.getElementById('filterDistrict').value.toLowerCase();
+            const engineer = document.getElementById('filterEngineer').value.toLowerCase();
+
+            const costMode = document.getElementById('costMode').value;
+            const costExact = parseFloat(document.getElementById('filterCostExact').value);
+            const costMin = parseFloat(document.getElementById('filterCostMin').value);
+            const costMax = parseFloat(document.getElementById('filterCostMax').value);
+
+            const dateMode = document.getElementById('dateMode').value;
+            const dateExact = document.getElementById('filterDateExact').value;
+            const dateMin = document.getElementById('filterDateMin').value;
+            const dateMax = document.getElementById('filterDateMax').value;
+
+            return allProjectsData.filter(p => {
+                if (category && (p.category || '').toLowerCase() !== category) return false;
+                if (organization && !(p.organization || '').toLowerCase().includes(organization)) return false;
+                if (donor && !(`${p.donor_name || ''} ${p.donor_id || ''}`).toLowerCase().includes(donor)) return false;
+                if (country && !(p.donated_country || '').toLowerCase().includes(country)) return false;
+                if (district && !(p.district || '').toLowerCase().includes(district)) return false;
+                if (engineer && !(`${p.engineer_name || ''} ${p.engineer_id || ''}`).toLowerCase().includes(engineer)) return false;
+
+                if (costMode === 'exact') {
+                    if (!isNaN(costExact) && (p.cost === null || p.cost === undefined || Number(p.cost) !== costExact)) return false;
+                } else {
+                    if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
+                    if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
+                }
+
+                if (dateMode === 'exact') {
+                    if (dateExact && p.opening_date !== dateExact) return false;
+                } else {
+                    if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
+                    if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
+                }
+
+                return true;
+            });
+        }
+
+        function applyAdvFilters() {
+            ensureFilterTabsBuilt();
+
+            const nonStatusFiltered = getNonStatusFilteredProjects();
+            updateFilterTabCounts(nonStatusFiltered);
+
+            const finalFiltered = currentFilter === 'all'
+                ? nonStatusFiltered
+                : nonStatusFiltered.filter(p => p.status === currentFilter);
+
+            renderProjectGrid(finalFiltered);
+            moveFilterTabIndicator();
+        }
+
+        function renderProjectGrid(projects) {
             const grid = document.getElementById('allProjectsGrid');
-            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
 
-            let query = supabaseClient
-                .from('projects')
-                .select('*')
-                .order('opening_date', { ascending: false, nullsFirst: false });
-
-            if (currentFilter !== 'all') {
-                query = query.eq('status', currentFilter);
-            }
-
-            const { data, error } = await query;
-
-            if (error) {
-                console.error(error);
-                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects found.</div>';
+            if (!projects || projects.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects match the selected filters.</div>';
                 return;
             }
 
             grid.innerHTML = '';
-            data.forEach((project, index) => {
+            projects.forEach((project, index) => {
                 grid.insertAdjacentHTML('beforeend', buildProjectCardHTML(project, index));
                 cardImageIndices[index] = 0;
             });
@@ -1911,18 +2320,40 @@
             observeRevealTargets(grid);
         }
 
-        function setFilter(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-filter') === filter);
-            });
-            loadAllProjects();
+        async function loadAllProjects() {
+            const grid = document.getElementById('allProjectsGrid');
+            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
+
+            populateReferenceLists();
+
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('opening_date', { ascending: false, nullsFirst: false });
+
+            if (error) {
+                console.error(error);
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                return;
+            }
+
+            allProjectsData = data || [];
+            applyAdvFilters();
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAllProjects();
             observeRevealTargets(document);
             initAuthState();
+
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => {
+                    requestAnimationFrame(moveFilterTabIndicator);
+                });
+            }
+            window.addEventListener('load', () => {
+                setTimeout(moveFilterTabIndicator, 350);
+            });
 
             const loadingProgress = document.getElementById('pageLoadingProgress');
             const finishPageLoad = () => {
