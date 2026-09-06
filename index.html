@@ -1782,7 +1782,7 @@ body.theme-effective-dark #ae-x:hover {
                     <a href="#" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-house text-sm"></i>
                     </a>
-                    <a href="#" id="headerContactBtn" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                    <a id="headerContactBtn" href="#siteFooterContainer" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-phone text-sm"></i>
                     </a>
                 </div>
@@ -2090,56 +2090,21 @@ body.theme-effective-dark #ae-x:hover {
         })();
         </script>
 
-        <!-- Header Contact: always scroll to the footer of the CURRENT page.
-             No navigation, no hash change, and no dependency on the Home page. -->
         <script>
         (function () {
-            function scrollToCurrentPageFooter(event) {
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
+            const headerContactBtn = document.getElementById('headerContactBtn');
+            if (!headerContactBtn) return;
 
-                const footer = document.getElementById('siteFooterContainer')
-                    || document.querySelector('footer')
-                    || document.querySelector('[data-site-footer]');
+            headerContactBtn.addEventListener('click', function (event) {
+                event.preventDefault();
 
+                const footer = document.getElementById('siteFooterContainer');
                 if (!footer) return;
 
-                const doScroll = function () {
-                    footer.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                        inline: 'nearest'
-                    });
-                };
-
-                // The shared footer is loaded asynchronously. Wait briefly for
-                // its content so the scroll always lands on the real footer.
-                if (footer.id === 'siteFooterContainer' && footer.childElementCount === 0) {
-                    let done = false;
-                    const finish = function () {
-                        if (done) return;
-                        done = true;
-                        if (observer) observer.disconnect();
-                        clearTimeout(timer);
-                        requestAnimationFrame(doScroll);
-                    };
-
-                    const observer = new MutationObserver(function () {
-                        if (footer.childElementCount > 0 || footer.scrollHeight > 0) finish();
-                    });
-                    observer.observe(footer, { childList: true, subtree: true });
-                    const timer = setTimeout(finish, 1800);
-                } else {
-                    requestAnimationFrame(doScroll);
-                }
-            }
-
-            document.addEventListener('click', function (event) {
-                const contactBtn = event.target.closest('#headerContactBtn');
-                if (!contactBtn) return;
-                scrollToCurrentPageFooter(event);
+                footer.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             });
         })();
         </script>
