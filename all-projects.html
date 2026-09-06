@@ -1258,7 +1258,7 @@
         <!-- Projects Grid (cards styled exactly like index.html Recent Projects cards) -->
         <section class="py-12 px-6">
             <div id="allProjectsGrid" class="projects-grid max-w-[1700px] mx-auto grid grid-cols-4 gap-6">
-                <div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+                <div class="col-span-full flex items-center justify-center py-24 min-h-[420px] text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
             </div>
         </section>
 
@@ -2301,7 +2301,11 @@
             const grid = document.getElementById('allProjectsGrid');
 
             if (!projects || projects.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects match the selected filters.</div>';
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[420px] text-slate-400">
+                        <i class="fa-solid fa-folder-open text-4xl mb-4 text-slate-300"></i>
+                        <span class="text-sm tracking-wide uppercase">No projects match the selected filters.</span>
+                    </div>`;
                 return;
             }
 
@@ -2316,7 +2320,7 @@
 
         async function loadAllProjects() {
             const grid = document.getElementById('allProjectsGrid');
-            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
+            grid.innerHTML = '<div class="col-span-full flex items-center justify-center py-24 min-h-[420px] text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>';
 
             populateReferenceLists();
 
@@ -2327,7 +2331,7 @@
 
             if (error) {
                 console.error(error);
-                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                grid.innerHTML = `<div class="col-span-full flex items-center justify-center py-24 min-h-[420px] text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
                 return;
             }
 
