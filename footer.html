@@ -10,6 +10,13 @@
     --icon-bg:#3a3c3c;
     --icon-line:#55575a;
     --amber:#d98c3c;
+
+    /* classic hacking-terminal green palette for the dev-credit block */
+    --hg-bg:#04140a;
+    --hg-dim:#1a6b34;
+    --hg-mid:#2ecc55;
+    --hg-bright:#7dffa3;
+    --hg-glow:rgba(46,204,85,.55);
   }
   .ynad-footer-component *{box-sizing:border-box;}
   .ynad-footer-component{font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
@@ -177,72 +184,93 @@
   }
   .social-icons a:hover .circle{background:var(--amber); color:#1b1d1d;}
 
-  /* --- developer credit block --- */
+  /* --- developer credit block: fully binary by default, hacking reveal on hover --- */
   .footer-dev{
     display:flex;
     align-items:center;
-    padding-right:18px;
+    justify-content:center;
   }
-  .dev-by{
-    display:flex;
+
+  .dev-terminal{
+    position:relative;
+    display:inline-flex;
     align-items:center;
-    color:#5f6161;
-    font-size:16px;
-    font-weight:400;
+    justify-content:center;
+    font-family:'JetBrains Mono','Fira Code','SFMono-Regular',Consolas,monospace;
+    font-size:12px;
+    letter-spacing:.04em;
+    cursor:default;
+    padding:4px 2px;
+    min-width:290px;
+    min-height:20px;
+  }
+
+  /* both layers occupy the same cell, centered, like a stacked reveal */
+  .dev-stack{
+    position:relative;
+    display:grid;
+    place-items:center;
+    width:100%;
+  }
+  .dev-binary-line,
+  .dev-plain-line{
+    grid-area:1/1;
+    display:inline-flex;
+    gap:2px;
     white-space:nowrap;
   }
-  .dev-d-letter{
-    position:relative;
-    width:30px;height:30px;
-    display:flex;align-items:center;justify-content:center;
-    margin-right:1px;
-    flex:none;
+
+  .dev-binary-line .bit{
+    display:inline-block;
+    color:var(--hg-dim);
+    opacity:1;
+    transform:translateY(0) scale(1);
+    transition:opacity .3s cubic-bezier(.2,.8,.3,1), transform .3s cubic-bezier(.2,.8,.3,1);
   }
-  .dev-d-letter svg{
-    width:100%;height:100%;
-    display:block;
+  /* binary bits leave left-to-right on hover, mirroring the CONTACT letters */
+  .dev-terminal:hover .dev-binary-line .bit{
+    opacity:0;
+    transform:translateY(-8px) scale(.7);
   }
-  .dev-d-letter .d-ring{
-    stroke:#5f6161;
-    fill:none;
-    stroke-width:2.2;
-    stroke-linejoin:round;
+
+  .dev-plain-line .letter{
+    display:inline-block;
+    color:var(--hg-mid);
+    text-shadow:0 0 4px var(--hg-glow);
+    opacity:0;
+    transform:translateY(10px) scale(.6);
+    transition:opacity .3s cubic-bezier(.2,.8,.3,1), transform .3s cubic-bezier(.2,.8,.3,1),
+               color .3s ease, text-shadow .3s ease;
   }
-  .dev-d-letter .gear{
-    stroke:#5f6161;
-    fill:none;
-    stroke-width:1.5;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-    transform-origin:center;
-    transform-box:fill-box;
+  /* real letters arrive left-to-right, entering just after the bit above it leaves */
+  .dev-terminal:hover .dev-plain-line .letter{
+    opacity:1;
+    transform:translateY(0) scale(1);
   }
-  .footer-dev:hover .dev-d-letter .gear{animation:gearSpin .7s ease;}
-  @keyframes gearSpin{
-    from{transform:rotate(0deg);}
-    to{transform:rotate(360deg);}
+
+  .dev-cursor{
+    display:inline-block;
+    width:6px;height:12px;
+    background:var(--hg-dim);
+    margin-left:3px;
+    vertical-align:-2px;
+    animation:devBlink 1.1s steps(1) infinite;
+    opacity:0;
+    transition:background-color .3s ease, opacity .3s ease;
   }
-  .dev-name{
-    position:relative;
-    margin-left:14px;
-    padding:9px 26px 9px 20px;
-    background:#5c5e5e;
-    color:#dcdad7;
-    font-size:15px;
-    font-weight:400;
-    white-space:nowrap;
-    display:flex;
-    align-items:center;
-    height:100%;
-    border-radius:15px 0 0 15px;
+  .dev-terminal:hover .dev-cursor{
+    background:var(--hg-bright);
+    box-shadow:0 0 6px var(--hg-glow);
+    opacity:1;
   }
-  .dev-name::after{
-    content:"";
-    position:absolute;
-    top:0; right:-13px;
-    width:26px; height:100%;
-    background:#5c5e5e;
-    clip-path:polygon(0 0, 45% 0, 100% 100%, 55% 100%);
+  @keyframes devBlink{
+    0%,49%{opacity:.85;}
+    50%,100%{opacity:0;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .dev-cursor{animation:none;}
+    .dev-binary-line .bit, .dev-plain-line .letter{transition:opacity .2s ease;}
   }
 
   .footer-bottom{
@@ -266,6 +294,11 @@
 
     .footer-contact{order:3; width:100%;}
     .footer-dev{order:2;}
+  }
+
+  @media (max-width:480px){
+    .dev-reveal{min-width:150px; font-size:11px;}
+    .dev-prompt{font-size:10px;}
   }
 
   /* ================= MODAL ================= */
@@ -360,18 +393,13 @@
       </div>
 
       <div class="footer-dev">
-        <span class="dev-by">
-          <span class="dev-d-letter">
-            <svg viewBox="0 0 32 32">
-              <path class="d-ring" d="M7 4 h7.5 a12 12 0 0 1 0 24 H7 Z"/>
-              <g class="gear">
-                <circle cx="16.5" cy="16" r="4.4"/>
-                <path d="M16.5 9v2.2M16.5 20.8v2.2M9.7 16h2.2M21.1 16h2.2M12.1 10.9l1.55 1.55M19.35 19.55l1.55 1.55M12.1 21.1l1.55-1.55M19.35 12.45l1.55-1.55"/>
-              </g>
-            </svg>
-          </span>eveloped by
-        </span>
-        <span class="dev-name">Md. Abu Sayeed</span>
+        <div class="dev-terminal" id="devTerminal" tabindex="0" aria-label="Developed by MD ABU SAYEED">
+          <span class="dev-stack">
+            <span class="dev-binary-line" id="devBinaryLine" aria-hidden="true"></span>
+            <span class="dev-plain-line" id="devPlainLine"></span>
+          </span>
+          <span class="dev-cursor"></span>
+        </div>
       </div>
     </div>
 
@@ -537,6 +565,47 @@
   });
 
   renderFooter();
+
+  // ---- dev credit: fully-binary by default, staggered hacking reveal on hover ----
+  (function initDevReveal(){
+    const PHRASE = "Developed by MD ABU SAYEED";
+    const binaryLine = document.getElementById('devBinaryLine');
+    const plainLine = document.getElementById('devPlainLine');
+    const terminalEl = document.getElementById('devTerminal');
+    if (!binaryLine || !plainLine || !terminalEl) return;
+
+    function randBit(){ return Math.random() > 0.5 ? '1' : '0'; }
+
+    const letters = PHRASE.split('');
+    const n = letters.length;
+    const stepOut = 0.02;   // seconds between each bit leaving
+    const stepIn = 0.02;    // seconds between each letter arriving
+    const inStartOffset = 0.12; // letters start arriving shortly after bits begin leaving
+
+    // binary layer: one random bit per character position (space -> blank)
+    binaryLine.innerHTML = letters.map((ch, i) => {
+      if (ch === ' ') return '<span class="bit">&nbsp;</span>';
+      const delay = (i * stepOut).toFixed(2);
+      return '<span class="bit" style="transition-delay:' + delay + 's">' + randBit() + '</span>';
+    }).join('');
+
+    // plain layer: the real phrase, staggered entrance left-to-right
+    plainLine.innerHTML = letters.map((ch, i) => {
+      const display = ch === ' ' ? '&nbsp;' : ch;
+      const delay = (inStartOffset + i * stepIn).toFixed(2);
+      return '<span class="letter" style="transition-delay:' + delay + 's">' + display + '</span>';
+    }).join('');
+
+    // re-roll the binary noise each time the mouse leaves, so it looks fresh on next hover
+    function rescrambleBits(){
+      binaryLine.querySelectorAll('.bit').forEach((el) => {
+        if (el.textContent.trim() === '') return;
+        el.textContent = randBit();
+      });
+    }
+    terminalEl.addEventListener('mouseleave', rescrambleBits);
+    terminalEl.addEventListener('focusout', rescrambleBits);
+  })();
 })();
 </script>
 
