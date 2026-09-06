@@ -199,10 +199,11 @@
     font-family:'JetBrains Mono','Fira Code','SFMono-Regular',Consolas,monospace;
     font-size:12px;
     letter-spacing:.04em;
-    cursor:default;
+    cursor:pointer;
     padding:4px 2px;
     min-width:290px;
     min-height:20px;
+    text-decoration:none;
   }
 
   /* both layers occupy the same cell, centered, like a stacked reveal */
@@ -393,13 +394,13 @@
       </div>
 
       <div class="footer-dev">
-        <div class="dev-terminal" id="devTerminal" tabindex="0" aria-label="Developed by MD ABU SAYEED">
+        <a class="dev-terminal" id="devTerminal" href="#" target="_blank" rel="noopener" tabindex="0" aria-label="Developed by MD ABU SAYEED">
           <span class="dev-stack">
             <span class="dev-binary-line" id="devBinaryLine" aria-hidden="true"></span>
             <span class="dev-plain-line" id="devPlainLine"></span>
           </span>
           <span class="dev-cursor"></span>
-        </div>
+        </a>
       </div>
     </div>
 
@@ -438,6 +439,11 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>Developed by — link</label>
+        <input type="text" id="inputDevLink" placeholder="https://example.com">
+      </div>
+
       <div class="modal-actions">
         <button class="btn" id="cancelBtn">Cancel</button>
         <button class="btn primary" id="saveBtn">Save changes</button>
@@ -462,6 +468,7 @@
   const state = {
     location: "Level - 05, House - 04, Road - 33, Sector - 07\nUttara, Dhaka-1230",
     mapLink: "https://www.google.com/maps",
+    devLink: "https://github.com/",
     socials: [
       { name:"facebook",  url:"https://facebook.com/ynadconstruction" },
       { name:"instagram", url:"https://instagram.com/ynadconstruction" },
@@ -481,10 +488,12 @@
   const locationEl = document.getElementById('footerLocationText');
   const socialWrap = document.getElementById('socialIcons');
   const mapPinLink = document.getElementById('mapPinLink');
+  const devTerminalLink = document.getElementById('devTerminal');
 
   function renderFooter(){
     locationEl.innerHTML = state.location.replace(/\n/g, '<br>');
     mapPinLink.href = state.mapLink;
+    if (devTerminalLink) devTerminalLink.href = state.devLink || '#';
     socialWrap.innerHTML = state.socials.map(s =>
       `<a href="${s.url}" target="_blank" rel="noopener" title="${s.name}"><span class="circle">${svgIcon(s.name)}</span></a>`
     ).join('');
@@ -526,6 +535,7 @@
   const modal = document.getElementById('editModal');
   const inputLocation = document.getElementById('inputLocation');
   const inputMapLink = document.getElementById('inputMapLink');
+  const inputDevLink = document.getElementById('inputDevLink');
   const socialEditList = document.getElementById('socialEditList');
 
   function renderSocialEdit(){
@@ -540,6 +550,7 @@
   function openModal(){
     inputLocation.value = state.location;
     inputMapLink.value = state.mapLink;
+    inputDevLink.value = state.devLink;
     renderSocialEdit();
     modal.classList.add('open');
   }
@@ -557,6 +568,7 @@
   document.getElementById('saveBtn').addEventListener('click', () => {
     state.location = inputLocation.value;
     state.mapLink = inputMapLink.value.trim() || state.mapLink;
+    state.devLink = inputDevLink.value.trim() || state.devLink;
     socialEditList.querySelectorAll('input[data-idx]').forEach(inp => {
       state.socials[Number(inp.dataset.idx)].url = inp.value.trim();
     });
