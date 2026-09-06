@@ -39,81 +39,33 @@ html.dark .edit-icon:hover{color:#d97706}
 body.edit-mode .edit-icon{display:inline-block}
 @media(min-width:768px){.menu-link{font-size:1.125rem}}
 
-/* Faster float-in, single smooth ease-out curve (no mid-keyframe overshoot
-   so there's no late jitter), shorter stagger between items */
 .menu-list.menu-open .menu-item .menu-link{
     animation:menuFloatIn .85s cubic-bezier(.22,1,.36,1) forwards;
 }
 
-.menu-list.menu-open .menu-item:nth-child(1) .menu-link{
-    animation-delay:0s;
-}
-
-.menu-list.menu-open .menu-item:nth-child(2) .menu-link{
-    animation-delay:.16s;
-}
-
-.menu-list.menu-open .menu-item:nth-child(3) .menu-link{
-    animation-delay:.32s;
-}
-
-.menu-list.menu-open .menu-item:nth-child(4) .menu-link{
-    animation-delay:.48s;
-}
-
-.menu-list.menu-open .menu-item:nth-child(5) .menu-link{
-    animation-delay:.64s;
-}
+.menu-list.menu-open .menu-item:nth-child(1) .menu-link{animation-delay:0s}
+.menu-list.menu-open .menu-item:nth-child(2) .menu-link{animation-delay:.16s}
+.menu-list.menu-open .menu-item:nth-child(3) .menu-link{animation-delay:.32s}
+.menu-list.menu-open .menu-item:nth-child(4) .menu-link{animation-delay:.48s}
+.menu-list.menu-open .menu-item:nth-child(5) .menu-link{animation-delay:.64s}
 
 @keyframes menuFloatIn{
-    0%{
-        opacity:0;
-        transform:translateY(55px);
-        filter:blur(3px);
-    }
-    100%{
-        opacity:1;
-        transform:translateY(0);
-        filter:blur(0);
-    }
+    0%{opacity:0;transform:translateY(55px);filter:blur(3px)}
+    100%{opacity:1;transform:translateY(0);filter:blur(0)}
 }
 
 .menu-list.menu-closing .menu-item .menu-link{
     animation:menuFloatOut .38s ease-in forwards !important;
 }
-
-.menu-list.menu-closing .menu-item:nth-child(1) .menu-link{
-    animation-delay:0s !important;
-}
-
-.menu-list.menu-closing .menu-item:nth-child(2) .menu-link{
-    animation-delay:.04s !important;
-}
-
-.menu-list.menu-closing .menu-item:nth-child(3) .menu-link{
-    animation-delay:.08s !important;
-}
-
-.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{
-    animation-delay:.12s !important;
-}
-
-.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{
-    animation-delay:.16s !important;
-}
+.menu-list.menu-closing .menu-item:nth-child(1) .menu-link{animation-delay:0s !important}
+.menu-list.menu-closing .menu-item:nth-child(2) .menu-link{animation-delay:.04s !important}
+.menu-list.menu-closing .menu-item:nth-child(3) .menu-link{animation-delay:.08s !important}
+.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{animation-delay:.12s !important}
+.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{animation-delay:.16s !important}
 
 @keyframes menuFloatOut{
-    0%{
-        opacity:1;
-        transform:translateY(0);
-        filter:blur(0);
-    }
-
-    100%{
-        opacity:0;
-        transform:translateY(55px);
-        filter:blur(3px);
-    }
+    0%{opacity:1;transform:translateY(0);filter:blur(0)}
+    100%{opacity:0;transform:translateY(55px);filter:blur(3px)}
 }
 </style>
 </head>
@@ -146,15 +98,15 @@ body.edit-mode .edit-icon{display:inline-block}
 </div>
 
 <script>
-
-/* ================================================================
-   THEME SYNC — mirrors the parent page's dark/light mode
-   ================================================================ */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
     if(e.data.type === 'ynad-menu-open'){
         const list=document.querySelector('.menu-list');
-        if(list){ list.classList.remove('menu-open'); void list.offsetWidth; list.classList.add('menu-open'); }
+        if(list){
+            list.classList.remove('menu-open');
+            void list.offsetWidth;
+            list.classList.add('menu-open');
+        }
     }
 });
 
@@ -165,7 +117,6 @@ window.addEventListener('message', function(e){
     }
 });
 
-/* Menu closing animation */
 window.addEventListener('message', function(e){
     if(!e.data || typeof e.data !== 'object') return;
 
@@ -173,7 +124,6 @@ window.addEventListener('message', function(e){
         const list = document.querySelector('.menu-list');
 
         if(list){
-            /* Keep menu-open until the closing animation finishes */
             list.classList.add('menu-closing');
 
             setTimeout(() => {
@@ -183,6 +133,7 @@ window.addEventListener('message', function(e){
         }
     }
 });
+
 try{
     parent.postMessage({ type: 'ynad-request-theme' }, '*');
     if (parent.document.documentElement.classList.contains('dark')) {
@@ -190,9 +141,6 @@ try{
     }
 }catch(e){}
 
-/* Supabase client — same project as index.html, used only to save the
-   About section's heading/text so it's visible to every visitor/device,
-   not just this browser's localStorage. */
 const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -226,7 +174,6 @@ window.addEventListener('message', function(e){
     }
 });
 
-/* About Editor */
 function openEditor(e){
     e.preventDefault();
 
@@ -259,7 +206,7 @@ function openEditor(e){
 
         <div class="ae-body">
           <label>Heading <span class="ae-req">*</span></label>
-          <input id="ae-head" value="${originalHeading}" placeholder="e.g. About YNAD Construction">
+          <input id="ae-head" value="${originalHeading.replace(/"/g,'&quot;')}" placeholder="e.g. About YNAD Construction">
           <p class="ae-error" id="ae-head-err">Heading is required.</p><label>
             About Text <span class="ae-req">*</span>
             <span class="ae-count" id="ae-count">0 / ${MIN_WORDS}\u2013${MAX_WORDS} words</span>
@@ -309,12 +256,10 @@ function openEditor(e){
       transform:translateY(14px) scale(.98);
       opacity:0;
       animation:ae-pop .35s cubic-bezier(.16,1,.3,1) .05s forwards;
-      transition:background-color .25s ease
+      transition:background-color .25s ease,color .25s ease,border-color .25s ease
     }
     @keyframes ae-pop{to{transform:translateY(0) scale(1);opacity:1}}
 
-    /* Closing sequence: box itself shrinks/fades slightly, timed to start
-       just after the inner content has finished dropping+fading down. */
     #about-editor .ae-box.ae-box-closing{
       animation:ae-box-close .28s cubic-bezier(.4,0,1,1) forwards
     }
@@ -322,7 +267,6 @@ function openEditor(e){
       to{transform:translateY(10px) scale(.97);opacity:0}
     }
 
-    /* Content drop-down-and-fade before the box closes */
     #about-editor .ae-header,
     #about-editor .ae-body,
     #about-editor .ae-actions{
@@ -425,9 +369,6 @@ function openEditor(e){
     #ae-save:hover:not(:disabled){background:#b45309;border-color:#b45309;transform:translateY(-1px)}
     #ae-save:disabled{background:#e2e8f0;border-color:#e2e8f0;color:#94a3b8;cursor:not-allowed;transform:none}
 
-    /* FIX: the outer #ae-x button (and its circular hit-area/background)
-       now stays perfectly still on hover. Only the × glyph inside it
-       rotates, via its own inner span. */
     #ae-x{
       border:0;background:#f1f5f9;width:32px;height:32px;border-radius:50%;
       font-size:20px;line-height:1;color:#64748b;cursor:pointer;
@@ -441,28 +382,139 @@ function openEditor(e){
     }
     #ae-x:hover .ae-x-glyph{transform:rotate(180deg)}
 
-    /* ---- Dark mode (mirrors the main site's html.dark / theme-effective-dark palette) ---- */
-    html.dark #about-editor .ae-box{background:#1e293b}
-    html.dark #about-editor .ae-header{background:#1e293b;border-bottom-color:#334155}
-    html.dark #about-editor h3{color:#f1f5f9}
-    html.dark #about-editor label{color:#94a3b8}
-    html.dark #about-editor .ae-count{color:#64748b}
-    html.dark #about-editor input,html.dark #about-editor textarea{
-      background:#0f172a;border-color:#334155;color:#e2e8f0
+    /* ================================================================
+       ABOUT EDITOR — DARK MODE
+       Matches index.html dark palette:
+       page #0f172a
+       surface/card #111827
+       border #334155
+       primary text #f8fafc
+       secondary text #cbd5e1
+       muted text #94a3b8
+       accent #d97706
+       ================================================================ */
+
+    html.dark #about-editor .ae-bg{
+      background:rgba(2,6,23,.72);
     }
-    html.dark #about-editor input::placeholder,html.dark #about-editor textarea::placeholder{color:#475569}
-    html.dark #about-editor input:focus,html.dark #about-editor textarea:focus{
-      border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.22)
+
+    html.dark #about-editor .ae-box{
+      background:#111827;
+      color:#e2e8f0;
     }
-    html.dark .ae-align{background:#0f172a;border-color:#334155}
-    html.dark .ae-align-fill{background:#d97706}
-    html.dark .ae-align button{color:#94a3b8}
-    html.dark .ae-align button.active{color:#fff}
-    html.dark #ae-clear{background:#0f172a;border-color:#334155;color:#94a3b8}
-    html.dark #ae-clear:hover{border-color:#dc2626;color:#f87171;background:rgba(220,38,38,.1)}
-    html.dark #ae-save:disabled{background:#334155;border-color:#334155;color:#64748b}
-    html.dark #ae-x{background:#0f172a;color:#94a3b8}
-    html.dark #ae-x:hover{background:#d97706;color:#ffffff}
+
+    html.dark #about-editor .ae-header{
+      background:#111827;
+      border-bottom-color:#334155;
+    }
+
+    html.dark #about-editor h3{
+      color:#f8fafc;
+    }
+
+    html.dark #about-editor label{
+      color:#cbd5e1;
+    }
+
+    html.dark #about-editor .ae-req{
+      color:#f59e0b;
+    }
+
+    html.dark #about-editor .ae-count{
+      color:#94a3b8;
+    }
+
+    html.dark #about-editor .ae-count.ae-count-ok{
+      color:#4ade80;
+    }
+
+    html.dark #about-editor .ae-count.ae-count-bad{
+      color:#f87171;
+    }
+
+    html.dark #about-editor input,
+    html.dark #about-editor textarea{
+      background:#0f172a;
+      border-color:#334155;
+      color:#f8fafc;
+    }
+
+    html.dark #about-editor input::placeholder,
+    html.dark #about-editor textarea::placeholder{
+      color:#64748b;
+    }
+
+    html.dark #about-editor input:focus,
+    html.dark #about-editor textarea:focus{
+      background:#0f172a;
+      border-color:#d97706;
+      color:#f8fafc;
+      box-shadow:0 0 0 3px rgba(217,119,6,.22);
+    }
+
+    html.dark #about-editor .ae-error{
+      color:#f87171;
+    }
+
+    html.dark #about-editor .ae-align{
+      background:#0f172a;
+      border-color:#334155;
+    }
+
+    html.dark #about-editor .ae-align-fill{
+      background:#d97706;
+    }
+
+    html.dark #about-editor .ae-align button{
+      color:#94a3b8;
+    }
+
+    html.dark #about-editor .ae-align button:hover{
+      color:#f8fafc;
+    }
+
+    html.dark #about-editor .ae-align button.active{
+      color:#ffffff;
+    }
+
+    html.dark #about-editor #ae-clear{
+      background:#0f172a;
+      border-color:#334155;
+      color:#cbd5e1;
+    }
+
+    html.dark #about-editor #ae-clear:hover{
+      background:rgba(220,38,38,.10);
+      border-color:#dc2626;
+      color:#f87171;
+    }
+
+    html.dark #about-editor #ae-save{
+      background:#d97706;
+      border-color:#d97706;
+      color:#ffffff;
+    }
+
+    html.dark #about-editor #ae-save:hover:not(:disabled){
+      background:#b45309;
+      border-color:#b45309;
+    }
+
+    html.dark #about-editor #ae-save:disabled{
+      background:#334155;
+      border-color:#334155;
+      color:#64748b;
+    }
+
+    html.dark #about-editor #ae-x{
+      background:#0f172a;
+      color:#94a3b8;
+    }
+
+    html.dark #about-editor #ae-x:hover{
+      background:#d97706;
+      color:#ffffff;
+    }
     `;
 
     d.head.appendChild(st);
@@ -531,7 +583,6 @@ function openEditor(e){
     headInput.addEventListener('click',()=>selectAlignmentTarget('heading'));
     textarea.addEventListener('click',()=>selectAlignmentTarget('body'));
 
-        // Position the fills instantly on open (no slide-in from a stale spot).
     requestAnimationFrame(()=>{
         textAlignFill.style.transition='none';
         applyActiveAlignment();
@@ -540,9 +591,6 @@ function openEditor(e){
     textarea.style.textAlign = textAlign;
     headInput.style.textAlign = headAlign;
 
-    // ---- Validation + dirty-check: Save only enables once the form is
-    // both valid (required fields filled, word count in range) AND
-    // something has actually changed from the original saved values. ----
     function validate(){
         const headVal = headInput.value.trim();
         const textVal = textarea.value.trim();
@@ -579,31 +627,23 @@ function openEditor(e){
 
     validate();
 
-    // ---- Close sequence: text/content drops+fades down first, then the
-    // box itself fades out, then the whole overlay is removed. ----
     const bgEl = s.querySelector('.ae-bg');
     const boxEl = s.querySelector('.ae-box');
 
-    const CONTENT_FADE_MS = 450;   // matches .ae-header/.ae-body/.ae-actions transition
-    const CONTENT_LAST_DELAY_MS = 120; // matches .ae-actions transition-delay
-    const BOX_CLOSE_MS = 280;      // matches ae-box-close animation duration
+    const CONTENT_FADE_MS = 450;
+    const CONTENT_LAST_DELAY_MS = 120;
+    const BOX_CLOSE_MS = 280;
 
     const close=()=>{
-        // Step 1: drop + fade the inner content downward — wait for this
-        // to fully finish (including the staggered .ae-actions delay)
-        // before touching the box itself.
         s.classList.add('ae-content-closing');
 
         const contentDoneMs = CONTENT_FADE_MS + CONTENT_LAST_DELAY_MS;
 
-        // Step 2: only once content has completely faded/dropped out,
-        // fade the box + overlay together.
         setTimeout(()=>{
             boxEl.classList.add('ae-box-closing');
             bgEl.classList.add('ae-bg-closing');
         }, contentDoneMs);
 
-        // Step 3: remove from DOM once everything has finished animating
         setTimeout(()=>{
             s.remove();
             st.remove();
@@ -612,8 +652,6 @@ function openEditor(e){
 
     d.getElementById('ae-x').onclick=close;
 
-    // Clear: wipes the heading/text fields and resets alignment to left,
-    // rather than closing the editor (that's what the × button is for).
     d.getElementById('ae-clear').onclick=()=>{
         headInput.value='';
         textarea.value='';
@@ -633,8 +671,6 @@ function openEditor(e){
         const newHeading = headInput.value.trim();
         const newText = textarea.value.trim();
 
-        // Show a saving state and disable the button while the Supabase
-        // write is in flight, so a second click can't fire mid-save.
         const originalLabel = saveBtn.textContent;
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving...';
@@ -653,7 +689,6 @@ function openEditor(e){
 
             if(error) throw error;
 
-            // Update the DOM immediately for this session.
             if(h){
                 h.textContent=newHeading;
                 h.style.textAlign=headAlign;
@@ -663,8 +698,6 @@ function openEditor(e){
                 p.style.textAlign=textAlign;
             }
 
-            // Tell the parent page (index.html) the About content changed,
-            // so it can reflect the update live without needing a reload.
             try{
                 parent.postMessage({
                     type: 'ynad-about-updated',
@@ -694,7 +727,6 @@ function openEditor(e){
     };
 }
 
-/* Navigation */
 function goTo(id){
     if(parent&&typeof parent.closeMenuWithEffect==='function')
         parent.closeMenuWithEffect();
@@ -708,7 +740,6 @@ function goTo(id){
         }
     },400);
 }
-
 </script>
 </body>
 </html>
