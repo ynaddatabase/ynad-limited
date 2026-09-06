@@ -1782,7 +1782,7 @@ body.theme-effective-dark #ae-x:hover {
                     <a href="#" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-house text-sm"></i>
                     </a>
-                    <a href="#contact" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                    <a id="headerContactBtn" href="#siteFooterContainer" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-phone text-sm"></i>
                     </a>
                 </div>
@@ -2087,6 +2087,25 @@ body.theme-effective-dark #ae-x:hover {
                     console.error(error);
                     container.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;background:#0f172a;">Footer failed to load.</div>';
                 });
+        })();
+        </script>
+
+        <script>
+        (function () {
+            const headerContactBtn = document.getElementById('headerContactBtn');
+            if (!headerContactBtn) return;
+
+            headerContactBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                const footer = document.getElementById('siteFooterContainer');
+                if (!footer) return;
+
+                footer.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
         })();
         </script>
 
