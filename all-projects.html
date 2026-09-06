@@ -1025,102 +1025,42 @@
 
     <div id="pageContentWrapper">
 
-        <nav id="mainNav" class="sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-4">
-                <div class="text-2xl font-bold tracking-widest nav-adaptive uppercase">
-                    YNAD <span class="text-amber-500 font-light">Construction</span>
-                </div>
-            </a>
+        <!-- Header is sourced directly from index.html so one header stays shared. -->
+        <div id="indexHeaderContainer" aria-label="Site header"></div>
 
-            <div class="flex items-center gap-8">
-                <div id="homeContactLoginGroup" class="hidden md:flex gap-3 font-medium text-sm tracking-wider items-center transition-transform duration-400" style="transition-timing-function: cubic-bezier(0.4,0,0.2,1);">
-                    <a href="index.html" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-                        <i class="fa-solid fa-house text-sm"></i>
-                    </a>
-                    <a href="index.html#contact" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-                        <i class="fa-solid fa-phone text-sm"></i>
-                    </a>
-                </div>
+        <script>
+        // ------------------------------------------------------------------
+        // SHARED HEADER: source of truth is index.html
+        // Fetch the current #mainNav from index.html on every page load.
+        // ------------------------------------------------------------------
+        window.__indexHeaderReady = (async function loadIndexHeader() {
+            const container = document.getElementById('indexHeaderContainer');
+            if (!container) return;
 
-                <div class="flex items-center gap-3">
-                    <div id="searchBoxWrap" class="relative flex items-center">
-                        <div id="searchDropdownMenu" class="bg-white shadow-lg border border-slate-200 flex items-center z-0">
-                            <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none pl-4 pr-1 py-1.5 text-xs text-slate-800 focus:outline-none">
-                        </div>
+            try {
+                const response = await fetch('index.html', { cache: 'no-store' });
+                if (!response.ok) throw new Error('Unable to load index.html');
 
-                        <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
-                                class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 relative z-10">
-                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                        </button>
-                    </div>
-                    <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const nav = doc.querySelector('#mainNav');
+                if (!nav) throw new Error('Header #mainNav was not found in index.html');
 
-                    <div class="relative">
-                        <div id="settingsIconBtn" onclick="toggleSettingsDropdown(event)" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Settings">
-                            <i class="fa-solid fa-gear text-sm"></i>
-                        </div>
+                container.replaceChildren(nav.cloneNode(true));
 
-                        <div id="settingsDropdownMenu" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2 z-50">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                                <i class="fa-solid fa-sliders w-4 text-center"></i> Preferences
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                                <i class="fa-solid fa-shield-halved w-4 text-center"></i> Account &amp; Security
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                                <i class="fa-solid fa-bell w-4 text-center"></i> Notifications
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                // Keep header navigation meaningful on this page.
+                const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
+                const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
+                if (homeLink) homeLink.href = 'index.html';
+                if (contactLink) contactLink.href = 'index.html#contact';
 
-                <div id="themeModeSwitch" class="theme-mode-switch nav-adaptive" role="group" aria-label="Theme mode">
-                    <button type="button" class="theme-mode-btn" data-mode="light" onclick="setThemeMode('light')" title="Light mode">
-                        <i class="fa-solid fa-sun"></i>
-                    </button>
-                    <button type="button" class="theme-mode-btn active" data-mode="dynamic" onclick="setThemeMode('dynamic')" title="Dynamic mode">
-                        <i class="fa-solid fa-circle-half-stroke"></i>
-                    </button>
-                    <button type="button" class="theme-mode-btn" data-mode="dark" onclick="setThemeMode('dark')" title="Dark mode">
-                        <i class="fa-solid fa-moon"></i>
-                    </button>
-                </div>
-
-                <div class="relative">
-                    <div id="userProfileBtn" onclick="toggleUserDropdown(event)"
-                         class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500 cursor-pointer shadow-sm transition transform duration-300 hover:scale-110 hover:shadow-lg bg-white flex items-center justify-center"
-                         title="Profile">
-                        <i id="userProfileFallback" class="fa-solid fa-user profile-fallback-icon" aria-hidden="true"></i>
-                        <img id="userProfileImage" src="" alt="User profile" class="w-full h-full object-cover" hidden>
-                    </div>
-
-                    <div id="userDropdownMenu" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 p-4 z-50">
-                        <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                            <div class="profile-avatar-large w-12 h-12 rounded-full overflow-hidden border border-slate-200 flex items-center justify-center flex-shrink-0">
-                                <i id="userDropdownFallback" class="fa-solid fa-user text-sm" aria-hidden="true"></i>
-                                <img id="userDropdownImage" src="" alt="User profile" class="w-full h-full object-cover" hidden>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div id="profileUserName" class="profile-user-name text-sm font-semibold truncate">Guest User</div>
-                                <div id="profileUserEmail" class="profile-user-email text-[11px] truncate">Not logged in</div>
-                            </div>
-                        </div>
-
-                        <div class="pt-3">
-                            <a id="profileAuthAction" href="login.html"
-                               class="auth-action w-full py-2 px-3 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 transition duration-200 cursor-pointer">
-                                <i id="profileAuthActionIcon" class="fa-solid fa-right-to-bracket"></i>
-                                <span id="profileAuthActionText">LOG IN</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" onclick="openMenuWithEffect()" title="Menu">
-                    <i id="hamburgerBtnIcon" class="fa-solid fa-bars hamburger-icon text-sm"></i>
-                </div>
-            </div>
-        </nav>
+                document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
+            } catch (error) {
+                console.error('Shared index header failed to load:', error);
+                container.innerHTML = '';
+            }
+        })();
+        </script>
 
         <section id="pageHeaderSection" class="py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
             <h1 id="pageHeadingText" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">All Projects</h1>
@@ -1301,38 +1241,46 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
         (function () {
-            const nav = document.getElementById('mainNav');
-            if (!nav) return;
+            async function initSharedHeaderScroll() {
+                try {
+                    if (window.__indexHeaderReady) await window.__indexHeaderReady;
+                } catch (e) {}
 
-            let lastScrollY = window.scrollY;
-            let ticking = false;
+                const nav = document.getElementById('mainNav');
+                if (!nav) return;
 
-            function handleNavScroll() {
-                const currentScrollY = window.scrollY;
-                const pastTop = currentScrollY > 4;
+                let lastScrollY = window.scrollY;
+                let ticking = false;
 
-                nav.classList.toggle('nav-solid', pastTop);
+                function handleNavScroll() {
+                    const currentScrollY = window.scrollY;
+                    const pastTop = currentScrollY > 4;
 
-                if (currentScrollY <= 4) {
-                    nav.classList.remove('nav-hidden');
-                } else if (currentScrollY > lastScrollY) {
-                    nav.classList.add('nav-hidden');
-                } else if (currentScrollY < lastScrollY) {
-                    nav.classList.remove('nav-hidden');
+                    nav.classList.toggle('nav-solid', pastTop);
+
+                    if (currentScrollY <= 4) {
+                        nav.classList.remove('nav-hidden');
+                    } else if (currentScrollY > lastScrollY) {
+                        nav.classList.add('nav-hidden');
+                    } else if (currentScrollY < lastScrollY) {
+                        nav.classList.remove('nav-hidden');
+                    }
+
+                    lastScrollY = currentScrollY;
+                    ticking = false;
                 }
 
-                lastScrollY = currentScrollY;
-                ticking = false;
+                window.addEventListener('scroll', function () {
+                    if (!ticking) {
+                        window.requestAnimationFrame(handleNavScroll);
+                        ticking = true;
+                    }
+                }, { passive: true });
+
+                handleNavScroll();
             }
 
-            window.addEventListener('scroll', function () {
-                if (!ticking) {
-                    window.requestAnimationFrame(handleNavScroll);
-                    ticking = true;
-                }
-            }, { passive: true });
-
-            handleNavScroll();
+            initSharedHeaderScroll();
         })();
 
         function getUserAvatarUrl(user) {
@@ -1437,6 +1385,7 @@
 
         async function initAuthState() {
             try {
+                if (window.__indexHeaderReady) await window.__indexHeaderReady;
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 updateProfileUI(session ? session.user : null);
                 supabaseClient.auth.onAuthStateChange(function (_event, newSession) {
@@ -1740,7 +1689,11 @@
             let saved = 'dynamic';
             try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    if (window.__indexHeaderReady) await window.__indexHeaderReady;
+                } catch (e) {}
+
                 setThemeMode(saved);
 
                 if (window.matchMedia) {
