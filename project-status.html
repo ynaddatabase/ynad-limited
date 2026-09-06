@@ -1984,15 +1984,8 @@
             { key: 'Location Not Finalized',   label: 'Location Not Finalized' },
         ];
 
-        const STATUS_HEADING_TEXT = {
-            all:                      'Project Status Overview',
-            'On Time':                'On Time Projects',
-            'Opening Delay':          'Opening Delay Projects',
-            'Elapsed Delay':          'Elapsed Delay Projects',
-            'Opening In':             'Upcoming Opening Projects',
-            'Not Started':            'Not Started Projects',
-            'Location Not Finalized': 'Location Not Finalized Projects'
-        };
+        /* Fixed page heading: filter changes do not alter this text. */
+        const FIXED_STATUS_HEADING = 'Project Status Overview';
 
         function computeProjectStatus(project) {
             if (!project.location_link) return 'Location Not Finalized';
@@ -2012,14 +2005,6 @@
             }
             if (project.status === 'Ongoing') return 'Elapsed Delay';
             return 'Not Started';
-        }
-
-        function updatePageHeading() {
-            const headingEl = document.getElementById('pageHeadingText');
-            if (!headingEl) return;
-            const newText = STATUS_HEADING_TEXT[currentFilter] || 'Project Status Overview';
-            if (headingEl.textContent === newText) return;
-            headingEl.textContent = newText;
         }
 
         let allProjectsData = [];
@@ -2096,7 +2081,6 @@
 
         function setFilter(filter) {
             currentFilter = filter;
-            updatePageHeading();
             applyAdvFilters();
         }
 
