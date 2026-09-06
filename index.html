@@ -1737,12 +1737,15 @@ body.theme-effective-dark #ae-x:hover {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #0f172a;
+            background: #ffffff;
             transform: translate(-50%, -50%) scale(0);
             transform-origin: center center;
             pointer-events: none;
             z-index: 999998;
             will-change: transform;
+        }
+        body.theme-effective-dark #pageTransitionCircle {
+            background: #131414;
         }
 
         body.page-transitioning #pageContentWrapper {
@@ -3005,6 +3008,56 @@ function closeMenuWithEffect() {
         }
 
         /* ================================================================
+           ICON-ORIGIN PAGE TRANSITION — bfcache / back-button fix
+           When the browser restores this page from back/forward cache
+           (event.persisted === true), any leftover shrink/fade/blur inline
+           styles and the 'page-transitioning' class from the moment we
+           navigated AWAY must be cleared immediately. Without this, coming
+           back via the browser's back arrow shows the page still stuck at
+           scale(0.08)/opacity:0/blur — invisible or broken-looking — until
+           a second interaction forces a repaint, which is exactly the
+           "have to click back twice" symptom.
+           ================================================================ */
+        function resetPageTransitionState() {
+            const pageWrapper = document.getElementById('pageContentWrapper');
+            const circle = document.getElementById('pageTransitionCircle');
+
+            document.body.classList.remove('page-transitioning');
+
+            if (pageWrapper) {
+                pageWrapper.style.transition = 'none';
+                pageWrapper.style.transform = '';
+                pageWrapper.style.opacity = '';
+                pageWrapper.style.filter = '';
+                // Force reflow so the cleared styles take effect before any
+                // future transition classes/styles are re-applied.
+                void pageWrapper.offsetWidth;
+                pageWrapper.style.transition = '';
+            }
+
+            if (circle) {
+                circle.style.transition = 'none';
+                circle.style.transform = 'translate(-50%, -50%) scale(0)';
+                circle.style.opacity = '0';
+                void circle.offsetWidth;
+                circle.style.transition = '';
+            }
+        }
+
+        // Fires on normal load AND whenever the page is restored from
+        // bfcache (e.g. clicking the browser's back arrow to return here).
+        window.addEventListener('pageshow', function (e) {
+            resetPageTransitionState();
+        });
+
+        // Belt-and-suspenders: also clear it right before this page itself
+        // is unloaded/navigated away from, so if THIS page is ever the one
+        // restored from bfcache later, it wasn't left mid-animation.
+        window.addEventListener('pagehide', function () {
+            resetPageTransitionState();
+        });
+
+        /* ================================================================
            ICON-ORIGIN PAGE TRANSITION
            Clicking a hero icon (All Project / Overview / Project Graph)
            grows a circle out from that icon's exact position, while the
@@ -3040,6 +3093,12 @@ function closeMenuWithEffect() {
                 Math.max(originY, window.innerHeight - originY)
             );
             const scaleTarget = (maxDist * 2.15) / 40; // circle base size is 40px
+
+            // Match the transition circle's color to the site's current theme:
+            // dark mode uses the same near-black used across the dark palette
+            // (#131414), light mode uses white — never the old navy blue.
+            const isDarkNow = document.body.classList.contains('theme-effective-dark');
+            circle.style.backgroundColor = isDarkNow ? '#131414' : '#ffffff';
 
             circle.style.left = originX + 'px';
             circle.style.top = originY + 'px';
