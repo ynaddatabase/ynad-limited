@@ -1671,7 +1671,58 @@ body.theme-effective-dark #ae-x:hover {
             transition-timing-function: ease !important;
         }
 
-    </style>
+    
+        /* RESTORED ABOUT SECTION PARTITION — keeps the original separated block,
+           generous top/bottom breathing room, centered heading and distinct
+           surface in both light and dark themes. */
+        #about {
+            position: relative;
+            padding: 64px 24px 82px !important;
+            text-align: center;
+            border-top: 1px solid transparent;
+            border-bottom: 1px solid transparent;
+        }
+        #about .max-w-6xl {
+            max-width: 1160px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        #aboutHeading {
+            margin: 0 0 30px !important;
+            text-align: center;
+            line-height: 1.25;
+        }
+        #aboutText {
+            margin: 0 auto;
+            text-align: left;
+            max-width: 1160px;
+        }
+        body.theme-light #about {
+            background-color: #e9e9e9 !important;
+            border-top-color: #d7d7d7 !important;
+            border-bottom-color: #d7d7d7 !important;
+        }
+        body.theme-effective-dark #about {
+            background-color: #1b1d1d !important;
+            border-top-color: #3a3c3c !important;
+            border-bottom-color: #3a3c3c !important;
+        }
+        body.theme-effective-dark #aboutHeading {
+            color: #ffffff !important;
+        }
+        body.theme-effective-dark #aboutText {
+            color: #c7c5c2 !important;
+        }
+        @media (max-width: 768px) {
+            #about {
+                padding: 52px 20px 64px !important;
+            }
+            #aboutHeading {
+                margin-bottom: 24px !important;
+            }
+        }
+
+</style>
 </head>
 
 <body class="bg-white text-slate-800">
@@ -1952,7 +2003,7 @@ body.theme-effective-dark #ae-x:hover {
         </section>
 
         <!-- About Section -->
-        <section id="about" class="py-16 bg-slate-100 px-6">
+        <section id="about" class="bg-slate-100 px-6">
             <div class="max-w-6xl mx-auto">
                 <h2 id="aboutHeading" class="text-2xl md:text-3xl font-light tracking-widest uppercase text-slate-900 mb-6 about-fade-in">About YNAD Construction</h2>
                 <p id="aboutText" class="text-sm text-slate-600 leading-relaxed"></p>
