@@ -1752,6 +1752,41 @@ body.theme-effective-dark #ae-x:hover {
             will-change: transform, opacity, filter;
         }
 
+        /* ================================================================
+           FOOTER CONTACT HIGHLIGHT — when the header's Contact icon jumps
+           the page down to the footer (which holds the contact details),
+           the footer briefly lifts slightly and gets a frosted glass glow
+           so it's obvious you've arrived, then settles back to normal.
+           ================================================================ */
+        #siteFooterContainer {
+            transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1),
+                        box-shadow 0.5s ease;
+            position: relative;
+        }
+        #siteFooterContainer.footer-highlight {
+            transform: translateY(-6px);
+            box-shadow: 0 -18px 40px -12px rgba(217, 119, 6, 0.35);
+        }
+        #siteFooterContainer.footer-highlight::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(6px) saturate(140%);
+            -webkit-backdrop-filter: blur(6px) saturate(140%);
+            border-top: 1px solid rgba(217, 119, 6, 0.45);
+            opacity: 0;
+            animation: footerGlassFlash 1.6s ease forwards;
+        }
+        @keyframes footerGlassFlash {
+            0%   { opacity: 0; }
+            15%  { opacity: 1; }
+            70%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
 </style>
 </head>
 
@@ -1782,7 +1817,7 @@ body.theme-effective-dark #ae-x:hover {
                     <a href="#" title="Home" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-house text-sm"></i>
                     </a>
-                    <a href="#contact" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
+                    <a href="#siteFooterContainer" onclick="return goToFooterContact(event)" title="Contact" class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-phone text-sm"></i>
                     </a>
                 </div>
@@ -3239,6 +3274,98 @@ function closeMenuWithEffect() {
             }
 
             heroScrollAnimId = requestAnimationFrame(frame);
+        }
+
+        /* ================================================================
+           HEADER CONTACT ICON -> FOOTER
+           The Contact icon in the header now jumps straight to the footer
+           (which holds the contact details) instead of the old #contact
+           anchor. The footer is injected asynchronously via fetch(), so
+           this waits for it to actually be in the DOM before measuring/
+           scrolling, then briefly lifts + glass-glows it so it's obvious
+           you've arrived.
+           ================================================================ */
+        let footerScrollAnimId = null;
+
+        function scrollToElementSmooth(targetEl, onDone) {
+            if (!targetEl) { if (onDone) onDone(); return; }
+
+            if (footerScrollAnimId) cancelAnimationFrame(footerScrollAnimId);
+
+            const startY = window.scrollY;
+            const targetY = Math.max(0, targetEl.getBoundingClientRect().top + window.scrollY);
+            const distance = targetY - startY;
+
+            if (Math.abs(distance) < 1) {
+                if (onDone) onDone();
+                return;
+            }
+
+            const duration = Math.min(1400, Math.max(700, Math.abs(distance) * 0.55));
+            const startedAt = performance.now();
+
+            function smoothEase(t) {
+                return t < 0.5
+                    ? 4 * t * t * t
+                    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            function frame(now) {
+                const t = Math.min((now - startedAt) / duration, 1);
+                window.scrollTo(0, startY + distance * smoothEase(t));
+
+                if (t < 1) {
+                    footerScrollAnimId = requestAnimationFrame(frame);
+                } else {
+                    window.scrollTo(0, targetY);
+                    footerScrollAnimId = null;
+                    if (onDone) onDone();
+                }
+            }
+
+            footerScrollAnimId = requestAnimationFrame(frame);
+        }
+
+        function flashFooterHighlight() {
+            const footer = document.getElementById('siteFooterContainer');
+            if (!footer) return;
+
+            // Restart the animation cleanly even if clicked again quickly.
+            footer.classList.remove('footer-highlight');
+            void footer.offsetWidth;
+            footer.classList.add('footer-highlight');
+
+            window.clearTimeout(footer._highlightTimer);
+            footer._highlightTimer = window.setTimeout(() => {
+                footer.classList.remove('footer-highlight');
+            }, 1650);
+        }
+
+        function goToFooterContact(event) {
+            if (event) event.preventDefault();
+
+            const footer = document.getElementById('siteFooterContainer');
+            if (!footer) return false;
+
+            // Footer content loads asynchronously (fetch('footer.html')).
+            // If it hasn't rendered yet, wait briefly for it so we scroll
+            // to its real final height instead of an empty container.
+            const footerHasContent = footer.children.length > 0;
+
+            if (footerHasContent) {
+                scrollToElementSmooth(footer, flashFooterHighlight);
+            } else {
+                let attempts = 0;
+                const waitForFooter = setInterval(() => {
+                    attempts++;
+                    if (footer.children.length > 0 || attempts > 40) {
+                        clearInterval(waitForFooter);
+                        scrollToElementSmooth(footer, flashFooterHighlight);
+                    }
+                }, 75);
+            }
+
+            return false;
         }
 
         /* ---- Scroll-triggered fade-in (left -> right) for heading & project cards ---- */
