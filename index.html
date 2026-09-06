@@ -689,11 +689,7 @@ body.theme-light #about {
 
         body.theme-effective-dark #projects .recent-project-card::after {
             background: #334155 !important;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 1px;
-            box-shadow: none !important;
+            left: 0; right: 0; bottom: 0; height: 1px; box-shadow: none !important;
         }
 
         body.theme-effective-dark #searchDropdownMenu input {
@@ -718,7 +714,7 @@ body.theme-light #about {
             background-color: #111827 !important;
         }
 
-        body.theme-effective-dark .hover\\:bg-slate-100:hover {
+        body.theme-effective-dark .hover\:bg-slate-100:hover {
             background-color: #1e293b !important;
         }
 
@@ -1642,7 +1638,7 @@ body.theme-effective-dark #ae-x:hover {
         body.theme-effective-dark .bg-white {
             background-color: #232525 !important;
         }
-        body.theme-effective-dark .hover\\:bg-slate-100:hover {
+        body.theme-effective-dark .hover\:bg-slate-100:hover {
             background-color: #2a2c2c !important;
         }
         body.theme-effective-dark #mainNav.nav-solid {
@@ -1722,6 +1718,37 @@ body.theme-effective-dark #ae-x:hover {
             }
         }
 
+        /* ================================================================
+           ICON-ORIGIN PAGE TRANSITION — click an icon (All Project, Overview,
+           Project Graph) and the page appears to shrink/get sucked into that
+           icon's position before the browser navigates to the target page.
+           ================================================================ */
+        #pageTransitionOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999998;
+            pointer-events: none;
+        }
+
+        #pageTransitionCircle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0f172a;
+            transform: translate(-50%, -50%) scale(0);
+            transform-origin: center center;
+            pointer-events: none;
+            z-index: 999998;
+            will-change: transform;
+        }
+
+        body.page-transitioning #pageContentWrapper {
+            will-change: transform, opacity, filter;
+        }
+
 </style>
 </head>
 
@@ -1732,6 +1759,8 @@ body.theme-effective-dark #ae-x:hover {
         <div id="pageLoadingProgress"></div>
     </div>
 
+    <!-- Icon-origin page transition circle -->
+    <div id="pageTransitionCircle"></div>
 
     <!-- Main Content Wrapper to handle Page Blur Effect -->
     <div id="pageContentWrapper">
@@ -1948,19 +1977,19 @@ body.theme-effective-dark #ae-x:hover {
                         </div>
                         <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Project Add</span>
                     </a>
-                    <a href="all-projects.html" class="group cursor-pointer">
+                    <a href="all-projects.html" onclick="return iconOriginNavigate(event, this)" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-layer-group text-lg"></i>
                         </div>
                         <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">All Project</span>
                     </a>
-                    <a href="project-status.html" class="group cursor-pointer">
+                    <a href="project-status.html" onclick="return iconOriginNavigate(event, this)" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-chart-pie text-lg"></i>
                         </div>
                         <span class="text-xs uppercase tracking-wider mt-2 block text-gray-200 group-hover:text-white">Overview</span>
                     </a>
-                    <a href="project-graph.html" class="group cursor-pointer">
+                    <a href="project-graph.html" onclick="return iconOriginNavigate(event, this)" class="group cursor-pointer">
                         <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-white/10 group-hover:bg-amber-600 transition">
                             <i class="fa-solid fa-chart-line text-lg"></i>
                         </div>
@@ -2973,6 +3002,78 @@ function closeMenuWithEffect() {
             const totalImages = slider.children.length;
             cardImageIndices[cardId] = ((cardImageIndices[cardId] || 0) + direction + totalImages) % totalImages;
             slider.style.transform = `translateX(-${cardImageIndices[cardId] * 100}%)`;
+        }
+
+        /* ================================================================
+           ICON-ORIGIN PAGE TRANSITION
+           Clicking a hero icon (All Project / Overview / Project Graph)
+           grows a circle out from that icon's exact position, while the
+           page content shrinks + fades toward the same point — giving the
+           impression the next page is being "pulled out of" that icon,
+           similar to a Mac genie-effect minimize/restore. Once the animation
+           finishes, the browser navigates to the link's real href.
+           ================================================================ */
+        function iconOriginNavigate(event, linkEl) {
+            event.preventDefault();
+
+            const href = linkEl.getAttribute('href');
+            if (!href) return false;
+
+            // Find the actual icon circle inside this link for a precise origin point.
+            const iconCircle = linkEl.querySelector('div');
+            const originEl = iconCircle || linkEl;
+            const rect = originEl.getBoundingClientRect();
+            const originX = rect.left + rect.width / 2;
+            const originY = rect.top + rect.height / 2;
+
+            const circle = document.getElementById('pageTransitionCircle');
+            const pageWrapper = document.getElementById('pageContentWrapper');
+            if (!circle || !pageWrapper) {
+                window.location.href = href;
+                return false;
+            }
+
+            // Figure out how large the circle needs to grow to fully cover the
+            // viewport from this origin point.
+            const maxDist = Math.hypot(
+                Math.max(originX, window.innerWidth - originX),
+                Math.max(originY, window.innerHeight - originY)
+            );
+            const scaleTarget = (maxDist * 2.15) / 40; // circle base size is 40px
+
+            circle.style.left = originX + 'px';
+            circle.style.top = originY + 'px';
+            circle.style.transition = 'none';
+            circle.style.transform = 'translate(-50%, -50%) scale(0)';
+            circle.style.opacity = '1';
+
+            document.body.classList.add('page-transitioning');
+
+            // Force reflow so the reset above is applied before animating.
+            void circle.offsetWidth;
+
+            requestAnimationFrame(() => {
+                // The circle grows outward from the icon, covering the screen —
+                // as if the new page is emerging from that exact spot.
+                circle.style.transition = 'transform 0.65s cubic-bezier(0.65, 0, 0.35, 1)';
+                circle.style.transform = `translate(-50%, -50%) scale(${scaleTarget})`;
+
+                // Simultaneously, the current page content shrinks and fades
+                // toward the same origin point, reinforcing the "sucked into
+                // the icon" feel.
+                pageWrapper.style.transition = 'transform 0.55s cubic-bezier(0.55, 0, 1, 0.45), opacity 0.5s ease, filter 0.5s ease';
+                pageWrapper.style.transformOrigin = originX + 'px ' + originY + 'px';
+                pageWrapper.style.transform = 'scale(0.08)';
+                pageWrapper.style.opacity = '0';
+                pageWrapper.style.filter = 'blur(4px)';
+            });
+
+            // Navigate once the animation has visually completed.
+            setTimeout(() => {
+                window.location.href = href;
+            }, 620);
+
+            return false;
         }
 
         /* Main Project Horizontal Slider — moves exactly TWO cards per click.
