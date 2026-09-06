@@ -1257,39 +1257,65 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+        /* ================================================================
+           HEADER SCROLL ANIMATION — follows index.html exactly
+           The header is loaded asynchronously from index.html, so the
+           scroll binding must start only after that shared header exists.
+        ================================================================ */
         (function () {
-            const nav = document.getElementById('mainNav');
-            if (!nav) return;
+            function bindIndexHeaderScroll() {
+                const nav = document.getElementById('mainNav');
+                if (!nav) return;
+                if (nav.dataset.scrollBound === 'true') return;
+                nav.dataset.scrollBound = 'true';
 
-            let lastScrollY = window.scrollY;
-            let ticking = false;
+                let lastScrollY = window.scrollY;
+                let ticking = false;
 
-            function handleNavScroll() {
-                const currentScrollY = window.scrollY;
-                const pastTop = currentScrollY > 4;
+                function handleNavScroll() {
+                    const currentScrollY = window.scrollY;
+                    const pastTop = currentScrollY > 4;
 
-                nav.classList.toggle('nav-solid', pastTop);
+                    nav.classList.toggle('nav-solid', pastTop);
 
-                if (currentScrollY <= 4) {
-                    nav.classList.remove('nav-hidden');
-                } else if (currentScrollY > lastScrollY) {
-                    nav.classList.add('nav-hidden');
-                } else if (currentScrollY < lastScrollY) {
-                    nav.classList.remove('nav-hidden');
+                    /* Match index.html: header stays visible at the top,
+                       slides up on scroll-down, and returns immediately
+                       when the user scrolls back up. */
+                    if (nav.dataset.scrollLock === 'true') {
+                        nav.classList.add('nav-hidden');
+                        lastScrollY = currentScrollY;
+                        ticking = false;
+                        return;
+                    }
+
+                    if (currentScrollY <= 4) {
+                        nav.classList.remove('nav-hidden');
+                    } else if (currentScrollY > lastScrollY) {
+                        nav.classList.add('nav-hidden');
+                    } else if (currentScrollY < lastScrollY) {
+                        nav.classList.remove('nav-hidden');
+                    }
+
+                    lastScrollY = currentScrollY;
+                    ticking = false;
                 }
 
-                lastScrollY = currentScrollY;
-                ticking = false;
+                window.addEventListener('scroll', function () {
+                    if (!ticking) {
+                        window.requestAnimationFrame(handleNavScroll);
+                        ticking = true;
+                    }
+                }, { passive: true });
+
+                handleNavScroll();
             }
 
-            window.addEventListener('scroll', function () {
-                if (!ticking) {
-                    window.requestAnimationFrame(handleNavScroll);
-                    ticking = true;
-                }
-            }, { passive: true });
-
-            handleNavScroll();
+            /* The shared header is fetched asynchronously from index.html. */
+            if (window.__indexHeaderReady && typeof window.__indexHeaderReady.then === 'function') {
+                window.__indexHeaderReady.then(bindIndexHeaderScroll);
+            } else {
+                document.addEventListener('ynad-index-header-ready', bindIndexHeaderScroll, { once: true });
+            }
         })();
 
         function getUserAvatarUrl(user) {
