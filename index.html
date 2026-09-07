@@ -3728,7 +3728,7 @@ function closeMenuWithEffect() {
             animateAllVisibleCounters();
         }
 
-        // Load projects, hero slideshow & stats on first page load
+                // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
             loadProjects();
             loadHeroSlides();
@@ -3738,6 +3738,7 @@ function closeMenuWithEffect() {
             observeRevealTargets(document);
             initAuthState();
             initHeroCounterReplay();
+            handleHashDeepLink();
 
             /* Start the top loading bar, then complete and hide it after the
                browser has finished loading the page resources. */
