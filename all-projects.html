@@ -1049,12 +1049,24 @@
                 container.replaceChildren(nav.cloneNode(true));
 
                 // Keep header navigation meaningful on this page.
-                const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
-                const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
-                if (homeLink) homeLink.href = 'index.html';
-                if (contactLink) contactLink.href = 'index.html#contact';
+const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
+const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
+if (homeLink) homeLink.href = 'index.html';
 
-                document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
+// Contact should scroll to THIS page's own footer if it has one.
+// Only fall back to index.html's footer if this page has none.
+if (contactLink) {
+    contactLink.href = 'index.html#siteFooterContainer';
+    contactLink.addEventListener('click', function (event) {
+        const footer = document.getElementById('siteFooterContainer');
+        if (footer) {
+            event.preventDefault();
+            footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+}
+
+document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
             } catch (error) {
                 console.error('Shared index header failed to load:', error);
                 container.innerHTML = '';
