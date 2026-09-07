@@ -2411,7 +2411,7 @@ body.theme-effective-dark #ae-x:hover {
             requestAnimationFrame(frame);
 
             history.replaceState(null, '', window.location.pathname + window.location.search);
-        }, 150);
+        }, 50);
     }
 
         // Live update: when menu.html's editor saves successfully, it posts this
@@ -3850,12 +3850,17 @@ function closeMenuWithEffect() {
             loadProjects();
             loadHeroSlides();
             loadHeroStats();
-            loadAboutContent();
             animateAllVisibleCounters();
             observeRevealTargets(document);
             initAuthState();
             initHeroCounterReplay();
-            handleHashDeepLink();
+
+            // Wait for About content to finish loading (so its section has its
+            // final height) before attempting any hash-based deep-link scroll,
+            // otherwise the scroll target position shifts mid-animation.
+            loadAboutContent().finally(() => {
+                handleHashDeepLink();
+            });
 
             /* Start the top loading bar, then complete and hide it after the
                browser has finished loading the page resources. */
