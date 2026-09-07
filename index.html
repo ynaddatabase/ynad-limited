@@ -2353,17 +2353,15 @@ body.theme-effective-dark #ae-x:hover {
             // avoids the custom frame loop getting stuck at the pre-jumped
             // Recent Projects position.
             if (isDeepLink) {
-                document.body.classList.add('deep-link-scrolling');
-                window.scrollTo({ top: targetY, behavior: 'smooth' });
+    document.body.classList.add('deep-link-scrolling');
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
 
-                setTimeout(() => {
-                    window.scrollTo(0, Math.max(0, target.getBoundingClientRect().top + window.scrollY));
-                    if (nav) {
-                        nav.dataset.scrollLock = 'false';
-                        nav.classList.remove('nav-hidden');
-                    }
-                    document.body.classList.remove('deep-link-scrolling');
-                }, 1400);
+    setTimeout(() => {
+        window.scrollTo(0, Math.max(0, target.getBoundingClientRect().top + window.scrollY));
+        ...
+    }, 1400);
+    ...
+}
 
                 history.replaceState(null, '', window.location.pathname + window.location.search);
                 return;
