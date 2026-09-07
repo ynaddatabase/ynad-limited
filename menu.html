@@ -653,10 +653,23 @@ function openEditor(e){
 function goTo(id){
     if(parent&&typeof parent.closeMenuWithEffect==='function') parent.closeMenuWithEffect();
     setTimeout(()=>{
-        const el=parent.document.getElementById(id);
-        if(el){
-            if(typeof parent.smoothScrollToElement==='function') parent.smoothScrollToElement(el);
-            else el.scrollIntoView({behavior:'smooth',block:'start'});
+        try{
+            const el = parent.document.getElementById(id);
+            if(el){
+                // Element exists on the current page — scroll to it directly.
+                if(typeof parent.smoothScrollToElement==='function') parent.smoothScrollToElement(el);
+                else el.scrollIntoView({behavior:'smooth',block:'start'});
+                return;
+            }
+        }catch(e){}
+
+        // Element not found on this page (e.g. we're on all-projects.html
+        // or project-status.html, which have no #about section) —
+        // navigate to the homepage and let it scroll to the target itself.
+        try{
+            parent.location.href = 'index.html#' + id;
+        }catch(e){
+            window.location.href = 'index.html#' + id;
         }
     },400);
 }
