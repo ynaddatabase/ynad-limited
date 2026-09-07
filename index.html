@@ -2294,17 +2294,67 @@ body.theme-effective-dark #ae-x:hover {
 
         // Handle deep-link navigation from menu.html (e.g. index.html#about)
         // with the same smooth scroll behaviour as in-page navigation.
-        function handleHashDeepLink() {
-            const hash = window.location.hash;
-            if (!hash || hash.length < 2) return;
-            const targetId = hash.substring(1);
+            function handleHashDeepLink() {
+        const hash = window.location.hash;
+        if (!hash || hash.length < 2) return;
+        const targetId = hash.substring(1);
+
+        setTimeout(() => {
             const target = document.getElementById(targetId);
             if (!target) return;
 
-            setTimeout(() => {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 300);
-        }
+            const nav = document.getElementById('mainNav');
+            const startY = window.scrollY;
+            const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
+            const distance = targetY - startY;
+
+            if (Math.abs(distance) < 1) return;
+
+            if (nav) {
+                nav.dataset.scrollLock = 'true';
+                nav.classList.add('nav-hidden');
+            }
+
+            const duration = Math.min(1250, Math.max(850, Math.abs(distance) * 0.72));
+            const startedAt = performance.now();
+
+            function smoothEase(t) {
+                return t < 0.5
+                    ? 4 * t * t * t
+                    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            function frame(now) {
+                const t = Math.min((now - startedAt) / duration, 1);
+                const eased = smoothEase(t);
+                window.scrollTo(0, startY + distance * eased);
+
+                if (t < 1) {
+                    requestAnimationFrame(frame);
+                } else {
+                    window.scrollTo(0, targetY);
+                    if (nav) {
+                        nav.dataset.scrollLock = 'false';
+                        const hero = document.getElementById('heroSection');
+                        setTimeout(() => {
+                            const y = window.scrollY;
+                            if (hero) {
+                                const heroBottom = hero.offsetTop + hero.offsetHeight;
+                                nav.classList.toggle('nav-solid', y >= heroBottom - nav.offsetHeight);
+                            } else {
+                                nav.classList.toggle('nav-solid', y > 4);
+                            }
+                            nav.classList.remove('nav-hidden');
+                        }, 80);
+                    }
+                }
+            }
+
+            requestAnimationFrame(frame);
+
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }, 350);
+    }
 
         // Live update: when menu.html's editor saves successfully, it posts this
         // message so the homepage reflects the change immediately without a reload.
