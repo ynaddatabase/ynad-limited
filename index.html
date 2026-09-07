@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YNAD Construction</title>
+
+    <script>
+    // Deep-link from another page (menu.html -> index.html#about&autoscroll=1):
+    // hide the whole page until we've jumped scroll position past the hero,
+    // so the hero is never visible/flashed even for a frame.
+    (function () {
+        if (window.location.hash.indexOf('autoscroll=1') === -1) return;
+        document.documentElement.style.visibility = 'hidden';
+        window.__ynadDeepLinkPending = true;
+    })();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1757,6 +1769,15 @@ body.theme-effective-dark #ae-x:hover {
 
 <body class="bg-white text-slate-800">
 
+    <script>
+    // Instantly jump scroll position past the hero (before first paint is
+    // shown, since <html> is still visibility:hidden from the <head> script)
+    // so the hero never appears — it looks like we're already scrolling.
+    if (window.__ynadDeepLinkPending) {
+        window.scrollTo(0, Math.max(0, window.innerHeight - 40));
+    }
+    </script>
+
     <!-- Full-page load progress bar: visible at the very top of the webpage -->
     <div id="pageLoadingBar" aria-hidden="true">
         <div id="pageLoadingProgress"></div>
@@ -2156,7 +2177,9 @@ body.theme-effective-dark #ae-x:hover {
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
-        window.scrollTo(0, 0);
+        if (!window.__ynadDeepLinkPending) {
+            window.scrollTo(0, 0);
+        }
 
         function syncHeroViewportHeight() {
             const hero = document.getElementById('heroSection');
@@ -2297,10 +2320,19 @@ body.theme-effective-dark #ae-x:hover {
             function handleHashDeepLink() {
         const hash = window.location.hash;
         if (!hash || hash.length < 2) return;
-        const targetId = hash.substring(1);
+        const targetId = hash.split('&')[0].substring(1);
+        const isDeepLink = window.__ynadDeepLinkPending === true;
 
         setTimeout(() => {
             const target = document.getElementById(targetId);
+
+            // Reveal the page now — either we found the target and are about
+            // to animate to it, or there's nothing to scroll to.
+            if (isDeepLink) {
+                document.documentElement.style.visibility = 'visible';
+                window.__ynadDeepLinkPending = false;
+            }
+
             if (!target) return;
 
             const nav = document.getElementById('mainNav');
@@ -2308,14 +2340,21 @@ body.theme-effective-dark #ae-x:hover {
             const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
             const distance = targetY - startY;
 
-            if (Math.abs(distance) < 1) return;
-
             if (nav) {
                 nav.dataset.scrollLock = 'true';
                 nav.classList.add('nav-hidden');
             }
 
-            const duration = Math.min(1250, Math.max(850, Math.abs(distance) * 0.72));
+            if (Math.abs(distance) < 1) {
+                if (nav) {
+                    nav.dataset.scrollLock = 'false';
+                    nav.classList.remove('nav-hidden');
+                }
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+                return;
+            }
+
+            const duration = Math.min(1100, Math.max(600, Math.abs(distance) * 0.55));
             const startedAt = performance.now();
 
             function smoothEase(t) {
@@ -2345,7 +2384,7 @@ body.theme-effective-dark #ae-x:hover {
                                 nav.classList.toggle('nav-solid', y > 4);
                             }
                             nav.classList.remove('nav-hidden');
-                        }, 80);
+                        }, 60);
                     }
                 }
             }
@@ -2353,7 +2392,7 @@ body.theme-effective-dark #ae-x:hover {
             requestAnimationFrame(frame);
 
             history.replaceState(null, '', window.location.pathname + window.location.search);
-        }, 350);
+        }, 150);
     }
 
         // Live update: when menu.html's editor saves successfully, it posts this
@@ -3780,6 +3819,15 @@ function closeMenuWithEffect() {
 
                 // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
+            // Safety: if something goes wrong and handleHashDeepLink never runs,
+            // don't leave the page permanently hidden.
+            setTimeout(() => {
+                if (window.__ynadDeepLinkPending) {
+                    document.documentElement.style.visibility = 'visible';
+                    window.__ynadDeepLinkPending = false;
+                }
+            }, 2000);
+
             loadProjects();
             loadHeroSlides();
             loadHeroStats();
