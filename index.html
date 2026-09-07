@@ -2341,30 +2341,42 @@ body.theme-effective-dark #ae-x:hover {
             if (!target) return;
 
             const nav = document.getElementById('mainNav');
-            const startY = window.scrollY;
-
-            // Recompute the target position fresh every frame instead of once
-            // up front — this way, any layout shift caused by lazy-loading
-            // images or IntersectionObserver-triggered animations along the
-            // way (e.g. the Recent Projects reveal animation) doesn't throw
-            // the scroll off or make it appear to pause.
-            function getTargetY() {
-                return Math.max(0, target.getBoundingClientRect().top + window.scrollY);
-            }
-
-            const initialTargetY = getTargetY();
-            const initialDistance = initialTargetY - startY;
-
-            if (Math.abs(initialDistance) < 1) return;
+            const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
 
             if (nav) {
                 nav.dataset.scrollLock = 'true';
                 nav.classList.add('nav-hidden');
             }
 
-            // Temporarily disable the reveal-fade transition while we're
-            // auto-scrolling past sections, so their animation doesn't compete
-            // with the scroll and cause visible jank/stutter.
+            // For a cross-page deep-link, use the browser's native smooth
+            // scrolling. This matches normal in-page anchor scrolling and
+            // avoids the custom frame loop getting stuck at the pre-jumped
+            // Recent Projects position.
+            if (isDeepLink) {
+                document.body.classList.add('deep-link-scrolling');
+                window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    window.scrollTo(0, Math.max(0, target.getBoundingClientRect().top + window.scrollY));
+                    if (nav) {
+                        nav.dataset.scrollLock = 'false';
+                        nav.classList.remove('nav-hidden');
+                    }
+                    document.body.classList.remove('deep-link-scrolling');
+                }, 1400);
+
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+                return;
+            }
+
+            // Keep the existing custom animation for non-deep-link hash loads.
+            const startY = window.scrollY;
+            const initialDistance = targetY - startY;
+            if (Math.abs(initialDistance) < 1) {
+                if (nav) nav.classList.remove('nav-hidden');
+                return;
+            }
+
             document.body.classList.add('deep-link-scrolling');
 
             const duration = Math.min(1300, Math.max(700, Math.abs(initialDistance) * 0.6));
@@ -2379,17 +2391,14 @@ body.theme-effective-dark #ae-x:hover {
             function frame(now) {
                 const t = Math.min((now - startedAt) / duration, 1);
                 const eased = smoothEase(t);
-
-                // Re-measure every frame so a mid-scroll layout shift (lazy
-                // images, reveal animations) doesn't cause a visible stall.
-                const liveTargetY = getTargetY();
+                const liveTargetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
                 const currentY = startY + (liveTargetY - startY) * eased;
                 window.scrollTo(0, currentY);
 
                 if (t < 1) {
                     requestAnimationFrame(frame);
                 } else {
-                    window.scrollTo(0, getTargetY());
+                    window.scrollTo(0, Math.max(0, target.getBoundingClientRect().top + window.scrollY));
                     if (nav) {
                         nav.dataset.scrollLock = 'false';
                         const hero = document.getElementById('heroSection');
@@ -2409,7 +2418,6 @@ body.theme-effective-dark #ae-x:hover {
             }
 
             requestAnimationFrame(frame);
-
             history.replaceState(null, '', window.location.pathname + window.location.search);
         }, 50);
     }
