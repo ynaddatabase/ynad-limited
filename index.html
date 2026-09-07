@@ -442,6 +442,13 @@ body.theme-effective-dark #projectLocationHeading {
             transform: translateX(0);
         }
 
+        /* Suppress the reveal-fade transition while a deep-link auto-scroll
+           is in progress, so it doesn't compete with the scroll animation
+           and cause visible jank/stutter. */
+        body.deep-link-scrolling .reveal-fade-left {
+            transition: none !important;
+        }
+
         @media (max-width: 1200px) {
             .recent-project-card {
                 width: calc(33.333% - 16px);
@@ -2326,8 +2333,6 @@ body.theme-effective-dark #ae-x:hover {
         setTimeout(() => {
             const target = document.getElementById(targetId);
 
-            // Reveal the page now — either we found the target and are about
-            // to animate to it, or there's nothing to scroll to.
             if (isDeepLink) {
                 document.documentElement.style.visibility = 'visible';
                 window.__ynadDeepLinkPending = false;
@@ -2337,24 +2342,32 @@ body.theme-effective-dark #ae-x:hover {
 
             const nav = document.getElementById('mainNav');
             const startY = window.scrollY;
-            const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
-            const distance = targetY - startY;
+
+            // Recompute the target position fresh every frame instead of once
+            // up front — this way, any layout shift caused by lazy-loading
+            // images or IntersectionObserver-triggered animations along the
+            // way (e.g. the Recent Projects reveal animation) doesn't throw
+            // the scroll off or make it appear to pause.
+            function getTargetY() {
+                return Math.max(0, target.getBoundingClientRect().top + window.scrollY);
+            }
+
+            const initialTargetY = getTargetY();
+            const initialDistance = initialTargetY - startY;
+
+            if (Math.abs(initialDistance) < 1) return;
 
             if (nav) {
                 nav.dataset.scrollLock = 'true';
                 nav.classList.add('nav-hidden');
             }
 
-            if (Math.abs(distance) < 1) {
-                if (nav) {
-                    nav.dataset.scrollLock = 'false';
-                    nav.classList.remove('nav-hidden');
-                }
-                history.replaceState(null, '', window.location.pathname + window.location.search);
-                return;
-            }
+            // Temporarily disable the reveal-fade transition while we're
+            // auto-scrolling past sections, so their animation doesn't compete
+            // with the scroll and cause visible jank/stutter.
+            document.body.classList.add('deep-link-scrolling');
 
-            const duration = Math.min(1100, Math.max(600, Math.abs(distance) * 0.55));
+            const duration = Math.min(1300, Math.max(700, Math.abs(initialDistance) * 0.6));
             const startedAt = performance.now();
 
             function smoothEase(t) {
@@ -2366,12 +2379,17 @@ body.theme-effective-dark #ae-x:hover {
             function frame(now) {
                 const t = Math.min((now - startedAt) / duration, 1);
                 const eased = smoothEase(t);
-                window.scrollTo(0, startY + distance * eased);
+
+                // Re-measure every frame so a mid-scroll layout shift (lazy
+                // images, reveal animations) doesn't cause a visible stall.
+                const liveTargetY = getTargetY();
+                const currentY = startY + (liveTargetY - startY) * eased;
+                window.scrollTo(0, currentY);
 
                 if (t < 1) {
                     requestAnimationFrame(frame);
                 } else {
-                    window.scrollTo(0, targetY);
+                    window.scrollTo(0, getTargetY());
                     if (nav) {
                         nav.dataset.scrollLock = 'false';
                         const hero = document.getElementById('heroSection');
@@ -2386,6 +2404,7 @@ body.theme-effective-dark #ae-x:hover {
                             nav.classList.remove('nav-hidden');
                         }, 60);
                     }
+                    document.body.classList.remove('deep-link-scrolling');
                 }
             }
 
