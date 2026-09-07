@@ -2421,20 +2421,6 @@ body.theme-effective-dark #ae-x:hover {
             history.replaceState(null, '', window.location.pathname + window.location.search);
         }, 50);
     }
-
-        // Live update: when menu.html's editor saves successfully, it posts this
-        // message so the homepage reflects the change immediately without a reload.
-        window.addEventListener('message', function (e) {
-            if (!e.data || typeof e.data !== 'object') return;
-            if (e.data.type === 'ynad-about-updated') {
-                const headingEl = document.getElementById('aboutHeading');
-                const textEl = document.getElementById('aboutText');
-                const payload = e.data.payload || {};
-
-                if (headingEl && payload.heading) {
-                    headingEl.textContent = payload.heading;
-                    aboutLoadedHeading = payload.heading;
-                }
                 if (payload.text) {
                     aboutLoadedText = payload.text;
                     if (textEl) {
