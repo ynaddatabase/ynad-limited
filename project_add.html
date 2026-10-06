@@ -5,14 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YNAD System — Project Record</title>
 <script>
-/* ---- Theme sync with index page (reads the same saved theme) ---- */
-const THEME_KEYS = ['theme', 'color-theme', 'colorTheme', 'mode', 'darkMode', 'dark-mode']; // <-- index page er key ta ekhane thakle ok, na hole add korun
+/* ---- Theme sync with index page: scans saved theme settings ---- */
+function readTheme() {
+  const stores = [];
+  try { stores.push(localStorage); } catch (e) {}
+  try { stores.push(sessionStorage); } catch (e) {}
+  for (const st of stores) {
+    for (let i = 0; i < st.length; i++) {
+      const k = st.key(i);
+      if (!/theme|mode|dark|light|appearance|color-scheme/i.test(k)) continue;
+      let val = (st.getItem(k) || '').toLowerCase();
+      try {
+        const j = JSON.parse(val);
+        if (typeof j === 'string') val = j.toLowerCase();
+        else if (typeof j === 'boolean') val = j ? 'true' : 'false';
+        else if (j && typeof j === 'object' && (j.theme || j.mode)) val = String(j.theme || j.mode).toLowerCase();
+      } catch (e) {}
+      const darkKey = /dark/i.test(k), lightKey = /light/i.test(k) && !darkKey;
+      if (val === 'light' || val === 'day' || (darkKey && val === 'false') || (lightKey && val === 'true')) return 'light';
+      if (val === 'dark' || val === 'night' || (darkKey && val === 'true') || (lightKey && val === 'false')) return 'dark';
+    }
+  }
+  const c = document.cookie.match(/(?:theme|mode)=(light|dark)/i);
+  return c ? c[1].toLowerCase() : null;
+}
 function applyTheme() {
-  let v = null;
-  try { for (const k of THEME_KEYS) { const x = localStorage.getItem(k); if (x) { v = x.toLowerCase(); break; } } } catch (e) {}
-  let light;
-  if (v === null) light = !window.matchMedia('(prefers-color-scheme: dark)').matches;
-  else light = (v === 'light' || v === 'false');
+  const t = readTheme();
+  const light = t === null ? !window.matchMedia('(prefers-color-scheme: dark)').matches : t === 'light';
   document.documentElement.classList.toggle('light', light);
 }
 applyTheme();
@@ -156,8 +175,9 @@ tailwind.config = {
               <label class="label">Organization Name</label>
               <button type="button" id="orgEditBtn" title="Edit organization list" class="hidden -mt-1 mb-1 text-orange-400 hover:text-orange-300 text-xs cursor-pointer"><i class="fa-solid fa-pen"></i></button>
             </div>
-            <input id="pOrg" list="orgList" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ORGANIZATION NAME">
-            <datalist id="orgList"></datalist>
+            <select id="pOrg" class="field w-full rounded-xl px-4 py-3 text-sm">
+              <option value="" class="bg-zinc-900 text-white">SELECT ORGANIZATION</option>
+            </select>
           </div>
           <div>
             <label class="label">Donor Name</label>
@@ -239,22 +259,21 @@ tailwind.config = {
           <div class="sm:col-span-2 flex items-center gap-2">
             <span class="label mb-0">Media Category</span>
             <span id="mediaCatChip" class="text-[11px] font-extrabold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-0.5 rounded-full">—</span>
-            <span class="hint text-[10px] text-zinc-400">AUTO FROM STATUS</span>
           </div>
           <div class="sm:col-span-2">
             <label class="label">Documents (PDF / JPG / PNG)</label>
-            <div data-mode="upload"><input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="mf field w-full rounded-xl"></div>
+            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pDocsLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE DOCUMENT LINK"></div>
           </div>
           <div id="fieldCPhoto" class="sm:col-span-2 hidden">
             <label class="label">C-Photo (Single Photo)</label>
-            <div data-mode="upload"><input id="pCPhoto" type="file" accept="image/*" class="mf field w-full rounded-xl"></div>
+            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pCPhoto" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pCPhotoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE C-PHOTO LINK"></div>
           </div>
           <div class="sm:col-span-2">
             <label class="label">Photos (Max 10 Qty)</label>
             <div data-mode="upload">
-              <input id="pPhotos" type="file" accept="image/*" multiple class="mf field w-full rounded-xl">
+              <label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label>
               <p class="hint text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 10 IMAGES SIMULTANEOUSLY.</p>
             </div>
             <div data-mode="link" class="hidden">
@@ -272,8 +291,16 @@ tailwind.config = {
       <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">05. Raw Media (Photos & Videos)</h3>
         <div class="grid sm:grid-cols-2 gap-5">
-          <div><label class="label">Raw Photos Link</label><input id="pRawPhotosLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK"></div>
-          <div><label class="label">Raw Video Link</label><input id="pRawVideoLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW VIDEO LINK"></div>
+          <div>
+            <label class="label">Raw Photos</label>
+            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
+            <div data-mode="link" class="hidden"><input id="pRawPhotosLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK"></div>
+          </div>
+          <div>
+            <label class="label">Raw Videos</label>
+            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawVideos" type="file" accept="video/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
+            <div data-mode="link" class="hidden"><input id="pRawVideoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW VIDEOS LINK"></div>
+          </div>
         </div>
       </section>
 
@@ -414,8 +441,16 @@ function updateMediaUI() {
   modeToggle.setAttribute('aria-checked', mediaMode === 'link');
   $('mmUp').classList.toggle('text-orange-400', mediaMode === 'upload');
   $('mmLink').classList.toggle('text-orange-400', mediaMode === 'link');
+  refreshFileLabels();
   updateFormProgress();
 }
+function refreshFileLabels() {
+  document.querySelectorAll('[data-file]').forEach(l => {
+    const f = l.querySelector('input').files;
+    l.querySelector('.fname').textContent = !f.length ? 'NO FILE CHOSEN' : f.length > 1 ? `${f.length} FILES` : f[0].name;
+  });
+}
+document.addEventListener('change', e => { if (e.target.type === 'file') refreshFileLabels(); });
 modeToggle.addEventListener('click', () => { mediaMode = mediaMode === 'upload' ? 'link' : 'upload'; updateMediaUI(); });
 
 /* ---- Single Lat,Lng box -> auto address (Nominatim + Overpass / OpenStreetMap) ---- */
@@ -475,7 +510,11 @@ $('pCoords').addEventListener('input', onCoordInput);
 const ORG_KEY = 'ynad_orgs';
 const getOrgs = () => { try { return JSON.parse(localStorage.getItem(ORG_KEY)) || []; } catch (e) { return []; } };
 function renderOrgList() {
-  $('orgList').innerHTML = getOrgs().map(o => `<option value="${o.replace(/"/g, '&quot;')}">`).join('');
+  const sel = $('pOrg'), cur = sel.value;
+  const esc = t => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  sel.innerHTML = '<option value="" class="bg-zinc-900 text-white">SELECT ORGANIZATION</option>' +
+    getOrgs().map(o => `<option value="${esc(o)}" class="bg-zinc-900 text-white">${esc(o)}</option>`).join('');
+  sel.value = cur;
 }
 function closeOrg() { $('orgModal').classList.add('hidden'); $('orgModal').classList.remove('flex'); }
 renderOrgList();
@@ -494,7 +533,6 @@ $('orgSave').addEventListener('click', () => {
   try { localStorage.setItem(ORG_KEY, JSON.stringify(names)); } catch (e) { alert('COULD NOT SAVE THE LIST'); return; }
   renderOrgList(); closeOrg();
 });
-$('pOrg').addEventListener('click', () => { try { $('pOrg').showPicker(); } catch (e) {} });
 
 /* ---- Progress bar ---- */
 const formProgressFill = $('formProgressFill'), formProgressLabel = $('formProgressLabel'), projectFormEl = $('projectForm');
@@ -548,7 +586,7 @@ projectFormEl.addEventListener('submit', async function (e) {
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
 
-  let documentsUrl = null, cPhotoUrl = null, photoUrls = [];
+  let documentsUrl = null, cPhotoUrl = null, photoUrls = [], rawPhotos = null, rawVideos = null;
   try {
     if (mediaMode === 'upload') {
       if ($('pDocs').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Document...'; documentsUrl = await uploadFileAndGetUrl('documents', $('pDocs').files[0]); }
@@ -557,10 +595,16 @@ projectFormEl.addEventListener('submit', async function (e) {
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Photos...';
         for (const f of $('pPhotos').files) photoUrls.push(await uploadFileAndGetUrl('photos', f));
       }
+      const rp = [], rv = [];
+      if ($('pRawPhotos').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Raw Photos...'; for (const f of $('pRawPhotos').files) rp.push(await uploadFileAndGetUrl('raw-photos', f)); }
+      if ($('pRawVideos').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Raw Videos...'; for (const f of $('pRawVideos').files) rv.push(await uploadFileAndGetUrl('raw-videos', f)); }
+      rawPhotos = rp.join(', ') || null; rawVideos = rv.join(', ') || null;
     } else {
       documentsUrl = $('pDocsLink').value.trim() || null;
       cPhotoUrl = mediaTypeSelect.value === 'Opening' ? ($('pCPhotoLink').value.trim() || null) : null;
       photoUrls = photoLinks;
+      rawPhotos = $('pRawPhotosLink').value.trim() || null;
+      rawVideos = $('pRawVideoLink').value.trim() || null;
     }
   } catch (err) {
     console.error(err);
@@ -606,8 +650,8 @@ projectFormEl.addEventListener('submit', async function (e) {
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
     photo_urls: photoUrls,
-    raw_photos_link: v('pRawPhotosLink'),
-    raw_video_link: v('pRawVideoLink')
+    raw_photos_link: rawPhotos,
+    raw_video_link: rawVideos
   };
 
   const { error } = await supabaseClient.from('projects').insert([record]).select();
