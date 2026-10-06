@@ -4,165 +4,91 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YNAD System — Project Record</title>
+<script>
+/* ---- Theme sync with index page (reads the same saved theme) ---- */
+const THEME_KEYS = ['theme', 'color-theme', 'colorTheme', 'mode', 'darkMode', 'dark-mode']; // <-- index page er key ta ekhane thakle ok, na hole add korun
+function applyTheme() {
+  let v = null;
+  try { for (const k of THEME_KEYS) { const x = localStorage.getItem(k); if (x) { v = x.toLowerCase(); break; } } } catch (e) {}
+  let light;
+  if (v === null) light = !window.matchMedia('(prefers-color-scheme: dark)').matches;
+  else light = (v === 'light' || v === 'false');
+  document.documentElement.classList.toggle('light', light);
+}
+applyTheme();
+window.addEventListener('storage', applyTheme);
+window.addEventListener('focus', applyTheme);
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script>
 tailwind.config = {
-  darkMode: 'media',
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          400: '#fb923c',
-          500: '#f97316',
-          600: '#ea580c',
-          700: '#c2410c',
-          900: '#7c2d12',
-          glow: '#ff8c00'
-        }
-      },
-      boxShadow: {
-        'neon': '0 0 30px -5px rgba(255, 140, 0, 0.4)',
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.2)'
-      }
-    }
-  }
+  theme: { extend: {
+    colors: { brand: { 50:'#fff7ed',100:'#ffedd5',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',900:'#7c2d12',glow:'#ff8c00' } },
+    boxShadow: { 'neon':'0 0 30px -5px rgba(255,140,0,0.4)', 'glass':'0 8px 32px 0 rgba(0,0,0,0.2)' }
+  } }
 }
 </script>
 <style>
-  body {
-    background-color: #070709;
-    color: #f8fafc;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.18) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(255, 140, 0, 0.12) 0px, transparent 50%);
-    background-attachment: fixed;
-  }
-  input:not([type="url"]):not([type="file"]):not([type="date"]), select, textarea {
-    text-transform: uppercase;
-  }
-  .glass-panel {
-    background: rgba(18, 18, 22, 0.8);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 140, 0, 0.2);
-  }
-  .field {
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 140, 0, 0.25);
-    color: #f8fafc;
-  }
-  .field:focus, .field:not(:placeholder-shown) {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: #ff8c00;
-    box-shadow: 0 0 15px rgba(255, 140, 0, 0.35);
-  }
-  .label { 
-    display: block; 
-    font-size: 0.7rem; 
-    font-weight: 800; 
-    text-transform: uppercase; 
-    letter-spacing: 0.05em; 
-    color: #fb923c; 
-    margin-bottom: 0.45rem; 
-  }
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #c2410c; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #9a3412; }
-
-  html, body { margin: 0; padding: 0; }
-
-  /* Sticky header: flush to top, fully opaque so nothing can bleed through behind it */
-  #topHeader {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: #0d0d10;
-  }
-
-  /* Scroll Knob */
-  .scroll-knob {
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    touch-action: none;
-    flex-shrink: 0;
-  }
-  .scroll-knob svg { display: block; }
-  #knobProgress {
-    transition: stroke-dashoffset 0.05s linear;
-  }
-  #knobPointer {
-    transition: transform 0.05s linear;
-  }
-
-  /* Form completion progress bar - subtle, sits inline in the header row */
-  #formProgressTrack {
-    position: relative;
-    flex: 1 1 auto;
-    height: 22px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-    margin: 0 0.5in;
-  }
-  #formProgressFill {
-    height: 100%;
-    width: 0%;
-    border-radius: 999px;
-    background: rgba(255, 140, 0, 0.4);
-    transition: width 0.35s ease;
-  }
-  #formProgressLabel {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: #ffffff;
-    letter-spacing: 0.05em;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-    pointer-events: none;
-  }
+  body { background-color:#070709; color:#f8fafc;
+    background-image: radial-gradient(at 0% 0%, rgba(234,88,12,0.18) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255,140,0,0.12) 0px, transparent 50%);
+    background-attachment: fixed; }
+  input:not([type="url"]):not([type="file"]):not([type="date"]), select, textarea { text-transform: uppercase; }
+  .no-upper { text-transform: none !important; }
+  input:disabled { cursor: not-allowed; opacity: .4; }
+  .glass-panel { background: rgba(18,18,22,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,140,0,0.2); }
+  .field { transition: all .3s ease; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,140,0,0.25); color:#f8fafc; }
+  .field:focus, .field:not(:placeholder-shown) { background: rgba(255,255,255,0.16); border-color:#ff8c00; box-shadow: 0 0 15px rgba(255,140,0,0.35); }
+  .label { display:block; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#fb923c; margin-bottom:.45rem; }
+  ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#c2410c; border-radius:4px; }
+  html, body { margin:0; padding:0; }
+  #topHeader { position:sticky; top:0; z-index:50; background:#0d0d10; }
+  .scroll-knob { width:44px; height:44px; cursor:pointer; touch-action:none; flex-shrink:0; }
+  .scroll-knob svg { display:block; }
+  #knobProgress { transition: stroke-dashoffset .05s linear; }
+  #formProgressTrack { position:relative; flex:1 1 auto; height:22px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; margin:0 .5in; }
+  #formProgressFill { height:100%; width:0%; border-radius:999px; background:rgba(255,140,0,0.4); transition:width .35s ease; }
+  #formProgressLabel { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:800; color:#fff; letter-spacing:.05em; text-shadow:0 1px 2px rgba(0,0,0,.6); pointer-events:none; }
+  /* Media mode switch */
+  .mm-track { position:relative; width:48px; height:24px; border-radius:999px; background:rgba(255,140,0,.3); border:1px solid rgba(255,140,0,.5); }
+  .mm-knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#ff8c00; transition: transform .25s ease; }
+  #mediaModeToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
+  /* ---- LIGHT MODE ---- */
+  html.light body { background-color:#fff7ed; color:#1c1917;
+    background-image: radial-gradient(at 0% 0%, rgba(234,88,12,0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255,140,0,0.10) 0px, transparent 50%); }
+  html.light #topHeader { background:#ffffff; }
+  html.light h1 { color:#1c1917 !important; }
+  html.light .glass-panel { background:rgba(255,255,255,0.92); border-color:rgba(234,88,12,0.25); }
+  html.light .field { background:#fff; color:#1c1917; border-color:rgba(234,88,12,0.35); }
+  html.light .field:focus, html.light .field:not(:placeholder-shown) { background:#fff7ed; }
+  html.light .label { color:#c2410c; }
+  html.light option { background:#fff !important; color:#1c1917 !important; }
+  html.light #formProgressTrack { background:rgba(0,0,0,0.08); }
+  html.light #formProgressLabel { color:#1c1917; text-shadow:none; }
+  html.light .hint { color:#57534e !important; }
+  html.light #mediaModeToggle { color:#1c1917; }
 </style>
 </head>
 
 <body class="antialiased selection:bg-orange-500 selection:text-white">
 <div class="min-h-screen flex flex-col items-center p-4 sm:p-8">
-
   <main class="w-full max-w-4xl">
-    <!-- Top Header -->
     <header id="topHeader" class="rounded-3xl px-6 py-4 sm:px-7 sm:py-4 mb-8 shadow-neon">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-400 text-black font-black grid place-items-center shadow-neon">
             <i class="fa-solid fa-plus text-lg animate-pulse"></i>
           </div>
-          <div>
-            <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
-          </div>
+          <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
         </div>
-        <!-- Form completion progress: subtle bar between the title and the scroll knob -->
-        <div id="formProgressTrack">
-          <div id="formProgressFill"></div>
-          <span id="formProgressLabel">0%</span>
-        </div>
-        <!-- Rotating scroll knob: rotates as the page scrolls, click/drag to scroll -->
+        <div id="formProgressTrack"><div id="formProgressFill"></div><span id="formProgressLabel">0%</span></div>
         <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
           <svg viewBox="0 0 60 60" width="44" height="44">
             <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,140,0,0.2)" stroke-width="3"/>
             <circle id="knobProgress" cx="30" cy="30" r="26" fill="none" stroke="#ff8c00" stroke-width="3" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="163.36" transform="rotate(-90 30 30)"/>
-            <g id="knobPointer">
-              <line x1="30" y1="30" x2="30" y2="10" stroke="#ff8c00" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="3" fill="#ff8c00"/>
-            </g>
+            <g id="knobPointer"><line x1="30" y1="30" x2="30" y2="10" stroke="#ff8c00" stroke-width="3" stroke-linecap="round"/><circle cx="30" cy="30" r="3" fill="#ff8c00"/></g>
           </svg>
         </div>
       </div>
@@ -170,13 +96,13 @@ tailwind.config = {
 
     <form id="projectForm" class="space-y-6" autocomplete="off">
 
-      <!-- Section 1: General Info -->
+      <!-- 01 -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">01. General Identity & Status</h3>
         <div class="grid sm:grid-cols-2 gap-5">
           <div class="sm:col-span-2">
             <label class="label">Project Name <span class="text-red-500">*</span></label>
-            <input id="pName" required autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT NAME">
+            <input id="pName" required class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT NAME">
           </div>
           <div class="sm:col-span-2">
             <label class="label">Project Category <span class="text-red-500">*</span></label>
@@ -195,7 +121,7 @@ tailwind.config = {
             <label class="label">BD-Number <span class="text-red-500">*</span></label>
             <div class="field w-full rounded-xl flex items-stretch overflow-hidden pr-1">
               <span id="bdPrefixBadge" class="flex items-center px-3 text-sm font-black text-orange-400 bg-orange-500/10 border-r border-orange-500/25 select-none whitespace-nowrap">SELECT CATEGORY</span>
-              <input id="pBdDigits" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" disabled class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none disabled:cursor-not-allowed disabled:opacity-40" placeholder="123">
+              <input id="pBdDigits" data-rule="num" type="text" inputmode="numeric" disabled class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none" placeholder="123">
             </div>
             <input type="hidden" id="pBd">
           </div>
@@ -203,7 +129,7 @@ tailwind.config = {
             <label class="label">HO-Number <span class="text-red-500">*</span></label>
             <div class="field w-full rounded-xl flex items-stretch overflow-hidden pr-1">
               <span class="flex items-center px-3 text-sm font-black text-orange-400 bg-orange-500/10 border-r border-orange-500/25 select-none whitespace-nowrap">HO</span>
-              <input id="pHoDigits" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none" placeholder="12345">
+              <input id="pHoDigits" data-rule="num" type="text" inputmode="numeric" disabled class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none" placeholder="12345">
             </div>
             <input type="hidden" id="pHo">
           </div>
@@ -218,52 +144,54 @@ tailwind.config = {
           </div>
           <div>
             <label class="label">Organization Name</label>
-            <input id="pOrg" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ORGANIZATION NAME">
+            <input id="pOrg" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ORGANIZATION NAME">
           </div>
           <div>
             <label class="label">Donor Name</label>
-            <input id="pDonor" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DONOR NAME">
+            <input id="pDonor" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DONOR NAME">
           </div>
           <div>
             <label class="label">Donor ID (Digits Only)</label>
-            <input id="pDonorId" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="12345">
+            <input id="pDonorId" data-rule="num" type="text" inputmode="numeric" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="12345">
           </div>
           <div>
             <label class="label">Donated Country Name</label>
-            <input id="pCountry" list="countryList" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER COUNTRY NAME">
-            <datalist id="countryList">
-              <option value="AFGHANISTAN"><option value="ALBANIA"><option value="ALGERIA"><option value="ANDORRA"><option value="ANGOLA"><option value="ANTIGUA AND BARBUDA"><option value="ARGENTINA"><option value="ARMENIA"><option value="AUSTRALIA"><option value="AUSTRIA"><option value="AZERBAIJAN"><option value="BAHAMAS"><option value="BAHRAIN"><option value="BANGLADESH"><option value="BARBADOS"><option value="BELARUS"><option value="BELGIUM"><option value="BELIZE"><option value="BENIN"><option value="BHUTAN"><option value="BOLIVIA"><option value="BOSNIA AND HERZEGOVINA"><option value="BOTSWANA"><option value="BRAZIL"><option value="BRUNEI"><option value="BULGARIA"><option value="BURKINA FASO"><option value="BURUNDI"><option value="CABO VERDE"><option value="CAMBODIA"><option value="CAMEROON"><option value="CANADA"><option value="CENTRAL AFRICAN REPUBLIC"><option value="CHAD"><option value="CHILE"><option value="CHINA"><option value="COLOMBIA"><option value="COMOROS"><option value="CONGO"><option value="COSTA RICA"><option value="CROATIA"><option value="CUBA"><option value="CYPRUS"><option value="CZECHIA"><option value="DENMARK"><option value="DJIBOUTI"><option value="DOMINICA"><option value="DOMINICAN REPUBLIC"><option value="ECUADOR"><option value="EGYPT"><option value="EL SALVADOR"><option value="EQUATORIAL GUINEA"><option value="ERITREA"><option value="ESTONIA"><option value="ESWATINI"><option value="ETHIOPIA"><option value="FIJI"><option value="FINLAND"><option value="FRANCE"><option value="GABON"><option value="GAMBIA"><option value="GEORGIA"><option value="GERMANY"><option value="GHANA"><option value="GREECE"><option value="GRENADA"><option value="GUATEMALA"><option value="GUINEA"><option value="GUINEA-BISSAU"><option value="GUYANA"><option value="HAITI"><option value="HONDURAS"><option value="HUNGARY"><option value="ICELAND"><option value="INDIA"><option value="INDONESIA"><option value="IRAN"><option value="IRAQ"><option value="IRELAND"><option value="ISRAEL"><option value="ITALY"><option value="IVORY COAST"><option value="JAMAICA"><option value="JAPAN"><option value="JORDAN"><option value="KAZAKHSTAN"><option value="KENYA"><option value="KIRIBATI"><option value="KUWAIT"><option value="KYRGYZSTAN"><option value="LAOS"><option value="LATVIA"><option value="LEBANON"><option value="LESOTHO"><option value="LIBERIA"><option value="LIBYA"><option value="LIECHTENSTEIN"><option value="LITHUANIA"><option value="LUXEMBOURG"><option value="MADAGASCAR"><option value="MALAWI"><option value="MALAYSIA"><option value="MALDIVES"><option value="MALI"><option value="MALTA"><option value="MARSHALL ISLANDS"><option value="MAURITANIA"><option value="MAURITIUS"><option value="MEXICO"><option value="MICRONESIA"><option value="MOLDOVA"><option value="MONACO"><option value="MONGOLIA"><option value="MONTENEGRO"><option value="MOROCCO"><option value="MOZAMBIQUE"><option value="MYANMAR"><option value="NAMIBIA"><option value="NAURU"><option value="NEPAL"><option value="NETHERLANDS"><option value="NEW ZEALAND"><option value="NICARAGUA"><option value="NIGER"><option value="NIGERIA"><option value="NORTH KOREA"><option value="NORTH MACEDONIA"><option value="NORWAY"><option value="OMAN"><option value="PAKISTAN"><option value="PALAU"><option value="PALESTINE"><option value="PANAMA"><option value="PAPUA NEW GUINEA"><option value="PARAGUAY"><option value="PERU"><option value="PHILIPPINES"><option value="POLAND"><option value="PORTUGAL"><option value="QATAR"><option value="ROMANIA"><option value="RUSSIA"><option value="RWANDA"><option value="SAINT KITTS AND NEVIS"><option value="SAINT LUCIA"><option value="SAINT VINCENT AND THE GRENADINES"><option value="SAMOA"><option value="SAN MARINO"><option value="SAO TOME AND PRINCIPE"><option value="SAUDI ARABIA"><option value="SENEGAL"><option value="SERBIA"><option value="SEYCHELLES"><option value="SIERRA LEONE"><option value="SINGAPORE"><option value="SLOVAKIA"><option value="SLOVENIA"><option value="SOLOMON ISLANDS"><option value="SOMALIA"><option value="SOUTH AFRICA"><option value="SOUTH KOREA"><option value="SOUTH SUDAN"><option value="SPAIN"><option value="SRI LANKA"><option value="SUDAN"><option value="SURINAME"><option value="SWEDEN"><option value="SWITZERLAND"><option value="SYRIA"><option value="TAIWAN"><option value="TAJIKISTAN"><option value="TANZANIA"><option value="THAILAND"><option value="TIMOR-LESTE"><option value="TOGO"><option value="TONGA"><option value="TRINIDAD AND TOBAGO"><option value="TUNISIA"><option value="TURKEY"><option value="TURKMENISTAN"><option value="TUVALU"><option value="UAE"><option value="UGANDA"><option value="UKRAINE"><option value="UNITED KINGDOM"><option value="UNITED STATES"><option value="URUGUAY"><option value="UZBEKISTAN"><option value="VANUATU"><option value="VATICAN CITY"><option value="VENEZUELA"><option value="VIETNAM"><option value="YEMEN"><option value="ZAMBIA"><option value="ZIMBABWE">
-            </datalist>
+            <input id="pCountry" data-rule="alpha" list="countryList" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER COUNTRY NAME">
+            <datalist id="countryList"></datalist>
           </div>
           <div>
             <label class="label">Project Cost (BDT)</label>
-            <input id="pCost" type="text" inputmode="decimal" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT COST">
+            <input id="pCost" data-rule="dec" type="text" inputmode="decimal" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER PROJECT COST">
           </div>
         </div>
       </section>
 
-      <!-- Section 2: Location & District -->
+      <!-- 02 -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">02. Geo-Location & District</h3>
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">02. Geo-Location</h3>
         <div class="grid sm:grid-cols-2 gap-5">
           <div>
-            <label class="label">BD District (Type to search)</label>
-            <input id="pDistrict" list="districtList" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="TYPE DISTRICT NAME...">
-            <datalist id="districtList">
-              <option value="BAGERHAT"><option value="BANDARBAN"><option value="BARGUNA"><option value="BARISHAL"><option value="BHOLA"><option value="BOGURA"><option value="BRAHMANBARIA"><option value="CHANDPUR"><option value="CHATTOGRAM"><option value="CHUADANGA"><option value="COX'S BAZAR"><option value="CUMILLA"><option value="DHAKA"><option value="DINAJPUR"><option value="FARIDPUR"><option value="FENI"><option value="GAIBANDHA"><option value="GAZIPUR"><option value="GOPALGANJ"><option value="HABIGANJ"><option value="JAMALPUR"><option value="JASHORE"><option value="JHALOKATI"><option value="JHENAIDAH"><option value="JOYPURHAT"><option value="KHAGRACHHARI"><option value="KHULNA"><option value="KISHOREGANJ"><option value="KURIGRAM"><option value="KUSHTIA"><option value="LAKSHMIPUR"><option value="LALMONIRHAT"><option value="MADARIPUR"><option value="MAGURA"><option value="MANIKGANJ"><option value="MEHERPUR"><option value="MOULVIBAZAR"><option value="MUNSHIGANJ"><option value="MYMENSINGH"><option value="NAOGAON"><option value="NARAIL"><option value="NARAYANGANJ"><option value="NARSINGDI"><option value="NATORE"><option value="NETROKONA"><option value="NILPHAMARI"><option value="NOAKHALI"><option value="PABNA"><option value="PANCHAGARH"><option value="PATUAKHALI"><option value="PIROJPUR"><option value="RAJBARI"><option value="RAJSHAHI"><option value="RANGAMATI"><option value="RANGPUR"><option value="SATKHIRA"><option value="SHARIATPUR"><option value="SHERPUR"><option value="SIRAJGANJ"><option value="SUNAMGANJ"><option value="SYLHET"><option value="TANGAIL"><option value="THAKURGAON">
-            </datalist>
+            <label class="label">Latitude</label>
+            <input id="pLat" data-rule="coord" type="text" inputmode="decimal" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="E.G. 23.810331">
           </div>
           <div>
-            <label class="label">Location (Google Map Link)</label>
-            <input id="pLocation" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE MAP LOCATION LINK">
+            <label class="label">Longitude</label>
+            <input id="pLng" data-rule="coord" type="text" inputmode="decimal" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="E.G. 90.412521">
           </div>
+          <p id="geoStatus" class="sm:col-span-2 text-[10px] text-zinc-400 hint -mt-2">ENTER LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).</p>
+          <div><label class="label">Division</label><input id="pDivision" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DIVISION"></div>
+          <div><label class="label">District</label><input id="pDistrict" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DISTRICT"></div>
+          <div><label class="label">Thana / Upazila</label><input id="pThana" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="THANA"></div>
+          <div><label class="label">Post Office</label><input id="pPostOffice" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="POST OFFICE / POST CODE"></div>
+          <div><label class="label">Union</label><input id="pUnion" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="UNION"></div>
+          <div><label class="label">Village</label><input id="pVillage" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="VILLAGE"></div>
         </div>
       </section>
 
-      <!-- Section 3: Timeline & Management -->
+      <!-- 03 -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">03. Timeline, Management & Notes</h3>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5" id="timelineDatesGrid">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
           <div id="fieldApproval"><label class="label">Approval Date</label><input id="pApproval" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
           <div id="fieldStart"><label class="label">Start Date</label><input id="pStart" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
           <div id="fieldOpening"><label class="label">Opening Date</label><input id="pOpening" type="date" class="field w-full rounded-xl px-4 py-3 text-sm"></div>
@@ -272,14 +200,12 @@ tailwind.config = {
         <div class="grid sm:grid-cols-2 gap-5">
           <div>
             <label class="label">Assigned Site Engineer</label>
-            <input id="pEngineer" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENGINEER NAME">
+            <input id="pEngineer" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENGINEER NAME">
           </div>
           <div>
             <label class="label">Update Status / Notes (Digits Only)</label>
-            <input id="pUpdate" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER DIGITS ONLY (E.G. 513)">
+            <input id="pUpdate" data-rule="num" type="text" inputmode="numeric" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="ENTER DIGITS ONLY (E.G. 513)">
           </div>
-          
-          <!-- Reason for Delay -->
           <div id="delayReasonSection" class="sm:col-span-2 hidden space-y-2">
             <div class="flex items-center gap-3">
               <label class="label text-red-400 mb-0">Reason for Delay</label>
@@ -290,22 +216,45 @@ tailwind.config = {
         </div>
       </section>
 
-      <!-- Section 4: Media & Documents -->
+      <!-- 04 -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">04. Media, Photos & Documents</h3>
+        <div class="flex items-center justify-between gap-3 mb-4 pb-2 border-b border-orange-500/20">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">04. Media, Photos & Documents</h3>
+          <button type="button" id="mediaModeToggle" role="switch" aria-checked="false" title="Switch between file upload and link paste" class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer">
+            <span id="mmUp" class="text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span>
+            <span class="mm-track"><span class="mm-knob"></span></span>
+            <span id="mmLink"><i class="fa-solid fa-link mr-1"></i>Link</span>
+          </button>
+        </div>
         <div class="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label class="label">Documents (PDF / JPG / PNG)</label>
-            <input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="field w-full rounded-xl px-3 py-2 text-xs">
+          <div class="sm:col-span-2">
+            <label class="label">Media Category</label>
+            <select id="pMediaType" class="field w-full rounded-xl px-4 py-3 text-sm">
+              <option value="" class="bg-zinc-900 text-white">SELECT TYPE</option>
+              <option value="Opening" class="bg-zinc-900 text-white">OPENING</option>
+              <option value="Ongoing" class="bg-zinc-900 text-white">ONGOING</option>
+              <option value="Proposal" class="bg-zinc-900 text-white">PROPOSAL</option>
+            </select>
           </div>
           <div>
+            <label class="label">Documents (PDF / JPG / PNG)</label>
+            <div data-mode="upload"><input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="field w-full rounded-xl px-3 py-2 text-xs"></div>
+            <div data-mode="link" class="hidden"><input id="pDocsLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE DOCUMENT LINK"></div>
+          </div>
+          <div id="fieldCPhoto" class="hidden">
             <label class="label">C-Photo (Single Photo)</label>
-            <input id="pCPhoto" type="file" accept="image/*" class="field w-full rounded-xl px-3 py-2 text-xs">
+            <div data-mode="upload"><input id="pCPhoto" type="file" accept="image/*" class="field w-full rounded-xl px-3 py-2 text-xs"></div>
+            <div data-mode="link" class="hidden"><input id="pCPhotoLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE C-PHOTO LINK"></div>
           </div>
           <div class="sm:col-span-2">
             <label class="label">Photos (Max 10 Qty)</label>
-            <input id="pPhotos" type="file" accept="image/*" multiple class="field w-full rounded-xl px-3 py-2 text-xs">
-            <p class="text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 10 IMAGES SIMULTANEOUSLY.</p>
+            <div data-mode="upload">
+              <input id="pPhotos" type="file" accept="image/*" multiple class="field w-full rounded-xl px-3 py-2 text-xs">
+              <p class="hint text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 10 IMAGES SIMULTANEOUSLY.</p>
+            </div>
+            <div data-mode="link" class="hidden">
+              <textarea id="pPhotosLink" rows="3" class="no-upper field w-full rounded-xl px-4 py-3 text-sm resize-none" placeholder="PASTE PHOTO LINKS — ONE LINK PER LINE (MAX 10)"></textarea>
+            </div>
           </div>
           <div class="sm:col-span-2">
             <label class="label">Video (YouTube Embed Link)</label>
@@ -314,435 +263,324 @@ tailwind.config = {
         </div>
       </section>
 
-      <!-- Section 5: Raw Media (Photos & Videos) - only visible when Status is Ongoing or Completed -->
+      <!-- 05 -->
       <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">05. Raw Media (Photos & Videos)</h3>
         <div class="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label class="label">Raw Photos Link</label>
-            <input id="pRawPhotosLink" type="url" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK">
-          </div>
-          <div>
-            <label class="label">Raw Video Link</label>
-            <input id="pRawVideoLink" type="url" autocomplete="off" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW VIDEO LINK">
-          </div>
+          <div><label class="label">Raw Photos Link</label><input id="pRawPhotosLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK"></div>
+          <div><label class="label">Raw Video Link</label><input id="pRawVideoLink" type="url" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="PASTE RAW VIDEO LINK"></div>
         </div>
       </section>
 
-      <!-- Submit Button -->
       <div class="flex justify-end items-center gap-3 pb-8">
-        <button type="button" id="clearFormBtn" class="px-6 py-3.5 rounded-xl border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 font-black text-xs uppercase tracking-widest transition cursor-pointer">
-          <i class="fa-solid fa-eraser mr-2"></i> Clear
-        </button>
-        <button type="submit" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest shadow-neon transition transform hover:scale-[1.02]">
-          <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save
-        </button>
+        <button type="button" id="clearFormBtn" class="px-6 py-3.5 rounded-xl border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 font-black text-xs uppercase tracking-widest transition cursor-pointer"><i class="fa-solid fa-eraser mr-2"></i> Clear</button>
+        <button type="submit" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest shadow-neon transition transform hover:scale-[1.02]"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save</button>
       </div>
-
     </form>
   </main>
 </div>
 
 <script>
-/* ---- Supabase Connection ---- */
+const $ = id => document.getElementById(id);
+
+/* ---- Supabase ---- */
 const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-// NOTE: change this to match the actual Storage bucket name in your Supabase project.
-// The bucket must exist and be set to "Public" (Storage -> Buckets -> New bucket -> Public bucket ON).
 const STORAGE_BUCKET = 'project-media';
 
-document.getElementById('pUpdate').addEventListener('input', function (e) {
-  this.value = this.value.replace(/[^0-9]/g, '');
-});
-document.getElementById('pDonorId').addEventListener('input', function (e) {
-  this.value = this.value.replace(/[^0-9]/g, '');
-});
+/* ---- Country list ---- */
+const COUNTRIES = "AFGHANISTAN,ALBANIA,ALGERIA,ANDORRA,ANGOLA,ANTIGUA AND BARBUDA,ARGENTINA,ARMENIA,AUSTRALIA,AUSTRIA,AZERBAIJAN,BAHAMAS,BAHRAIN,BANGLADESH,BARBADOS,BELARUS,BELGIUM,BELIZE,BENIN,BHUTAN,BOLIVIA,BOSNIA AND HERZEGOVINA,BOTSWANA,BRAZIL,BRUNEI,BULGARIA,BURKINA FASO,BURUNDI,CABO VERDE,CAMBODIA,CAMEROON,CANADA,CENTRAL AFRICAN REPUBLIC,CHAD,CHILE,CHINA,COLOMBIA,COMOROS,CONGO,COSTA RICA,CROATIA,CUBA,CYPRUS,CZECHIA,DENMARK,DJIBOUTI,DOMINICA,DOMINICAN REPUBLIC,ECUADOR,EGYPT,EL SALVADOR,EQUATORIAL GUINEA,ERITREA,ESTONIA,ESWATINI,ETHIOPIA,FIJI,FINLAND,FRANCE,GABON,GAMBIA,GEORGIA,GERMANY,GHANA,GREECE,GRENADA,GUATEMALA,GUINEA,GUINEA-BISSAU,GUYANA,HAITI,HONDURAS,HUNGARY,ICELAND,INDIA,INDONESIA,IRAN,IRAQ,IRELAND,ISRAEL,ITALY,IVORY COAST,JAMAICA,JAPAN,JORDAN,KAZAKHSTAN,KENYA,KIRIBATI,KUWAIT,KYRGYZSTAN,LAOS,LATVIA,LEBANON,LESOTHO,LIBERIA,LIBYA,LIECHTENSTEIN,LITHUANIA,LUXEMBOURG,MADAGASCAR,MALAWI,MALAYSIA,MALDIVES,MALI,MALTA,MARSHALL ISLANDS,MAURITANIA,MAURITIUS,MEXICO,MICRONESIA,MOLDOVA,MONACO,MONGOLIA,MONTENEGRO,MOROCCO,MOZAMBIQUE,MYANMAR,NAMIBIA,NAURU,NEPAL,NETHERLANDS,NEW ZEALAND,NICARAGUA,NIGER,NIGERIA,NORTH KOREA,NORTH MACEDONIA,NORWAY,OMAN,PAKISTAN,PALAU,PALESTINE,PANAMA,PAPUA NEW GUINEA,PARAGUAY,PERU,PHILIPPINES,POLAND,PORTUGAL,QATAR,ROMANIA,RUSSIA,RWANDA,SAINT KITTS AND NEVIS,SAINT LUCIA,SAINT VINCENT AND THE GRENADINES,SAMOA,SAN MARINO,SAO TOME AND PRINCIPE,SAUDI ARABIA,SENEGAL,SERBIA,SEYCHELLES,SIERRA LEONE,SINGAPORE,SLOVAKIA,SLOVENIA,SOLOMON ISLANDS,SOMALIA,SOUTH AFRICA,SOUTH KOREA,SOUTH SUDAN,SPAIN,SRI LANKA,SUDAN,SURINAME,SWEDEN,SWITZERLAND,SYRIA,TAIWAN,TAJIKISTAN,TANZANIA,THAILAND,TIMOR-LESTE,TOGO,TONGA,TRINIDAD AND TOBAGO,TUNISIA,TURKEY,TURKMENISTAN,TUVALU,UAE,UGANDA,UKRAINE,UNITED KINGDOM,UNITED STATES,URUGUAY,UZBEKISTAN,VANUATU,VATICAN CITY,VENEZUELA,VIETNAM,YEMEN,ZAMBIA,ZIMBABWE";
+$('countryList').innerHTML = COUNTRIES.split(',').map(c => `<option value="${c}">`).join('');
 
-const openingDateInput = document.getElementById('pOpening');
-const openedDateInput = document.getElementById('pOpened');
-const delayReasonContainer = document.getElementById('delayReasonSection');
-const delayDisplay = document.getElementById('delayDisplay');
+/* ---- Input rules: numbers-only / letters-only ---- */
+const RULES = {
+  num: v => v.replace(/[^0-9]/g, ''),
+  dec: v => { v = v.replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); return i < 0 ? v : v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); },
+  coord: v => { const neg = v.startsWith('-'); return (neg ? '-' : '') + RULES.dec(v.replace(/-/g, '')); },
+  alpha: v => v.replace(/[0-9]/g, '')
+};
+document.querySelectorAll('[data-rule]').forEach(el => el.addEventListener('input', () => {
+  const n = RULES[el.dataset.rule](el.value);
+  if (n !== el.value) el.value = n;
+}));
 
+/* ---- Delay calc ---- */
+const openingDateInput = $('pOpening'), openedDateInput = $('pOpened');
+const delayReasonContainer = $('delayReasonSection'), delayDisplay = $('delayDisplay');
 function calculateDelay() {
-  const d1 = new Date(openingDateInput.value);
-  const d2 = new Date(openedDateInput.value);
-
+  const d1 = new Date(openingDateInput.value), d2 = new Date(openedDateInput.value);
   if (openingDateInput.value && openedDateInput.value && d2 > d1) {
     let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
     let days = d2.getDate() - d1.getDate();
-    
-    if (days < 0) {
-      months--;
-      days += new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
-    }
-    
-    let resultText = '';
-    if (months > 0) resultText += `${months} MONTH${months > 1 ? 'S' : ''} `;
-    if (days > 0 || months === 0) resultText += `${days} DAY${days > 1 ? 'S' : ''} `;
-    
-    delayDisplay.textContent = `${resultText.trim()} DELAY`;
+    if (days < 0) { months--; days += new Date(d2.getFullYear(), d2.getMonth(), 0).getDate(); }
+    let t = '';
+    if (months > 0) t += `${months} MONTH${months > 1 ? 'S' : ''} `;
+    if (days > 0 || months === 0) t += `${days} DAY${days > 1 ? 'S' : ''} `;
+    delayDisplay.textContent = `${t.trim()} DELAY`;
     delayReasonContainer.classList.remove('hidden');
-  } else {
-    delayReasonContainer.classList.add('hidden');
-  }
+  } else delayReasonContainer.classList.add('hidden');
 }
-
 openingDateInput.addEventListener('change', calculateDelay);
 openedDateInput.addEventListener('change', calculateDelay);
 
-/* ---- Category -> BD-Number Prefix Lock ---- */
-const categorySelect = document.getElementById('pCategory');
-const bdPrefixBadge = document.getElementById('bdPrefixBadge');
-const bdDigitsInput = document.getElementById('pBdDigits');
-const bdHiddenInput = document.getElementById('pBd');
+/* ---- Category -> BD prefix + HO unlock ---- */
+const categorySelect = $('pCategory'), bdPrefixBadge = $('bdPrefixBadge');
+const bdDigitsInput = $('pBdDigits'), bdHiddenInput = $('pBd');
+const hoDigitsInput = $('pHoDigits'), hoHiddenInput = $('pHo');
 
+function syncBdHiddenValue() {
+  const prefix = bdPrefixBadge.textContent, d = bdDigitsInput.value.trim();
+  bdHiddenInput.value = (d && prefix !== 'SELECT CATEGORY') ? `${prefix}-${d}` : '';
+}
+function syncHoHiddenValue() {
+  const d = hoDigitsInput.value.trim();
+  hoHiddenInput.value = d ? `HO-${d}` : '';
+}
 function updateBdPrefix() {
-  const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-  const prefix = selectedOption ? selectedOption.getAttribute('data-prefix') : null;
-
+  const opt = categorySelect.options[categorySelect.selectedIndex];
+  const prefix = opt ? opt.getAttribute('data-prefix') : null;
   if (prefix) {
     bdPrefixBadge.textContent = prefix;
     bdDigitsInput.disabled = false;
-    bdDigitsInput.placeholder = '123';
+    hoDigitsInput.disabled = false;
   } else {
     bdPrefixBadge.textContent = 'SELECT CATEGORY';
-    bdDigitsInput.disabled = true;
-    bdDigitsInput.value = '';
+    bdDigitsInput.disabled = true; bdDigitsInput.value = '';
+    hoDigitsInput.disabled = true; hoDigitsInput.value = '';
   }
-  syncBdHiddenValue();
+  syncBdHiddenValue(); syncHoHiddenValue();
 }
-
-function syncBdHiddenValue() {
-  const prefix = bdPrefixBadge.textContent;
-  const digits = bdDigitsInput.value.trim();
-  bdHiddenInput.value = (digits && prefix !== 'SELECT CATEGORY') ? `${prefix}-${digits}` : '';
-}
-
-bdDigitsInput.addEventListener('input', function () {
-  this.value = this.value.replace(/[^0-9]/g, '');
-  syncBdHiddenValue();
-});
+bdDigitsInput.addEventListener('input', syncBdHiddenValue);
+hoDigitsInput.addEventListener('input', syncHoHiddenValue);
 categorySelect.addEventListener('change', updateBdPrefix);
 updateBdPrefix();
 
-/* ---- Status -> Timeline Fields Visibility ---- */
-const statusSelect = document.getElementById('pStatus');
-const fieldApproval = document.getElementById('fieldApproval');
-const fieldStart = document.getElementById('fieldStart');
-const fieldOpening = document.getElementById('fieldOpening');
-const fieldOpened = document.getElementById('fieldOpened');
-
-function setFieldVisible(fieldWrapper, visible) {
-  fieldWrapper.classList.toggle('hidden', !visible);
-  if (!visible) {
-    const input = fieldWrapper.querySelector('input');
-    if (input) input.value = '';
-  }
+/* ---- Status -> timeline + raw media visibility ---- */
+const statusSelect = $('pStatus');
+const fields = { a: $('fieldApproval'), s: $('fieldStart'), o: $('fieldOpening'), d: $('fieldOpened') };
+function setFieldVisible(w, v) {
+  w.classList.toggle('hidden', !v);
+  if (!v) { const i = w.querySelector('input'); if (i) i.value = ''; }
 }
-
 function updateTimelineFieldsVisibility() {
-  const status = statusSelect.value;
-
-  if (status === 'Ongoing') {
-    setFieldVisible(fieldApproval, true);
-    setFieldVisible(fieldStart, true);
-    setFieldVisible(fieldOpening, false);
-    setFieldVisible(fieldOpened, false);
-  } else if (status === 'Completed') {
-    setFieldVisible(fieldApproval, true);
-    setFieldVisible(fieldStart, true);
-    setFieldVisible(fieldOpening, true);
-    setFieldVisible(fieldOpened, true);
-  } else if (status === 'Upcoming') {
-    setFieldVisible(fieldApproval, true);
-    setFieldVisible(fieldStart, false);
-    setFieldVisible(fieldOpening, false);
-    setFieldVisible(fieldOpened, false);
-  } else {
-    // No status selected yet — show all fields
-    setFieldVisible(fieldApproval, true);
-    setFieldVisible(fieldStart, true);
-    setFieldVisible(fieldOpening, true);
-    setFieldVisible(fieldOpened, true);
-  }
-
+  const st = statusSelect.value;
+  const map = { Ongoing: [1,1,0,0], Completed: [1,1,1,1], Upcoming: [1,0,0,0] };
+  const m = map[st] || [1,1,1,1];
+  setFieldVisible(fields.a, m[0]); setFieldVisible(fields.s, m[1]);
+  setFieldVisible(fields.o, m[2]); setFieldVisible(fields.d, m[3]);
   calculateDelay();
-  updateRawMediaVisibility();
+  const raw = $('section5RawMedia'), vis = (st === 'Ongoing' || st === 'Completed');
+  raw.classList.toggle('hidden', !vis);
+  if (!vis) raw.querySelectorAll('input').forEach(i => i.value = '');
 }
-
-/* ---- Raw Media Section Visibility (only for Ongoing / Completed) ---- */
-const section5RawMedia = document.getElementById('section5RawMedia');
-
-function updateRawMediaVisibility() {
-  const status = statusSelect.value;
-  const visible = (status === 'Ongoing' || status === 'Completed');
-
-  section5RawMedia.classList.toggle('hidden', !visible);
-  if (!visible) {
-    section5RawMedia.querySelectorAll('input').forEach(input => { input.value = ''; });
-  }
-}
-
-statusSelect.addEventListener('change', updateTimelineFieldsVisibility);
+statusSelect.addEventListener('change', () => { updateTimelineFieldsVisibility(); updateFormProgress(); });
 updateTimelineFieldsVisibility();
 
-/* ---- Form Completion Progress Bar ---- */
-const formProgressFill = document.getElementById('formProgressFill');
-const formProgressLabel = document.getElementById('formProgressLabel');
-const projectFormEl = document.getElementById('projectForm');
+/* ---- Media: category (C-Photo only for Opening) + Upload/Link switch ---- */
+let mediaMode = 'upload';
+const mediaTypeSelect = $('pMediaType'), fieldCPhoto = $('fieldCPhoto'), modeToggle = $('mediaModeToggle');
 
-function updateFormProgress() {
-  const trackedFields = Array.from(projectFormEl.querySelectorAll('input, select, textarea')).filter(el => {
-    if (el.type === 'hidden') return false;
-    if (el.disabled) return false;
-    if (el.closest('.hidden')) return false; // skip fields hidden by Status logic
-    return true;
+function updateMediaUI() {
+  const showC = mediaTypeSelect.value === 'Opening';
+  fieldCPhoto.classList.toggle('hidden', !showC);
+  if (!showC) { $('pCPhoto').value = ''; $('pCPhotoLink').value = ''; }
+  document.querySelectorAll('[data-mode]').forEach(el => {
+    const on = el.dataset.mode === mediaMode;
+    el.classList.toggle('hidden', !on);
+    if (!on) el.querySelectorAll('input, textarea').forEach(i => i.value = '');
   });
-
-  let filledCount = 0;
-  trackedFields.forEach(el => {
-    if (el.type === 'file') {
-      if (el.files && el.files.length > 0) filledCount++;
-    } else if (el.value && el.value.trim() !== '') {
-      filledCount++;
-    }
-  });
-
-  const percent = trackedFields.length ? Math.round((filledCount / trackedFields.length) * 100) : 0;
-  formProgressFill.style.width = percent + '%';
-  formProgressLabel.textContent = percent + '%';
+  modeToggle.setAttribute('aria-checked', mediaMode === 'link');
+  $('mmUp').classList.toggle('text-orange-400', mediaMode === 'upload');
+  $('mmLink').classList.toggle('text-orange-400', mediaMode === 'link');
+  updateFormProgress();
 }
+mediaTypeSelect.addEventListener('change', updateMediaUI);
+modeToggle.addEventListener('click', () => { mediaMode = mediaMode === 'upload' ? 'link' : 'upload'; updateMediaUI(); });
 
+/* ---- Lat/Lng -> auto address (OpenStreetMap Nominatim) ---- */
+let geoTimer = null, geoSeq = 0;
+const geoStatus = $('geoStatus');
+function onCoordInput() {
+  clearTimeout(geoTimer);
+  const lat = parseFloat($('pLat').value), lng = parseFloat($('pLng').value);
+  if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+  geoTimer = setTimeout(() => reverseGeocode(lat, lng), 800);
+}
+const clean = s => (s || '').replace(/\s+(Division|District|Upazila|Upazilla|Thana)$/i, '').trim().toUpperCase();
+async function reverseGeocode(lat, lng) {
+  const seq = ++geoSeq;
+  geoStatus.textContent = 'DETECTING ADDRESS...';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&accept-language=en&lat=${lat}&lon=${lng}`);
+    const j = await r.json();
+    if (seq !== geoSeq) return;
+    const a = j.address || {};
+    if (!j.address) { geoStatus.textContent = 'NO ADDRESS FOUND — PLEASE FILL MANUALLY.'; return; }
+    const set = (id, v) => { if (v) $(id).value = v; };
+    set('pDivision', clean(a.state));
+    set('pDistrict', clean(a.state_district || a.city));
+    set('pThana', clean(a.county || a.city_district || a.suburb));
+    set('pPostOffice', (a.postcode || '').toUpperCase());
+    set('pUnion', clean(a.municipality || a.town || a.suburb));
+    set('pVillage', clean(a.village || a.hamlet || a.neighbourhood || a.quarter));
+    geoStatus.textContent = 'ADDRESS FILLED — PLEASE CHECK & EDIT IF NEEDED.';
+    updateFormProgress();
+  } catch (e) {
+    if (seq === geoSeq) geoStatus.textContent = 'COULD NOT FETCH ADDRESS — PLEASE FILL MANUALLY.';
+  }
+}
+$('pLat').addEventListener('input', onCoordInput);
+$('pLng').addEventListener('input', onCoordInput);
+
+/* ---- Progress bar ---- */
+const formProgressFill = $('formProgressFill'), formProgressLabel = $('formProgressLabel'), projectFormEl = $('projectForm');
+function updateFormProgress() {
+  const tracked = Array.from(projectFormEl.querySelectorAll('input, select, textarea'))
+    .filter(el => el.type !== 'hidden' && !el.disabled && !el.closest('.hidden'));
+  let filled = 0;
+  tracked.forEach(el => {
+    if (el.type === 'file') { if (el.files && el.files.length) filled++; }
+    else if (el.value && el.value.trim() !== '') filled++;
+  });
+  const p = tracked.length ? Math.round(filled / tracked.length * 100) : 0;
+  formProgressFill.style.width = p + '%';
+  formProgressLabel.textContent = p + '%';
+}
 projectFormEl.addEventListener('input', updateFormProgress);
 projectFormEl.addEventListener('change', updateFormProgress);
-updateFormProgress();
 
-/* ---- HO-Number: fixed "HO" prefix, digits only ---- */
-const hoDigitsInput = document.getElementById('pHoDigits');
-const hoHiddenInput = document.getElementById('pHo');
-
-function syncHoHiddenValue() {
-  const digits = hoDigitsInput.value.trim();
-  hoHiddenInput.value = digits ? `HO-${digits}` : '';
-}
-
-hoDigitsInput.addEventListener('input', function () {
-  this.value = this.value.replace(/[^0-9]/g, '');
-  syncHoHiddenValue();
-});
-
-/* ---- File Upload Helpers (Supabase Storage) ---- */
-
-// Builds a safe, unique storage path for one file inside a folder.
-function buildStoragePath(folder, file) {
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  return `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
-}
-
-// Uploads a single file and returns its public URL.
+/* ---- Upload helpers ---- */
 async function uploadFileAndGetUrl(folder, file) {
-  const path = buildStoragePath(folder, file);
-  const { error: uploadError } = await supabaseClient
-    .storage
-    .from(STORAGE_BUCKET)
-    .upload(path, file, { cacheControl: '3600', upsert: false });
-
-  if (uploadError) {
-    throw new Error(`Upload failed for "${file.name}": ${uploadError.message}`);
-  }
-
-  const { data: publicUrlData } = supabaseClient
-    .storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(path);
-
-  return publicUrlData.publicUrl;
+  const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
+  const { error } = await supabaseClient.storage.from(STORAGE_BUCKET).upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) throw new Error(`Upload failed for "${file.name}": ${error.message}`);
+  return supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
-// Uploads multiple files (sequentially) and returns an array of public URLs.
-async function uploadMultipleFilesAndGetUrls(folder, fileList) {
-  const urls = [];
-  for (const file of fileList) {
-    const url = await uploadFileAndGetUrl(folder, file);
-    urls.push(url);
-  }
-  return urls;
-}
-
-document.getElementById('clearFormBtn').addEventListener('click', function () {
+function resetUI() {
   projectFormEl.reset();
   updateBdPrefix();
-  hoHiddenInput.value = '';
   delayReasonContainer.classList.add('hidden');
+  geoStatus.textContent = 'ENTER LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
   updateTimelineFieldsVisibility();
-  updateFormProgress();
-});
+  updateMediaUI();
+}
+$('clearFormBtn').addEventListener('click', resetUI);
 
-document.getElementById('projectForm').addEventListener('submit', async function(e) {
+/* ---- Submit ---- */
+projectFormEl.addEventListener('submit', async function (e) {
   e.preventDefault();
 
-  const docsInput = document.getElementById('pDocs');
-  const cPhotoInput = document.getElementById('pCPhoto');
-  const photosInput = document.getElementById('pPhotos');
+  if (!categorySelect.value || !bdDigitsInput.value.trim()) { alert('PLEASE SELECT A PROJECT CATEGORY AND ENTER THE BD-NUMBER DIGITS!'); return; }
+  if (!hoDigitsInput.value.trim()) { alert('PLEASE ENTER THE HO-NUMBER DIGITS!'); return; }
+  syncBdHiddenValue(); syncHoHiddenValue();
 
-  if (photosInput.files.length > 10) {
-    alert('YOU CAN UPLOAD A MAXIMUM OF 10 PHOTOS!');
-    return;
-  }
+  const photoLinks = $('pPhotosLink').value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+  if ($('pPhotos').files.length > 10 || photoLinks.length > 10) { alert('YOU CAN ADD A MAXIMUM OF 10 PHOTOS!'); return; }
 
-  // Category must be selected (this also locks the BD-Number prefix)
-  if (!categorySelect.value || !bdDigitsInput.value.trim()) {
-    alert('PLEASE SELECT A PROJECT CATEGORY AND ENTER THE BD-NUMBER DIGITS!');
-    return;
-  }
-  if (!hoDigitsInput.value.trim()) {
-    alert('PLEASE ENTER THE HO-NUMBER DIGITS!');
-    return;
-  }
-  syncBdHiddenValue();
-  syncHoHiddenValue();
+  const btn = document.querySelector('#projectForm button[type="submit"]');
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
 
-  const submitBtn = document.querySelector('#projectForm button[type="submit"]');
-  const originalBtnHtml = submitBtn.innerHTML;
-  submitBtn.disabled = true;
-
-  let documentsUrl = null;
-  let cPhotoUrl = null;
-  let photoUrls = [];
-
+  let documentsUrl = null, cPhotoUrl = null, photoUrls = [];
   try {
-    // 1) Upload the single document (if provided)
-    if (docsInput.files.length > 0) {
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Document...';
-      documentsUrl = await uploadFileAndGetUrl('documents', docsInput.files[0]);
+    if (mediaMode === 'upload') {
+      if ($('pDocs').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Document...'; documentsUrl = await uploadFileAndGetUrl('documents', $('pDocs').files[0]); }
+      if (mediaTypeSelect.value === 'Opening' && $('pCPhoto').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading C-Photo...'; cPhotoUrl = await uploadFileAndGetUrl('cphotos', $('pCPhoto').files[0]); }
+      if ($('pPhotos').files.length) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Photos...';
+        for (const f of $('pPhotos').files) photoUrls.push(await uploadFileAndGetUrl('photos', f));
+      }
+    } else {
+      documentsUrl = $('pDocsLink').value.trim() || null;
+      cPhotoUrl = mediaTypeSelect.value === 'Opening' ? ($('pCPhotoLink').value.trim() || null) : null;
+      photoUrls = photoLinks;
     }
-
-    // 2) Upload the C-Photo (if provided)
-    if (cPhotoInput.files.length > 0) {
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading C-Photo...';
-      cPhotoUrl = await uploadFileAndGetUrl('cphotos', cPhotoInput.files[0]);
-    }
-
-    // 3) Upload up to 10 gallery photos (if provided)
-    if (photosInput.files.length > 0) {
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Photos...';
-      photoUrls = await uploadMultipleFilesAndGetUrls('photos', photosInput.files);
-    }
-  } catch (uploadErr) {
-    console.error(uploadErr);
-    alert('FILE UPLOAD FAILED: ' + uploadErr.message + '\n\nCheck that the "' + STORAGE_BUCKET + '" bucket exists in Supabase Storage and is set to Public.');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnHtml;
+  } catch (err) {
+    console.error(err);
+    alert('FILE UPLOAD FAILED: ' + err.message + '\n\nCheck that the "' + STORAGE_BUCKET + '" bucket exists in Supabase Storage and is set to Public.');
+    btn.disabled = false; btn.innerHTML = originalHtml;
     return;
   }
 
-  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+  const v = id => $(id).value.trim() || null;
+  const lat = v('pLat'), lng = v('pLng');
 
   const record = {
-    project_name: document.getElementById('pName').value.trim(),
-    category: document.getElementById('pCategory').value,
-    bd_number: document.getElementById('pBd').value,
-    ho_number: document.getElementById('pHo').value,
-    status: document.getElementById('pStatus').value,
-    organization: document.getElementById('pOrg').value.trim() || null,
-    donor_name: document.getElementById('pDonor').value.trim() || null,
-    donor_id: document.getElementById('pDonorId').value.trim() || null,
-    donated_country: document.getElementById('pCountry').value.trim() || null,
-    project_cost: document.getElementById('pCost').value.trim() ? Number(document.getElementById('pCost').value.trim()) : null,
-    district: document.getElementById('pDistrict').value.trim() || null,
-    location_link: document.getElementById('pLocation').value.trim() || null,
-    approval_date: document.getElementById('pApproval').value || null,
-    start_date: document.getElementById('pStart').value || null,
-    opening_date: document.getElementById('pOpening').value || null,
-    opened_date: document.getElementById('pOpened').value || null,
-    engineer_name: document.getElementById('pEngineer').value.trim() || null,
-    update_notes: document.getElementById('pUpdate').value.trim() || null,
-    delay_reason: document.getElementById('pDelayReason').value.trim() || null,
-    video_link: document.getElementById('pVideo').value.trim() || null,
+    project_name: $('pName').value.trim(),
+    category: $('pCategory').value,
+    bd_number: $('pBd').value,
+    ho_number: $('pHo').value,
+    status: $('pStatus').value,
+    organization: v('pOrg'),
+    donor_name: v('pDonor'),
+    donor_id: v('pDonorId'),
+    donated_country: v('pCountry'),
+    project_cost: v('pCost') ? Number(v('pCost')) : null,
+    latitude: lat ? Number(lat) : null,
+    longitude: lng ? Number(lng) : null,
+    location_link: (lat && lng) ? `https://www.google.com/maps?q=${lat},${lng}` : null,
+    division: v('pDivision'),
+    district: v('pDistrict'),
+    thana: v('pThana'),
+    post_office: v('pPostOffice'),
+    union_name: v('pUnion'),
+    village: v('pVillage'),
+    approval_date: $('pApproval').value || null,
+    start_date: $('pStart').value || null,
+    opening_date: $('pOpening').value || null,
+    opened_date: $('pOpened').value || null,
+    engineer_name: v('pEngineer'),
+    update_notes: v('pUpdate'),
+    delay_reason: v('pDelayReason'),
+    media_category: mediaTypeSelect.value || null,
+    video_link: v('pVideo'),
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
     photo_urls: photoUrls,
-    raw_photos_link: document.getElementById('pRawPhotosLink').value.trim() || null,
-    raw_video_link: document.getElementById('pRawVideoLink').value.trim() || null
+    raw_photos_link: v('pRawPhotosLink'),
+    raw_video_link: v('pRawVideoLink')
   };
 
-  const { data, error } = await supabaseClient.from('projects').insert([record]).select();
-
-  submitBtn.disabled = false;
-  submitBtn.innerHTML = originalBtnHtml;
-
-  if (error) {
-    console.error(error);
-    alert('SAVE FAILED: ' + error.message);
-    return;
-  }
-
-  document.getElementById('projectForm').reset();
-  updateBdPrefix();
-  hoHiddenInput.value = '';
-  delayReasonContainer.classList.add('hidden');
-  updateTimelineFieldsVisibility();
-  updateFormProgress();
+  const { error } = await supabaseClient.from('projects').insert([record]).select();
+  btn.disabled = false; btn.innerHTML = originalHtml;
+  if (error) { console.error(error); alert('SAVE FAILED: ' + error.message); return; }
+  resetUI();
 });
 
-/* ---- Rotating Scroll Knob ---- */
+/* ---- Scroll knob ---- */
 (function () {
-  const knob = document.getElementById('scrollKnob');
-  const knobProgress = document.getElementById('knobProgress');
-  const knobPointer = document.getElementById('knobPointer');
-  const CIRCUMFERENCE = 2 * Math.PI * 26; // matches r=26 in the SVG
-
-  function getScrollableHeight() {
-    return Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+  const knob = $('scrollKnob'), prog = $('knobProgress'), ptr = $('knobPointer');
+  const C = 2 * Math.PI * 26;
+  const H = () => Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+  function update() {
+    const p = Math.min(Math.max(window.scrollY / H(), 0), 1);
+    ptr.setAttribute('transform', `rotate(${p * 360} 30 30)`);
+    prog.style.strokeDashoffset = C - p * C;
   }
-
-  function updateKnobFromScroll() {
-    const progress = Math.min(Math.max(window.scrollY / getScrollableHeight(), 0), 1);
-    const angle = progress * 360;
-    knobPointer.setAttribute('transform', `rotate(${angle} 30 30)`);
-    knobProgress.style.strokeDashoffset = CIRCUMFERENCE - progress * CIRCUMFERENCE;
+  function fromPointer(x, y) {
+    const r = knob.getBoundingClientRect();
+    let a = Math.atan2(x - (r.left + r.width / 2), -(y - (r.top + r.height / 2))) * 180 / Math.PI;
+    if (a < 0) a += 360;
+    window.scrollTo({ top: a / 360 * H(), behavior: 'auto' });
   }
-
-  function scrollFromPointer(clientX, clientY) {
-    const rect = knob.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    let angle = Math.atan2(clientX - cx, -(clientY - cy)) * (180 / Math.PI);
-    if (angle < 0) angle += 360;
-    const progress = angle / 360;
-    window.scrollTo({ top: progress * getScrollableHeight(), behavior: 'auto' });
-  }
-
-  let dragging = false;
-
-  knob.addEventListener('mousedown', function (e) {
-    dragging = true;
-    scrollFromPointer(e.clientX, e.clientY);
-  });
-  window.addEventListener('mousemove', function (e) {
-    if (dragging) scrollFromPointer(e.clientX, e.clientY);
-  });
-  window.addEventListener('mouseup', function () { dragging = false; });
-
-  knob.addEventListener('touchstart', function (e) {
-    dragging = true;
-    const t = e.touches[0];
-    scrollFromPointer(t.clientX, t.clientY);
-  }, { passive: true });
-  window.addEventListener('touchmove', function (e) {
-    if (dragging) {
-      const t = e.touches[0];
-      scrollFromPointer(t.clientX, t.clientY);
-    }
-  }, { passive: true });
-  window.addEventListener('touchend', function () { dragging = false; });
-
-  window.addEventListener('scroll', updateKnobFromScroll);
-  window.addEventListener('resize', updateKnobFromScroll);
-  updateKnobFromScroll();
+  let drag = false;
+  knob.addEventListener('mousedown', e => { drag = true; fromPointer(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e => { if (drag) fromPointer(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', () => drag = false);
+  knob.addEventListener('touchstart', e => { drag = true; fromPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchmove', e => { if (drag) fromPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchend', () => drag = false);
+  window.addEventListener('scroll', update);
+  window.addEventListener('resize', update);
+  update();
 })();
+
+updateMediaUI();
+updateFormProgress();
 </script>
 </body>
 </html>
