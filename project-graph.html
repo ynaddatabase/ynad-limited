@@ -176,31 +176,12 @@
             overflow: hidden;
             isolation: isolate;
         }
-        /*
-         * Graph view switching:
-         * keep both graph layers on the exact same left/top/baseline,
-         * then move the complete layers together. This removes the small
-         * "jump" that happens when the SVG widths/heights differ.
-         */
-        #graphCharts .graph-slide-layer {
-            width: 100%;
+        /* ---------- GRAPH WHOLE-PANEL SLIDE ---------- */
+        #graphCharts.graph-panel-sliding {
+            overflow: hidden;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            transform: translate3d(0, 0, 0);
-            will-change: transform, opacity;
-        }
-        #graphCharts .graph-slide-layer.graph-slide-absolute {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-        }
-        #graphCharts .graph-slide-layer.graph-slide-enter {
-            z-index: 2;
-        }
-        #graphCharts .graph-slide-layer.graph-slide-old {
-            z-index: 1;
-            pointer-events: none;
+            will-change: transform;
         }
     </style>
 </head>
@@ -261,7 +242,7 @@
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Category</label>
-                        <select id="filterCategory" onchange="applyAdvFilters()" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 bg-white">
+                        <select id="filterCategory" onchange="requestFilteredGraphUpdate()" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 bg-white">
                             <option value="">All Categories</option>
                             <option value="Masjid">Masjid</option>
                             <option value="Madrasa">Madrasa</option>
@@ -275,17 +256,17 @@
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Organization</label>
-                        <input type="text" id="filterOrganization" onkeyup="applyAdvFilters()" placeholder="e.g. WAMY" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filterOrganization" onkeyup="requestFilteredGraphUpdate()" placeholder="e.g. WAMY" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donor Name / ID</label>
-                        <input type="text" id="filterDonor" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filterDonor" onkeyup="requestFilteredGraphUpdate()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donated Country</label>
-                        <input type="text" id="filterCountry" list="worldCountryList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter country name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filterCountry" list="worldCountryList" onkeyup="requestFilteredGraphUpdate()" onchange="requestFilteredGraphUpdate()" placeholder="Enter country name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         <datalist id="worldCountryList"></datalist>
                     </div>
 
@@ -301,18 +282,18 @@
                             </div>
                         </div>
                         <div id="costExactWrap">
-                            <input type="number" id="filterCostExact" onchange="applyAdvFilters()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="number" id="filterCostExact" onchange="requestFilteredGraphUpdate()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         </div>
                         <div id="costRangeWrap" class="hidden items-center gap-2">
-                            <input type="number" id="filterCostMin" onchange="applyAdvFilters()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="number" id="filterCostMin" onchange="requestFilteredGraphUpdate()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                             <span class="text-slate-400 text-xs">—</span>
-                            <input type="number" id="filterCostMax" onchange="applyAdvFilters()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="number" id="filterCostMax" onchange="requestFilteredGraphUpdate()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">BD District</label>
-                        <input type="text" id="filterDistrict" list="bdDistrictList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter district name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filterDistrict" list="bdDistrictList" onkeyup="requestFilteredGraphUpdate()" onchange="requestFilteredGraphUpdate()" placeholder="Enter district name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         <datalist id="bdDistrictList"></datalist>
                     </div>
 
@@ -328,18 +309,18 @@
                             </div>
                         </div>
                         <div id="dateExactWrap">
-                            <input type="date" id="filterDateExact" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="date" id="filterDateExact" onchange="requestFilteredGraphUpdate()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         </div>
                         <div id="dateRangeWrap" class="hidden items-center gap-2">
-                            <input type="date" id="filterDateMin" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="date" id="filterDateMin" onchange="requestFilteredGraphUpdate()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                             <span class="text-slate-400 text-xs">—</span>
-                            <input type="date" id="filterDateMax" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <input type="date" id="filterDateMax" onchange="requestFilteredGraphUpdate()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Engineer Name / ID</label>
-                        <input type="text" id="filterEngineer" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filterEngineer" onkeyup="requestFilteredGraphUpdate()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
                     </div>
 
                     <div class="flex items-end">
@@ -599,7 +580,7 @@
 
             if (!query) {
                 searchQuery = '';
-                applyAdvFilters();
+                requestFilteredGraphUpdate();
                 if (feedback) {
                     feedback.textContent = 'Please enter project details.';
                     feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50';
@@ -608,7 +589,7 @@
             }
 
             searchQuery = query;
-            applyAdvFilters();
+            requestFilteredGraphUpdate();
             const matchCount = lastFilteredCount;
 
             if (feedback) {
@@ -769,6 +750,7 @@
         let graphDrill = {};          // e.g. { district: 'Dhaka' } set by clicking a bar
         let graphDir = 0;            // +1 = new graph enters from the right, -1 = from the left
         let graphFresh = false;       // true => graph rises from zero (same as By District / By Category)
+        let graphAnimationPending = false;
 
         function updatePageHeading() {
             const headingEl = document.getElementById('pageHeadingText');
@@ -822,7 +804,10 @@
             });
         }
         function setFilter(filter) {
-            /* no graphFresh / graphDir here: bars morph (grow, shrink, shift, fade) from the current graph to the new one */
+            if (filter === currentFilter) return;
+            const keysArr = FILTER_TAB_DEFS.map(t => t.key);
+            graphDir = keysArr.indexOf(filter) > keysArr.indexOf(currentFilter) ? 1 : -1;
+            graphAnimationPending = true;
             currentFilter = filter;
             updatePageHeading();
             applyAdvFilters();
@@ -869,6 +854,12 @@
             if (countryList) countryList.innerHTML = WORLD_COUNTRIES.map(c => `<option value="${escapeHtml(c)}">`).join('');
             const districtList = document.getElementById('bdDistrictList');
             if (districtList) districtList.innerHTML = BD_DISTRICTS.map(d => `<option value="${escapeHtml(d)}">`).join('');
+        }
+
+        function requestFilteredGraphUpdate() {
+            graphDir = 1;
+            graphAnimationPending = !!document.getElementById('mgSvg');
+            applyAdvFilters();
         }
 
         /* ---------- Advanced filter panel ---------- */
@@ -922,7 +913,7 @@
             searchQuery = '';
             const si = document.getElementById('projectSearchInput');
             if (si) si.value = '';
-            applyAdvFilters();
+            requestFilteredGraphUpdate();
         }
 
         function getNonStatusFilteredProjects() {
@@ -1011,9 +1002,10 @@
             syncGraphControls();
         }
         function setGraphView(view) {
-            if (!GRAPH_VIEWS[view]) return;
+            if (!GRAPH_VIEWS[view] || view === graphView) return;
             const keysArr = Object.keys(GRAPH_VIEWS);
             graphDir = keysArr.indexOf(view) > keysArr.indexOf(graphView) ? 1 : -1;
+            graphAnimationPending = true;
             delete graphDrill[view];
             graphView = view;
             applyAdvFilters();
@@ -1022,12 +1014,14 @@
             if (graphView === 'category' || !key) return;
             graphDrill[graphView] = { key: key, label: (mgState.names && mgState.names[key]) || key };
             graphDir = 1;
+            graphAnimationPending = true;
             graphView = 'category';
             applyAdvFilters();
         }
         function clearDrill(view) {
             delete graphDrill[view];
             graphDir = -1;
+            graphAnimationPending = true;
             if (GRAPH_VIEWS[view]) graphView = view;
             applyAdvFilters();
         }
@@ -1177,8 +1171,17 @@
         }
 
         function mgAnimate(keys, counts, clickable, names) {
-            const svg = document.getElementById('mgSvg');
+            const charts = document.getElementById('graphCharts');
+            let svg = document.getElementById('mgSvg');
+
+            /* On the first render the page only has the \"Loading graph...\"
+               placeholder. Build the SVG skeleton before drawing the graph. */
+            if (!svg && charts) {
+                charts.innerHTML = mgSkeletonHtml();
+                svg = document.getElementById('mgSvg');
+            }
             if (!svg) return;
+
             Object.assign(mgState.names, names || {});
             const n = keys.length;
             const box = document.getElementById('graphCharts');
@@ -1264,7 +1267,6 @@
             const emptyCharts = document.getElementById('graphCharts');
             if (emptyCharts) {
                 emptyCharts.style.height = '';
-                emptyCharts.querySelectorAll('.graph-slide-layer').forEach(layer => layer.remove());
             }
             document.getElementById('graphCharts').innerHTML = `
                 <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[320px] text-slate-400">
@@ -1273,9 +1275,66 @@
                 </div>`;
         }
 
+        function animateGraphPanel(direction, update) {
+            const charts = document.getElementById('graphCharts');
+            const oldSvg = document.getElementById('mgSvg');
+            if (!charts || !oldSvg || !direction) { update(); return; }
+
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion) { update(); return; }
+
+            const height = Math.max(charts.offsetHeight, charts.scrollHeight);
+            if (height > 0) charts.style.height = height + 'px';
+            charts.classList.add('graph-panel-sliding');
+
+            const out = charts.animate(
+                [
+                    { transform: 'translate3d(0, 0, 0)' },
+                    { transform: `translate3d(${-direction * 100}%, 0, 0)` }
+                ],
+                { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' }
+            );
+
+            out.finished.catch(() => {}).finally(() => {
+                out.cancel();
+                update();
+
+                /* New graph starts fully outside on the opposite side.
+                   Nothing is displayed side-by-side, so the graph never looks split. */
+                charts.style.transform = `translate3d(${direction * 100}%, 0, 0)`;
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const incoming = charts.animate(
+                            [
+                                { transform: `translate3d(${direction * 100}%, 0, 0)` },
+                                { transform: 'translate3d(0, 0, 0)' }
+                            ],
+                            { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' }
+                        );
+                        incoming.finished.catch(() => {}).finally(() => {
+                            incoming.cancel();
+                            charts.style.transform = '';
+                            charts.style.height = '';
+                            charts.classList.remove('graph-panel-sliding');
+                        });
+                    });
+                });
+            });
+        }
+
         function renderGraph(projects) {
             const charts = document.getElementById('graphCharts');
             syncGraphControls();
+
+            /* All interactive graph/filter changes use the same whole-graph
+               left/right transition. Initial load and resize stay instant. */
+            if (graphAnimationPending && document.getElementById('mgSvg') && graphDir) {
+                const direction = graphDir;
+                graphAnimationPending = false;
+                graphDir = 0;
+                animateGraphPanel(direction, () => renderGraph(projects));
+                return;
+            }
 
             if (!projects || projects.length === 0) {
                 renderEmptyGraph('No projects match the selected filters.');
@@ -1316,129 +1375,10 @@
             const drillText = Object.keys(graphDrill).map(v => graphDrill[v].label).join(' and ');
             setGraphTitle(`Projects by ${g.label}${drillText ? ' for ' + drillText : ''} (${keys.length})`);
 
-            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            const dir = graphDir || 0;
-            graphDir = 0;
-
-            const oldSvg = document.getElementById('mgSvg');
-            const needsRebuild = mgState.view !== graphView || graphFresh || !oldSvg;
-
-            if (!needsRebuild) {
-                /*
-                 * Same view: keep the existing SVG and let mgAnimate morph
-                 * heights/positions normally (e.g. when a status/filter changes).
-                 */
-                mgState.stagger = false;
-                mgState.instant = false;
-                mgAnimate(keys, counts, graphView !== 'category', names);
-                return;
-            }
-
-            /*
-             * New view:
-             * 1) freeze the current graph in one layer;
-             * 2) create the new graph in a second layer with exactly the same
-             *    top/left/width/baseline;
-             * 3) force one layout frame so both layers are aligned;
-             * 4) slide both layers as one continuous movement.
-             *
-             * This is more stable than cloning #graphCharts and translating
-             * two differently-sized children by percentage.
-             */
-            const canSlide = !!oldSvg && !!dir && !reduceMotion;
-            let oldLayer = null;
-            let enterLayer = null;
-
-            charts.querySelectorAll('.graph-slide-layer').forEach(layer => layer.remove());
-
-            if (canSlide) {
-                oldLayer = document.createElement('div');
-                oldLayer.className = 'graph-slide-layer graph-slide-layer-old graph-slide-absolute graph-slide-old';
-                oldLayer.style.pointerEvents = 'none';
-                oldLayer.innerHTML = charts.innerHTML;
-            }
-
-            enterLayer = document.createElement('div');
-            enterLayer.className = 'graph-slide-layer graph-slide-layer-enter';
-            enterLayer.innerHTML = mgSkeletonHtml();
-
-            charts.innerHTML = '';
-            charts.appendChild(enterLayer);
-            if (oldLayer) charts.appendChild(oldLayer);
-
-            /*
-             * mgAnimate needs the actual graphCharts width, so render the new
-             * graph in its final internal geometry before the slide starts.
-             */
-            mgReset();
+            mgState.stagger = false;
+            mgState.instant = false;
             mgState.view = graphView;
-            graphFresh = false;
-            mgState.stagger = !canSlide;
-            mgState.instant = canSlide;
-
             mgAnimate(keys, counts, graphView !== 'category', names);
-
-            if (!canSlide) return;
-
-            /*
-             * Put both layers into the same absolute geometry. Because the new
-             * graph may be taller/shorter than the previous one, freeze the
-             * container height during the hand-off so the page itself does not
-             * jump while the graphs cross.
-             */
-            const oldHeight = Math.max(
-                oldLayer ? oldLayer.scrollHeight : 0,
-                oldLayer ? oldLayer.offsetHeight : 0
-            );
-            const newHeight = Math.max(
-                enterLayer.scrollHeight,
-                enterLayer.offsetHeight
-            );
-            charts.style.height = `${Math.max(oldHeight, newHeight)}px`;
-
-            oldLayer.classList.add('graph-slide-layer-old');
-            enterLayer.classList.add('graph-slide-enter');
-
-            oldLayer.style.transform = 'translate3d(0, 0, 0)';
-            enterLayer.style.transform = `translate3d(${dir * 100}%, 0, 0)`;
-
-            /*
-             * Two animation frames are intentional: the browser first paints
-             * the aligned start state, then begins the movement. This removes
-             * the one-frame "teleport" seen with immediate Web Animations.
-             */
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    const duration = 760;
-                    const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
-
-                    const oldAnim = oldLayer.animate(
-                        [
-                            { transform: 'translate3d(0, 0, 0)' },
-                            { transform: `translate3d(${-dir * 100}%, 0, 0)` }
-                        ],
-                        { duration, easing, fill: 'forwards' }
-                    );
-
-                    const newAnim = enterLayer.animate(
-                        [
-                            { transform: `translate3d(${dir * 100}%, 0, 0)` },
-                            { transform: 'translate3d(0, 0, 0)' }
-                        ],
-                        { duration, easing, fill: 'forwards' }
-                    );
-
-                    Promise.all([oldAnim.finished, newAnim.finished])
-                        .catch(() => {})
-                        .finally(() => {
-                            if (oldLayer) oldLayer.remove();
-                            enterLayer.getAnimations().forEach(a => a.cancel());
-                            enterLayer.classList.remove('graph-slide-absolute', 'graph-slide-enter');
-                            enterLayer.style.transform = '';
-                            charts.style.height = '';
-                        });
-                });
-            });
         }
 
         async function loadAllProjects() {
