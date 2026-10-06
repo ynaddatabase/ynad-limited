@@ -145,13 +145,29 @@
         .stat-value { color: #1b1d1d; }
         body.theme-effective-dark .stat-value { color: #ffffff; }
 
+        /* ---------- GRAPH VIEW SWITCHER ---------- */
+        .gv-tab { background: transparent; color: #3a3c3c; border: 1px solid #e2e8f0; transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
+        .gv-tab:hover { border-color: #d97706; color: #d97706; }
+        .gv-tab.gv-active { background: #d97706; border-color: #d97706; color: #ffffff; }
+        .gv-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer;
+            color: #b45309; background: rgba(217,119,6,0.10); border: 1px solid rgba(217,119,6,0.45); transition: background-color 0.25s ease, color 0.25s ease; }
+        .gv-chip:hover { background: #d97706; color: #ffffff; }
+        body.theme-effective-dark .gv-tab { color: #c7c5c2; border-color: #3a3c3c; }
+        body.theme-effective-dark .gv-tab:hover { color: #f59e0b; border-color: #f59e0b; }
+        body.theme-effective-dark .gv-tab.gv-active { background: #d97706; border-color: #d97706; color: #ffffff; }
+        body.theme-effective-dark .gv-chip { color: #fbbf24; }
+        body.theme-effective-dark .gv-chip:hover { color: #ffffff; }
+
         /* ---------- MOUNTAIN GRAPH ---------- */
         .mountain-wrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
         .mountain-svg { min-width: 760px; width: 100%; height: auto; display: block; }
-        .mg-marker { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28)); pointer-events: none; }
-        .mg-count { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 38px; fill: #ffffff; pointer-events: none; }
+        #mgMarkers { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28)); pointer-events: none; }
+        .mg-count { font-family: 'Poppins', sans-serif; font-weight: 500; fill: #ffffff; pointer-events: none; }
         .mg-label { font-family: 'Poppins', sans-serif; font-weight: 600; fill: #3a3c3c; letter-spacing: 1px; pointer-events: none; }
         body.theme-effective-dark .mg-label { fill: #e2e8f0; }
+        .mg-hit { fill: transparent; }
+        .mg-hit.mg-click { cursor: pointer; }
+        .mg-hit.mg-click:hover { fill: rgba(217,119,6,0.12); }
     </style>
 </head>
 
@@ -306,6 +322,12 @@
         <section class="py-12 px-6">
             <div class="max-w-[1700px] mx-auto">
                 <div id="graphStats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10"></div>
+
+                <div id="graphViewBar" class="flex flex-col items-center gap-4 mb-8">
+                    <div id="graphViewTabs" class="flex flex-wrap justify-center gap-2"></div>
+                    <div id="graphDrillChips" class="flex flex-wrap justify-center gap-2"></div>
+                    <div id="graphViewTitle" class="text-xs font-bold uppercase tracking-widest text-slate-500 text-center"></div>
+                </div>
                 <div id="graphCharts" class="grid grid-cols-1 gap-6">
                     <div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-slate-400 text-sm tracking-wide uppercase">Loading graph...</div>
                 </div>
@@ -708,6 +730,8 @@
         let currentFilter = 'all';
         let filterTabsBuilt = false;
         let lastFilteredCount = 0;
+        let graphView = 'category';   // 'category' | 'district' | 'organization'
+        let graphDrill = {};          // e.g. { district: 'Dhaka' } set by clicking a bar
 
         function updatePageHeading() {
             const headingEl = document.getElementById('pageHeadingText');
@@ -856,6 +880,7 @@
             document.getElementById('dateExactWrap').classList.remove('hidden');
             document.getElementById('dateRangeWrap').classList.add('hidden');
             document.getElementById('dateRangeWrap').classList.remove('flex');
+            graphDrill = {};
             searchQuery = '';
             const si = document.getElementById('projectSearchInput');
             if (si) si.value = '';
@@ -881,6 +906,9 @@
             const dateMax = document.getElementById('filterDateMax').value;
 
             return allProjectsData.filter(p => {
+                for (const v in graphDrill) {
+                    if (!GRAPH_VIEWS[v] || gvNorm(GRAPH_VIEWS[v].get(p)) !== graphDrill[v].key) return false;
+                }
                 if (searchQuery) {
                     const hay = [p.bd_number, p.ho_number, p.project_name, p.organization, p.donor_name, p.donated_country, p.district].join(' ').toUpperCase();
                     if (!hay.includes(searchQuery)) return false;
@@ -932,14 +960,74 @@
                 </div>`;
         }
 
-        /* Mountain graph: one bar per category (0-count categories are hidden),
-           smooth curve on top, white marker on each peak, label under the bar.
-           Every filter change animates bars up/down, and bars slide in/out. */
+        /* ---------- Graph views (Category / District / Organization) + drill-down ---------- */
+        /* Names that differ only by capital letters, spaces or punctuation ("WAMY", "Wamy ", "W.A.M.Y")
+           are counted as the same group. */
+        function gvClean(v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); }
+        function gvNorm(v) { return gvClean(v).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''); }
+
+        const GRAPH_VIEWS = {
+            category:     { label: 'Category',        all: 'all categories',        get: p => p.category },
+            district:     { label: 'District',        all: 'all districts',         get: p => p.district },
+            country:      { label: 'Donated Country', all: 'all donated countries', get: p => p.donated_country },
+            organization: { label: 'Organization',    all: 'all organizations',     get: p => p.organization },
+            donor:        { label: 'Donor',           all: 'all donors',            get: p => p.donor_name || p.donor_id },
+            engineer:     { label: 'Engineer',        all: 'all engineers',         get: p => p.engineer_name || p.engineer_id }
+        };
+
+        function buildGraphViewTabs() {
+            const wrap = document.getElementById('graphViewTabs');
+            if (!wrap) return;
+            wrap.innerHTML = Object.keys(GRAPH_VIEWS).map(k =>
+                `<button type="button" data-view="${k}" class="gv-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">By ${escapeHtml(GRAPH_VIEWS[k].label)}</button>`).join('');
+            wrap.querySelectorAll('.gv-tab').forEach(b => b.addEventListener('click', () => setGraphView(b.getAttribute('data-view'))));
+            const charts = document.getElementById('graphCharts');
+            if (charts) charts.addEventListener('click', e => {
+                const el = e.target.closest ? e.target.closest('.mg-click') : null;
+                if (el) drillInto(el.getAttribute('data-key'));
+            });
+            syncGraphControls();
+        }
+        function setGraphView(view) {
+            if (!GRAPH_VIEWS[view]) return;
+            delete graphDrill[view];          // grouping by X while filtered to one X makes no sense
+            graphView = view;
+            applyAdvFilters();
+        }
+        function drillInto(key) {
+            if (graphView === 'category' || !key) return;
+            graphDrill[graphView] = { key: key, label: (mgState.names && mgState.names[key]) || key };
+            graphView = 'category';           // show the category breakdown inside that district / country / donor ...
+            applyAdvFilters();
+        }
+        function clearDrill(view) {
+            delete graphDrill[view];
+            if (GRAPH_VIEWS[view]) graphView = view;   // go back to the list the user came from
+            applyAdvFilters();
+        }
+        function syncGraphControls() {
+            document.querySelectorAll('#graphViewTabs .gv-tab').forEach(b => b.classList.toggle('gv-active', b.getAttribute('data-view') === graphView));
+            const chips = document.getElementById('graphDrillChips');
+            if (!chips) return;
+            chips.innerHTML = Object.keys(graphDrill).map(view => {
+                const v = GRAPH_VIEWS[view];
+                if (!v) return '';
+                return `<button type="button" data-view="${escapeHtml(view)}" class="gv-chip" title="Back to ${escapeHtml(v.all)}"><i class="fa-solid fa-arrow-left"></i> ${escapeHtml(v.label)}: ${escapeHtml(graphDrill[view].label)}</button>`;
+            }).join('');
+            chips.querySelectorAll('.gv-chip').forEach(b => b.addEventListener('click', () => clearDrill(b.getAttribute('data-view'))));
+        }
+        function setGraphTitle(text) {
+            const el = document.getElementById('graphViewTitle');
+            if (el) el.textContent = text || '';
+        }
+
+        /* ---------- Mountain graph ----------
+           One bar per group (zero-count groups never appear), smooth curve on top, white marker on each
+           peak, label under the bar. Every change tweens bar height, position and width. */
         const MG_CATEGORIES = ['Masjid', 'Madrasa', 'Markaz', 'Orphanage', 'Ablution', 'Water Well', 'Clinic'];
-        const MG_W = 1600, MG_CHART_H = 560, MG_H = 700;
-        const MG_Y_MIN = 100, MG_Y_MAX = 400, MG_GAP = 10, MG_DURATION = 900;
-        const mgOrder = MG_CATEGORIES.slice();
-        const mgState = { cats: {}, max: 1, ready: false, raf: null };
+        const MG_W = 1600, MG_CHART_H = 560;
+        const MG_Y_MIN = 100, MG_Y_MAX = 400, MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12;
+        const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false, H: MG_CHART_H + 130 };
 
         function smoothPath(pts) {
             let d = `M${pts[0][0]},${pts[0][1]}`;
@@ -954,11 +1042,35 @@
 
         function mgEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
+        function mgShort(name) {
+            const s = String(name);
+            return s.length > 26 ? s.slice(0, 25) + '…' : s;
+        }
+
+        /* Horizontal label: short names one word per line, long names wrapped to max 3 lines, always centered */
+        function mgWrap(name, slot) {
+            const words = mgShort(name).toUpperCase().split(/\s+/).filter(Boolean);
+            const longest = Math.max(1, ...words.map(w => w.length));
+            const fs = Math.max(12, Math.min(26, (slot - 16) / (longest * 0.78)));
+            if (words.length <= 2) return { lines: words, fs };
+            const maxChars = Math.max(longest, Math.floor((slot - 16) / (fs * 0.78)));
+            const lines = [];
+            let cur = '';
+            words.forEach(w => {
+                if (!cur) cur = w;
+                else if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+                else { lines.push(cur); cur = w; }
+            });
+            if (cur) lines.push(cur);
+            if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].replace(/.?$/, '…'); }
+            return { lines, fs };
+        }
+
         function mgSkeletonHtml() {
             return `
                 <div class="col-span-full">
                     <div class="mountain-wrap">
-                        <svg id="mgSvg" class="mountain-svg" viewBox="0 0 ${MG_W} ${MG_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project count by category">
+                        <svg id="mgSvg" class="mountain-svg" viewBox="0 0 ${MG_W} ${MG_CHART_H + 130}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project graph">
                             <defs>
                                 <linearGradient id="mgDark" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#d97706"/>
@@ -972,6 +1084,7 @@
                             <g id="mgCounts"></g>
                             <g id="mgMarkers"></g>
                             <g id="mgLabels"></g>
+                            <g id="mgHits"></g>
                         </svg>
                     </div>
                 </div>`;
@@ -981,79 +1094,106 @@
         function mgDraw() {
             const barsEl = document.getElementById('mgBars');
             if (!barsEl) return;
-            const vis = mgOrder.filter(k => mgState.cats[k] && mgState.cats[k].w > 0.002);
+            const M = Math.max(mgState.max, 1);
+            const H = mgState.H;
+            const vis = Object.keys(mgState.cats)
+                .filter(k => mgState.cats[k].o > 0.002 && mgState.cats[k].sw > 1)
+                .sort((a, b) => mgState.cats[a].x - mgState.cats[b].x);
             if (!vis.length) return;
 
-            const sumW = vis.reduce((a, k) => a + mgState.cats[k].w, 0);
-            const M = Math.max(mgState.max, 1);
-            const pts = [], bars = [], counts = [], markers = [], labels = [];
-            let x = 0;
+            const pts = [], bars = [], counts = [], markers = [], labels = [], hits = [];
 
             vis.forEach(k => {
                 const s = mgState.cats[k];
-                const slot = MG_W * s.w / sumW;
-                const cx = x + slot / 2;
+                const name = mgState.names[k] || k;
+                const cx = s.x, slot = s.sw, o = s.o.toFixed(3);
                 const y = MG_Y_MAX - Math.min(s.c / M, 1) * (MG_Y_MAX - MG_Y_MIN);
                 pts.push([cx, y]);
 
-                const g = MG_GAP * s.w;
-                const bx = x + g / 2, bw = Math.max(slot - g, 0);
-                bars.push(`<rect x="${bx}" y="0" width="${bw}" height="${MG_CHART_H}" fill="url(#mgLight)"/>` +
-                          `<rect x="${bx}" y="0" width="${bw}" height="${MG_CHART_H}" fill="url(#mgDark)" opacity="${s.p.toFixed(3)}"><title>${escapeHtml(k)}: ${Math.round(s.c)}</title></rect>`);
+                const g = Math.min(MG_GAP, slot * 0.2);
+                const bw = Math.max(slot - g, 0), bx = cx - bw / 2;
+                bars.push(`<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${MG_CHART_H}" fill="url(#mgLight)"/>` +
+                          `<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${MG_CHART_H}" fill="url(#mgDark)" opacity="${s.p.toFixed(3)}"/>`);
 
-                counts.push(`<text class="mg-count" x="${cx}" y="${MG_CHART_H - 70}" text-anchor="middle" opacity="${s.w.toFixed(3)}">${String(Math.round(s.c)).padStart(2, '0')}</text>`);
-                markers.push(`<g class="mg-marker" opacity="${s.w.toFixed(3)}"><circle cx="${cx}" cy="${y}" r="26" fill="#ffffff"/><circle cx="${cx}" cy="${y}" r="13" fill="#b45309"/></g>`);
+                const num = String(Math.round(s.c)).padStart(2, '0');
+                const cfs = Math.min(38, slot * 0.8 / (num.length * 0.62));
+                counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${MG_CHART_H - 70}" text-anchor="middle" opacity="${o}">${num}</text>`);
 
-                /* label under the bar: one word per line, centered */
-                const words = k.toUpperCase().split(/\s+/);
-                const longest = Math.max(...words.map(w => w.length));
-                const fs = Math.max(13, Math.min(26, (slot - 14) / (longest * 0.78)));
-                const lines = words.map((w, li) =>
-                    `<text class="mg-label" font-size="${fs.toFixed(1)}" x="${cx}" y="${MG_CHART_H + 46 + li * fs * 1.3}" text-anchor="middle">${escapeHtml(w)}</text>`).join('');
-                labels.push(`<g opacity="${(s.w * s.w).toFixed(3)}">${lines}</g>`);
+                const ro = Math.min(26, slot * 0.42);
+                markers.push(`<g opacity="${o}"><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${ro.toFixed(2)}" fill="#ffffff"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${(ro * 0.5).toFixed(2)}" fill="#b45309"/></g>`);
 
-                x += slot;
+                const o2 = (s.o * s.o).toFixed(3);
+                if (mgState.dense) {
+                    const fs = Math.min(20, Math.max(11, slot * 0.55));
+                    labels.push(`<text class="mg-label" font-size="${fs.toFixed(1)}" transform="translate(${cx.toFixed(2)} ${MG_CHART_H + 16}) rotate(-90)" text-anchor="end" dy="0.35em" opacity="${o2}">${escapeHtml(mgShort(name).toUpperCase())}</text>`);
+                } else {
+                    const w = mgWrap(name, slot);
+                    labels.push(`<g opacity="${o2}">` + w.lines.map((ln, li) =>
+                        `<text class="mg-label" font-size="${w.fs.toFixed(1)}" x="${cx.toFixed(2)}" y="${(MG_CHART_H + 46 + li * w.fs * 1.3).toFixed(1)}" text-anchor="middle">${escapeHtml(ln)}</text>`).join('') + `</g>`);
+                }
+
+                const tip = `${name}: ${Math.round(s.c)} project(s)` + (mgState.clickable ? ' (click to see the category breakdown)' : '');
+                hits.push(`<rect class="mg-hit${mgState.clickable ? ' mg-click' : ''}" data-key="${escapeHtml(k)}" x="${(cx - slot / 2).toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${H}"><title>${escapeHtml(tip)}</title></rect>`);
             });
 
-            const last = pts.length - 1;
-            const curve = smoothPath([[0, pts[0][1] + 40], ...pts, [MG_W, pts[last][1] + 40]]);
+            const curve = smoothPath([[0, pts[0][1] + 40], ...pts, [MG_W, pts[pts.length - 1][1] + 40]]);
             document.getElementById('mgClipPath').setAttribute('d', `${curve} L${MG_W},${MG_CHART_H} L0,${MG_CHART_H} Z`);
             barsEl.innerHTML = bars.join('');
             document.getElementById('mgCounts').innerHTML = counts.join('');
             document.getElementById('mgMarkers').innerHTML = markers.join('');
             document.getElementById('mgLabels').innerHTML = labels.join('');
+            document.getElementById('mgHits').innerHTML = hits.join('');
         }
 
         function mgReset() {
             if (mgState.raf) cancelAnimationFrame(mgState.raf);
-            mgState.raf = null; mgState.cats = {}; mgState.max = 1; mgState.ready = false;
+            mgState.raf = null; mgState.cats = {}; mgState.names = {}; mgState.max = 1; mgState.ready = false; mgState.view = null;
         }
 
-        /* Tween from whatever is on screen right now to the new counts */
-        function mgAnimate(counts) {
+        /* Tween from whatever is on screen right now to the new set of bars */
+        function mgAnimate(keys, counts, clickable, names) {
+            const svg = document.getElementById('mgSvg');
+            if (!svg) return;
+            Object.assign(mgState.names, names || {});
+            const n = keys.length, sw = MG_W / n;
             const fresh = !mgState.ready;
             let tmax = 1;
-            mgOrder.forEach(k => { if ((counts[k] || 0) > tmax) tmax = counts[k]; });
+            keys.forEach(k => { if (counts[k] > tmax) tmax = counts[k]; });
 
+            /* label area: horizontal wrapped labels for few bars, vertical labels for many */
+            mgState.dense = n > MG_DENSE_AFTER;
+            mgState.clickable = clickable;
+            let labelH;
+            if (mgState.dense) {
+                const fs = Math.min(20, Math.max(11, sw * 0.55));
+                const longest = Math.max(...keys.map(k => mgShort(mgState.names[k] || k).length));
+                labelH = Math.min(300, 36 + longest * fs * 0.8);
+            } else {
+                let lines = 1, fsMax = 12;
+                keys.forEach(k => { const w = mgWrap(mgState.names[k] || k, sw); lines = Math.max(lines, w.lines.length); fsMax = Math.max(fsMax, w.fs); });
+                labelH = 40 + lines * fsMax * 1.3 + 20;
+            }
+            mgState.H = MG_CHART_H + labelH;
+            svg.setAttribute('viewBox', `0 0 ${MG_W} ${mgState.H}`);
+            svg.style.minWidth = Math.max(760, n * 28) + 'px';
+
+            /* targets */
             const target = {};
-            let idx = 0;
-            mgOrder.forEach(k => {
-                const n = counts[k] || 0;
-                if (!mgState.cats[k]) mgState.cats[k] = { c: 0, w: (fresh && n > 0) ? 1 : 0, p: 0 };
-                const cur = mgState.cats[k];
-                if (n > 0) {
-                    target[k] = { c: n, w: 1, p: idx % 2 === 0 ? 1 : 0 };
-                    idx++;
-                    if (cur.w < 0.002) cur.p = target[k].p;
-                } else {
-                    target[k] = { c: 0, w: 0, p: cur.p };
-                }
+            keys.forEach((k, i) => {
+                const tx = (i + 0.5) * sw, tp = i % 2 === 0 ? 1 : 0;
+                let cur = mgState.cats[k];
+                if (!cur) cur = mgState.cats[k] = { c: 0, x: tx, sw: fresh ? sw : 0, o: fresh ? 1 : 0, p: tp };
+                else if (cur.o < 0.002 || cur.sw < 1) { cur.x = tx; cur.sw = 0; cur.p = tp; }
+                target[k] = { c: counts[k], x: tx, sw: sw, o: 1, p: tp };
+            });
+            Object.keys(mgState.cats).forEach(k => {
+                if (!target[k]) { const cur = mgState.cats[k]; target[k] = { c: 0, x: cur.x, sw: 0, o: 0, p: cur.p }; }
             });
             if (fresh) mgState.max = tmax;
             mgState.ready = true;
 
             const from = {};
-            mgOrder.forEach(k => { const s = mgState.cats[k]; from[k] = { c: s.c, w: s.w, p: s.p }; });
+            Object.keys(target).forEach(k => { const s = mgState.cats[k]; from[k] = { c: s.c, x: s.x, sw: s.sw, o: s.o, p: s.p }; });
             const fromMax = mgState.max;
 
             if (mgState.raf) cancelAnimationFrame(mgState.raf);
@@ -1063,22 +1203,27 @@
             const step = (now) => {
                 const t = reduce ? 1 : Math.min(1, (now - start) / MG_DURATION);
                 const e = mgEase(t);
-                mgOrder.forEach(k => {
+                Object.keys(target).forEach(k => {
                     const a = from[k], b = target[k], s = mgState.cats[k];
+                    if (!s) return;
                     s.c = a.c + (b.c - a.c) * e;
-                    s.w = a.w + (b.w - a.w) * e;
+                    s.x = a.x + (b.x - a.x) * e;
+                    s.sw = a.sw + (b.sw - a.sw) * e;
+                    s.o = a.o + (b.o - a.o) * e;
                     s.p = a.p + (b.p - a.p) * e;
                 });
                 mgState.max = fromMax + (tmax - fromMax) * e;
+                if (t >= 1) Object.keys(target).forEach(k => { if (target[k].o === 0) delete mgState.cats[k]; });
                 mgDraw();
                 mgState.raf = t < 1 ? requestAnimationFrame(step) : null;
             };
             mgState.raf = requestAnimationFrame(step);
         }
 
-        function renderEmptyGraph(message) {
+        function renderEmptyGraph(message, keepStats) {
             mgReset();
-            document.getElementById('graphStats').innerHTML = '';
+            if (!keepStats) document.getElementById('graphStats').innerHTML = '';
+            setGraphTitle('');
             document.getElementById('graphCharts').innerHTML = `
                 <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[320px] text-slate-400">
                     <i class="fa-solid fa-chart-line text-4xl mb-4 text-slate-300"></i>
@@ -1089,18 +1234,12 @@
         function renderGraph(projects) {
             const stats = document.getElementById('graphStats');
             const charts = document.getElementById('graphCharts');
+            syncGraphControls();
 
             if (!projects || projects.length === 0) {
                 renderEmptyGraph('No projects match the selected filters.');
                 return;
             }
-
-            const counts = {};
-            projects.forEach(p => {
-                if (!p.category) return;
-                counts[p.category] = (counts[p.category] || 0) + 1;
-                if (!mgOrder.includes(p.category)) mgOrder.push(p.category);
-            });
 
             const totalCost = projects.reduce((s, p) => s + (Number(p.cost) || 0), 0);
             const ongoing = projects.filter(p => p.status === 'Ongoing').length;
@@ -1112,14 +1251,47 @@
                 statCardHtml('Completed', completed.toLocaleString(), 'fa-circle-check') +
                 statCardHtml('Total Cost', totalCost.toLocaleString(), 'fa-coins');
 
-            if (!Object.keys(counts).length) {
-                mgReset();
-                charts.innerHTML = `<div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-slate-400 text-sm tracking-wide uppercase">No category data to show.</div>`;
+            const g = GRAPH_VIEWS[graphView];
+
+            /* group by the cleaned-up key; show the spelling used most often */
+            const counts = {}, forms = {};
+            projects.forEach(p => {
+                const raw = gvClean(g.get(p));
+                const k = gvNorm(raw);
+                if (!k) return;
+                counts[k] = (counts[k] || 0) + 1;
+                forms[k] = forms[k] || {};
+                forms[k][raw] = (forms[k][raw] || 0) + 1;
+            });
+            let keys = Object.keys(counts);
+            if (!keys.length) {
+                renderEmptyGraph(`No ${g.label.toLowerCase()} data for the selected filters.`, true);
                 return;
             }
 
-            if (!document.getElementById('mgSvg')) { mgReset(); charts.innerHTML = mgSkeletonHtml(); }
-            mgAnimate(counts);
+            const names = {};
+            keys.forEach(k => {
+                const canon = graphView === 'category' ? MG_CATEGORIES.find(c => gvNorm(c) === k) : null;
+                names[k] = canon || Object.keys(forms[k]).sort((a, b) => forms[k][b] - forms[k][a])[0];
+            });
+
+            if (graphView === 'category') {
+                const known = MG_CATEGORIES.map(gvNorm).filter(k => counts[k]);
+                const extra = keys.filter(k => !known.includes(k)).sort((a, b) => names[a].localeCompare(names[b]));
+                keys = known.concat(extra);
+            } else {
+                keys.sort((a, b) => counts[b] - counts[a] || names[a].localeCompare(names[b]));   // highest first
+            }
+
+            const drillText = Object.keys(graphDrill).map(v => graphDrill[v].label).join(' and ');
+            setGraphTitle(`Projects by ${g.label}${drillText ? ' for ' + drillText : ''} (${keys.length})`);
+
+            if (mgState.view !== graphView || !document.getElementById('mgSvg')) {
+                mgReset();
+                charts.innerHTML = mgSkeletonHtml();
+                mgState.view = graphView;
+            }
+            mgAnimate(keys, counts, graphView !== 'category', names);
         }
 
         async function loadAllProjects() {
@@ -1141,6 +1313,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             currentFilter = 'all';
+            buildGraphViewTabs();
             loadAllProjects();
             observeRevealTargets(document);
             initAuthState();
