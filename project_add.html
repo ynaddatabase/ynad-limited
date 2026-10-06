@@ -78,7 +78,7 @@ tailwind.config = {
   /* Media mode switch */
   .mm-track { position:relative; width:48px; height:24px; border-radius:999px; background:rgba(255,140,0,.3); border:1px solid rgba(255,140,0,.5); }
   .mm-knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#ff8c00; transition: transform .25s ease; }
-  #mediaModeToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
+  #mediaModeToggle[aria-checked="true"] .mm-knob, #contactRoleToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
   /* ---- LIGHT MODE ---- */
   html.light body { background-color:#fff7ed; color:#1c1917;
     background-image: radial-gradient(at 0% 0%, rgba(234,88,12,0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255,140,0,0.10) 0px, transparent 50%); }
@@ -92,7 +92,7 @@ tailwind.config = {
   html.light #formProgressTrack { background:rgba(0,0,0,0.08); }
   html.light #formProgressLabel { color:#1c1917; text-shadow:none; }
   html.light .hint { color:#57534e !important; }
-  html.light #mediaModeToggle { color:#1c1917; }
+  html.light #mediaModeToggle, html.light #contactRoleToggle { color:#1c1917; }
 </style>
 </head>
 
@@ -245,10 +245,40 @@ tailwind.config = {
         </div>
       </section>
 
-      <!-- 04 -->
+      <!-- 04 Contact Person -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
         <div class="flex items-center justify-between gap-3 mb-4 pb-2 border-b border-orange-500/20">
-          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">04. Media, Photos & Documents</h3>
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">04. Contact Person</h3>
+          <button type="button" id="contactRoleToggle" role="switch" aria-checked="false" title="Responsible / Beneficiary" class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer">
+            <span id="crResp" class="text-orange-400">Responsible</span>
+            <span class="mm-track"><span class="mm-knob"></span></span>
+            <span id="crBenef">Beneficiary</span>
+          </button>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div>
+            <label class="label">Name</label>
+            <input id="pContactName" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="CONTACT PERSON NAME">
+          </div>
+          <div id="fieldDesignation">
+            <label class="label">Designation</label>
+            <input id="pContactDesignation" data-rule="alpha" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="DESIGNATION">
+          </div>
+          <div id="fieldBeneficiary" class="hidden">
+            <label class="label">Beneficiary Person</label>
+            <input id="pBeneficiaryPerson" data-rule="num" type="text" inputmode="numeric" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="BENEFICIARY PERSON (DIGITS ONLY)">
+          </div>
+          <div>
+            <label class="label">Phone Number</label>
+            <input id="pContactPhone" data-rule="num" type="text" inputmode="numeric" maxlength="15" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="01XXXXXXXXX">
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <div class="flex items-center justify-between gap-3 mb-4 pb-2 border-b border-orange-500/20">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">05. Media, Photos & Documents</h3>
           <button type="button" id="mediaModeToggle" role="switch" aria-checked="false" title="Switch between file upload and link paste" class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer">
             <span id="mmUp" class="text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span>
             <span class="mm-track"><span class="mm-knob"></span></span>
@@ -289,7 +319,7 @@ tailwind.config = {
 
       <!-- 05 -->
       <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">05. Raw Media (Photos & Videos)</h3>
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">06. Raw Media (Photos & Videos)</h3>
         <div class="grid sm:grid-cols-2 gap-5">
           <div>
             <label class="label">Raw Photos</label>
@@ -343,7 +373,7 @@ const RULES = {
   dec: v => { v = v.replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); return i < 0 ? v : v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); },
   coord: v => { const neg = v.startsWith('-'); return (neg ? '-' : '') + RULES.dec(v.replace(/-/g, '')); },
   coords: v => v.replace(/[^0-9.,\-\s]/g, ''),
-  alpha: v => v.replace(/[0-9]/g, '')
+  alpha: v => v.replace(/[^\p{L}\p{M}\s.'\-]/gu, '')
 };
 document.querySelectorAll('[data-rule]').forEach(el => el.addEventListener('input', () => {
   const n = RULES[el.dataset.rule](el.value);
@@ -567,6 +597,7 @@ function resetUI() {
   geoStatus.textContent = 'PASTE LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
   updateTimelineFieldsVisibility();
   updateMediaUI();
+  setContactRole('Responsible');
 }
 $('clearFormBtn').addEventListener('click', resetUI);
 
@@ -645,6 +676,11 @@ projectFormEl.addEventListener('submit', async function (e) {
     engineer_name: v('pEngineer'),
     update_notes: v('pUpdate'),
     delay_reason: v('pDelayReason'),
+    contact_role: contactRole,
+    contact_name: v('pContactName'),
+    contact_designation: v('pContactDesignation'),
+    beneficiary_person: v('pBeneficiaryPerson'),
+    contact_phone: v('pContactPhone'),
     media_category: mediaTypeSelect.value || null,
     video_link: v('pVideo'),
     documents_url: documentsUrl,
@@ -659,6 +695,21 @@ projectFormEl.addEventListener('submit', async function (e) {
   if (error) { console.error(error); alert('SAVE FAILED: ' + error.message); return; }
   resetUI();
 });
+
+/* ---- Contact person role switch (left = Responsible, right = Beneficiary) ---- */
+let contactRole = 'Responsible';
+function setContactRole(r) {
+  contactRole = r;
+  $('contactRoleToggle').setAttribute('aria-checked', r === 'Beneficiary');
+  $('crResp').classList.toggle('text-orange-400', r === 'Responsible');
+  $('crBenef').classList.toggle('text-orange-400', r === 'Beneficiary');
+  const ben = r === 'Beneficiary';
+  $('fieldDesignation').classList.toggle('hidden', ben);
+  $('fieldBeneficiary').classList.toggle('hidden', !ben);
+  if (ben) $('pContactDesignation').value = ''; else $('pBeneficiaryPerson').value = '';
+  updateFormProgress();
+}
+$('contactRoleToggle').addEventListener('click', () => setContactRole(contactRole === 'Responsible' ? 'Beneficiary' : 'Responsible'));
 
 /* ---- Scroll knob ---- */
 (function () {
