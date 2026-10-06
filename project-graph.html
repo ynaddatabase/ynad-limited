@@ -142,11 +142,16 @@
         /* ---------- GRAPH SECTION ---------- */
         .graph-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 6px 18px rgba(15,23,42,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .graph-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(15,23,42,0.14); }
-        .bar-track { background: #f1f5f9; height: 10px; border-radius: 999px; overflow: hidden; }
-        .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #b45309, #f59e0b); transition: width 0.6s cubic-bezier(0.16,1,0.3,1); width: 0; }
-        body.theme-effective-dark .bar-track { background: #2a2c2c; }
         .stat-value { color: #1b1d1d; }
         body.theme-effective-dark .stat-value { color: #ffffff; }
+
+        /* ---------- MOUNTAIN GRAPH ---------- */
+        .mountain-wrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
+        .mountain-svg { min-width: 760px; width: 100%; height: auto; display: block; }
+        .mg-marker { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28)); pointer-events: none; }
+        .mg-count { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 38px; fill: #ffffff; pointer-events: none; }
+        .mg-label { font-family: 'Poppins', sans-serif; font-weight: 600; fill: #3a3c3c; letter-spacing: 1px; pointer-events: none; }
+        body.theme-effective-dark .mg-label { fill: #e2e8f0; }
     </style>
 </head>
 
@@ -300,8 +305,8 @@
         <!-- GRAPH CONTENT -->
         <section class="py-12 px-6">
             <div class="max-w-[1700px] mx-auto">
-                <div id="graphStats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6"></div>
-                <div id="graphCharts" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="graphStats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10"></div>
+                <div id="graphCharts" class="grid grid-cols-1 gap-6">
                     <div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-slate-400 text-sm tracking-wide uppercase">Loading graph...</div>
                 </div>
             </div>
@@ -914,38 +919,6 @@
         }
 
         /* ---------- Graph rendering ---------- */
-        function groupCount(list, keyFn) {
-            const map = {};
-            list.forEach(p => {
-                const k = keyFn(p);
-                if (!k) return;
-                map[k] = (map[k] || 0) + 1;
-            });
-            return Object.entries(map).sort((a, b) => b[1] - a[1]);
-        }
-
-        function barListHtml(title, icon, entries, limit) {
-            const rows = entries.slice(0, limit || 8);
-            const max = rows.length ? rows[0][1] : 0;
-            const body = rows.length
-                ? rows.map(([label, n]) => `
-                    <div class="mb-4 last:mb-0">
-                        <div class="flex items-center justify-between text-[11px] uppercase tracking-wide mb-1.5">
-                            <span class="text-slate-600 truncate pr-3">${escapeHtml(label)}</span>
-                            <span class="font-semibold text-slate-800">${n}</span>
-                        </div>
-                        <div class="bar-track"><div class="bar-fill" data-w="${max ? Math.round((n / max) * 100) : 0}"></div></div>
-                    </div>`).join('')
-                : `<div class="text-xs text-slate-400 uppercase tracking-wide py-8 text-center">No data</div>`;
-            return `
-                <div class="graph-card rounded-lg p-6">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-800 mb-5 flex items-center gap-2">
-                        <i class="fa-solid ${icon} text-amber-600"></i> ${escapeHtml(title)}
-                    </h3>
-                    ${body}
-                </div>`;
-        }
-
         function statCardHtml(label, value, icon) {
             return `
                 <div class="graph-card rounded-lg p-6 flex items-center gap-4">
@@ -959,19 +932,175 @@
                 </div>`;
         }
 
+        /* Mountain graph: one bar per category (0-count categories are hidden),
+           smooth curve on top, white marker on each peak, label under the bar.
+           Every filter change animates bars up/down, and bars slide in/out. */
+        const MG_CATEGORIES = ['Masjid', 'Madrasa', 'Markaz', 'Orphanage', 'Ablution', 'Water Well', 'Clinic'];
+        const MG_W = 1600, MG_CHART_H = 560, MG_H = 700;
+        const MG_Y_MIN = 100, MG_Y_MAX = 400, MG_GAP = 10, MG_DURATION = 900;
+        const mgOrder = MG_CATEGORIES.slice();
+        const mgState = { cats: {}, max: 1, ready: false, raf: null };
+
+        function smoothPath(pts) {
+            let d = `M${pts[0][0]},${pts[0][1]}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+                const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+                const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+                d += ` C${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]}`;
+            }
+            return d;
+        }
+
+        function mgEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+        function mgSkeletonHtml() {
+            return `
+                <div class="col-span-full">
+                    <div class="mountain-wrap">
+                        <svg id="mgSvg" class="mountain-svg" viewBox="0 0 ${MG_W} ${MG_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project count by category">
+                            <defs>
+                                <linearGradient id="mgDark" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#d97706"/>
+                                </linearGradient>
+                                <linearGradient id="mgLight" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0" stop-color="#ea9a10"/><stop offset="1" stop-color="#dd880c"/>
+                                </linearGradient>
+                                <clipPath id="mgClip"><path id="mgClipPath" d=""/></clipPath>
+                            </defs>
+                            <g clip-path="url(#mgClip)"><g id="mgBars"></g></g>
+                            <g id="mgCounts"></g>
+                            <g id="mgMarkers"></g>
+                            <g id="mgLabels"></g>
+                        </svg>
+                    </div>
+                </div>`;
+        }
+
+        /* Draws the current (possibly mid-animation) state */
+        function mgDraw() {
+            const barsEl = document.getElementById('mgBars');
+            if (!barsEl) return;
+            const vis = mgOrder.filter(k => mgState.cats[k] && mgState.cats[k].w > 0.002);
+            if (!vis.length) return;
+
+            const sumW = vis.reduce((a, k) => a + mgState.cats[k].w, 0);
+            const M = Math.max(mgState.max, 1);
+            const pts = [], bars = [], counts = [], markers = [], labels = [];
+            let x = 0;
+
+            vis.forEach(k => {
+                const s = mgState.cats[k];
+                const slot = MG_W * s.w / sumW;
+                const cx = x + slot / 2;
+                const y = MG_Y_MAX - Math.min(s.c / M, 1) * (MG_Y_MAX - MG_Y_MIN);
+                pts.push([cx, y]);
+
+                const g = MG_GAP * s.w;
+                const bx = x + g / 2, bw = Math.max(slot - g, 0);
+                bars.push(`<rect x="${bx}" y="0" width="${bw}" height="${MG_CHART_H}" fill="url(#mgLight)"/>` +
+                          `<rect x="${bx}" y="0" width="${bw}" height="${MG_CHART_H}" fill="url(#mgDark)" opacity="${s.p.toFixed(3)}"><title>${escapeHtml(k)}: ${Math.round(s.c)}</title></rect>`);
+
+                counts.push(`<text class="mg-count" x="${cx}" y="${MG_CHART_H - 70}" text-anchor="middle" opacity="${s.w.toFixed(3)}">${String(Math.round(s.c)).padStart(2, '0')}</text>`);
+                markers.push(`<g class="mg-marker" opacity="${s.w.toFixed(3)}"><circle cx="${cx}" cy="${y}" r="26" fill="#ffffff"/><circle cx="${cx}" cy="${y}" r="13" fill="#b45309"/></g>`);
+
+                /* label under the bar: one word per line, centered */
+                const words = k.toUpperCase().split(/\s+/);
+                const longest = Math.max(...words.map(w => w.length));
+                const fs = Math.max(13, Math.min(26, (slot - 14) / (longest * 0.78)));
+                const lines = words.map((w, li) =>
+                    `<text class="mg-label" font-size="${fs.toFixed(1)}" x="${cx}" y="${MG_CHART_H + 46 + li * fs * 1.3}" text-anchor="middle">${escapeHtml(w)}</text>`).join('');
+                labels.push(`<g opacity="${(s.w * s.w).toFixed(3)}">${lines}</g>`);
+
+                x += slot;
+            });
+
+            const last = pts.length - 1;
+            const curve = smoothPath([[0, pts[0][1] + 40], ...pts, [MG_W, pts[last][1] + 40]]);
+            document.getElementById('mgClipPath').setAttribute('d', `${curve} L${MG_W},${MG_CHART_H} L0,${MG_CHART_H} Z`);
+            barsEl.innerHTML = bars.join('');
+            document.getElementById('mgCounts').innerHTML = counts.join('');
+            document.getElementById('mgMarkers').innerHTML = markers.join('');
+            document.getElementById('mgLabels').innerHTML = labels.join('');
+        }
+
+        function mgReset() {
+            if (mgState.raf) cancelAnimationFrame(mgState.raf);
+            mgState.raf = null; mgState.cats = {}; mgState.max = 1; mgState.ready = false;
+        }
+
+        /* Tween from whatever is on screen right now to the new counts */
+        function mgAnimate(counts) {
+            const fresh = !mgState.ready;
+            let tmax = 1;
+            mgOrder.forEach(k => { if ((counts[k] || 0) > tmax) tmax = counts[k]; });
+
+            const target = {};
+            let idx = 0;
+            mgOrder.forEach(k => {
+                const n = counts[k] || 0;
+                if (!mgState.cats[k]) mgState.cats[k] = { c: 0, w: (fresh && n > 0) ? 1 : 0, p: 0 };
+                const cur = mgState.cats[k];
+                if (n > 0) {
+                    target[k] = { c: n, w: 1, p: idx % 2 === 0 ? 1 : 0 };
+                    idx++;
+                    if (cur.w < 0.002) cur.p = target[k].p;
+                } else {
+                    target[k] = { c: 0, w: 0, p: cur.p };
+                }
+            });
+            if (fresh) mgState.max = tmax;
+            mgState.ready = true;
+
+            const from = {};
+            mgOrder.forEach(k => { const s = mgState.cats[k]; from[k] = { c: s.c, w: s.w, p: s.p }; });
+            const fromMax = mgState.max;
+
+            if (mgState.raf) cancelAnimationFrame(mgState.raf);
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const start = performance.now();
+
+            const step = (now) => {
+                const t = reduce ? 1 : Math.min(1, (now - start) / MG_DURATION);
+                const e = mgEase(t);
+                mgOrder.forEach(k => {
+                    const a = from[k], b = target[k], s = mgState.cats[k];
+                    s.c = a.c + (b.c - a.c) * e;
+                    s.w = a.w + (b.w - a.w) * e;
+                    s.p = a.p + (b.p - a.p) * e;
+                });
+                mgState.max = fromMax + (tmax - fromMax) * e;
+                mgDraw();
+                mgState.raf = t < 1 ? requestAnimationFrame(step) : null;
+            };
+            mgState.raf = requestAnimationFrame(step);
+        }
+
+        function renderEmptyGraph(message) {
+            mgReset();
+            document.getElementById('graphStats').innerHTML = '';
+            document.getElementById('graphCharts').innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[320px] text-slate-400">
+                    <i class="fa-solid fa-chart-line text-4xl mb-4 text-slate-300"></i>
+                    <span class="text-sm tracking-wide uppercase">${escapeHtml(message)}</span>
+                </div>`;
+        }
+
         function renderGraph(projects) {
             const stats = document.getElementById('graphStats');
             const charts = document.getElementById('graphCharts');
 
             if (!projects || projects.length === 0) {
-                stats.innerHTML = '';
-                charts.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[320px] text-slate-400">
-                        <i class="fa-solid fa-chart-line text-4xl mb-4 text-slate-300"></i>
-                        <span class="text-sm tracking-wide uppercase">No projects match the selected filters.</span>
-                    </div>`;
+                renderEmptyGraph('No projects match the selected filters.');
                 return;
             }
+
+            const counts = {};
+            projects.forEach(p => {
+                if (!p.category) return;
+                counts[p.category] = (counts[p.category] || 0) + 1;
+                if (!mgOrder.includes(p.category)) mgOrder.push(p.category);
+            });
 
             const totalCost = projects.reduce((s, p) => s + (Number(p.cost) || 0), 0);
             const ongoing = projects.filter(p => p.status === 'Ongoing').length;
@@ -983,20 +1112,14 @@
                 statCardHtml('Completed', completed.toLocaleString(), 'fa-circle-check') +
                 statCardHtml('Total Cost', totalCost.toLocaleString(), 'fa-coins');
 
-            const byStatus = groupCount(projects, p => p.status);
-            const byCategory = groupCount(projects, p => p.category);
-            const byYear = groupCount(projects, p => p.opening_date ? String(p.opening_date).slice(0, 4) : '').sort((a, b) => a[0].localeCompare(b[0]));
-            const byDistrict = groupCount(projects, p => p.district);
+            if (!Object.keys(counts).length) {
+                mgReset();
+                charts.innerHTML = `<div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-slate-400 text-sm tracking-wide uppercase">No category data to show.</div>`;
+                return;
+            }
 
-            charts.innerHTML =
-                barListHtml('By Status', 'fa-list-check', byStatus, 6) +
-                barListHtml('By Category', 'fa-layer-group', byCategory, 8) +
-                barListHtml('By Year (Opening Date)', 'fa-calendar-days', byYear.slice().sort((a, b) => b[0].localeCompare(a[0])), 10) +
-                barListHtml('Top Districts', 'fa-location-dot', byDistrict, 8);
-
-            requestAnimationFrame(() => {
-                charts.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.getAttribute('data-w') + '%'; });
-            });
+            if (!document.getElementById('mgSvg')) { mgReset(); charts.innerHTML = mgSkeletonHtml(); }
+            mgAnimate(counts);
         }
 
         async function loadAllProjects() {
