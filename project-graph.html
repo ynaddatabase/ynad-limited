@@ -147,6 +147,9 @@
 
         /* ---------- GRAPH VIEW SWITCHER ---------- */
         .gv-tab { background: transparent; color: #3a3c3c; border: 1px solid #e2e8f0; transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
+        /* all buttons same size */
+        .gv-tab { width: 210px; max-width: 100%; text-align: center; white-space: nowrap; }
+        @media (max-width: 639px) { .gv-tab { width: calc(50% - 4px); font-size: 10px; } }
         .gv-tab:hover { border-color: #d97706; color: #d97706; }
         .gv-tab.gv-active { background: #d97706; border-color: #d97706; color: #ffffff; }
         .gv-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer;
@@ -321,7 +324,8 @@
         <!-- GRAPH CONTENT -->
         <section class="py-12 px-6">
             <div class="max-w-[1700px] mx-auto">
-                <div id="graphStats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10"></div>
+                <!-- stat cards removed (kept hidden so the JS keeps working) -->
+                <div id="graphStats" class="hidden"></div>
 
                 <div id="graphViewBar" class="flex flex-col items-center gap-4 mb-8">
                     <div id="graphViewTabs" class="flex flex-wrap justify-center gap-2"></div>
@@ -730,8 +734,9 @@
         let currentFilter = 'all';
         let filterTabsBuilt = false;
         let lastFilteredCount = 0;
-        let graphView = 'category';   // 'category' | 'district' | 'organization'
+        let graphView = 'category';   // 'category' | 'district' | 'organization' ...
         let graphDrill = {};          // e.g. { district: 'Dhaka' } set by clicking a bar
+        let graphFresh = false;       // true => graph rises from zero (same as By District / By Category)
 
         function updatePageHeading() {
             const headingEl = document.getElementById('pageHeadingText');
@@ -786,6 +791,7 @@
         }
         function setFilter(filter) {
             currentFilter = filter;
+            graphFresh = true;   // graph rises from zero again
             updatePageHeading();
             applyAdvFilters();
         }
@@ -946,23 +952,7 @@
             scheduleIndicatorSync(0);
         }
 
-        /* ---------- Graph rendering ---------- */
-        function statCardHtml(label, value, icon) {
-            return `
-                <div class="graph-card rounded-lg p-6 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid ${icon} text-amber-600"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="stat-value text-xl font-semibold truncate">${escapeHtml(value)}</div>
-                        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-500">${escapeHtml(label)}</div>
-                    </div>
-                </div>`;
-        }
-
-        /* ---------- Graph views (Category / District / Organization) + drill-down ---------- */
-        /* Names that differ only by capital letters, spaces or punctuation ("WAMY", "Wamy ", "W.A.M.Y")
-           are counted as the same group. */
+        /* ---------- Graph views (Category / District / ...) + drill-down ---------- */
         function gvClean(v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); }
         function gvNorm(v) { return gvClean(v).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''); }
 
@@ -990,19 +980,19 @@
         }
         function setGraphView(view) {
             if (!GRAPH_VIEWS[view]) return;
-            delete graphDrill[view];          // grouping by X while filtered to one X makes no sense
+            delete graphDrill[view];
             graphView = view;
             applyAdvFilters();
         }
         function drillInto(key) {
             if (graphView === 'category' || !key) return;
             graphDrill[graphView] = { key: key, label: (mgState.names && mgState.names[key]) || key };
-            graphView = 'category';           // show the category breakdown inside that district / country / donor ...
+            graphView = 'category';
             applyAdvFilters();
         }
         function clearDrill(view) {
             delete graphDrill[view];
-            if (GRAPH_VIEWS[view]) graphView = view;   // go back to the list the user came from
+            if (GRAPH_VIEWS[view]) graphView = view;
             applyAdvFilters();
         }
         function syncGraphControls() {
@@ -1021,13 +1011,18 @@
             if (el) el.textContent = text || '';
         }
 
-        /* ---------- Mountain graph ----------
-           One bar per group (zero-count groups never appear), smooth curve on top, white marker on each
-           peak, label under the bar. Every change tweens bar height, position and width. */
+        /* ---------- Mountain graph ---------- */
         const MG_CATEGORIES = ['Masjid', 'Madrasa', 'Markaz', 'Orphanage', 'Ablution', 'Water Well', 'Clinic'];
-        const MG_W = 1600, MG_CHART_H = 560;
-        const MG_Y_MIN = 100, MG_Y_MAX = 400, MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12;
-        const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false, H: MG_CHART_H + 130 };
+        const MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12, MG_MIN_AXIS = 4;
+        const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false,
+                          W: 1600, CH: 520, H: 650, ymin: 94, ymax: 370 };
+
+        /* graph + labels fit the visible screen under the tabs/title */
+        function mgFitHeight() {
+            const bar = document.getElementById('graphViewBar');
+            const used = 76 + 48 + (bar ? bar.offsetHeight : 90) + 32 + 32;
+            return Math.max(380, window.innerHeight - used);
+        }
 
         function smoothPath(pts) {
             let d = `M${pts[0][0]},${pts[0][1]}`;
@@ -1039,15 +1034,9 @@
             }
             return d;
         }
-
         function mgEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+        function mgShort(name) { const s = String(name); return s.length > 26 ? s.slice(0, 25) + '…' : s; }
 
-        function mgShort(name) {
-            const s = String(name);
-            return s.length > 26 ? s.slice(0, 25) + '…' : s;
-        }
-
-        /* Horizontal label: short names one word per line, long names wrapped to max 3 lines, always centered */
         function mgWrap(name, slot) {
             const words = mgShort(name).toUpperCase().split(/\s+/).filter(Boolean);
             const longest = Math.max(1, ...words.map(w => w.length));
@@ -1070,7 +1059,7 @@
             return `
                 <div class="col-span-full">
                     <div class="mountain-wrap">
-                        <svg id="mgSvg" class="mountain-svg" viewBox="0 0 ${MG_W} ${MG_CHART_H + 130}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project graph">
+                        <svg id="mgSvg" class="mountain-svg" viewBox="0 0 ${mgState.W} ${mgState.H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Project graph">
                             <defs>
                                 <linearGradient id="mgDark" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#d97706"/>
@@ -1090,12 +1079,12 @@
                 </div>`;
         }
 
-        /* Draws the current (possibly mid-animation) state */
         function mgDraw() {
             const barsEl = document.getElementById('mgBars');
             if (!barsEl) return;
-            const M = Math.max(mgState.max, 1);
-            const H = mgState.H;
+            const W = mgState.W, CH = mgState.CH, H = mgState.H;
+            const YMIN = mgState.ymin, YMAX = mgState.ymax;
+            const M = Math.max(mgState.max, MG_MIN_AXIS);   // few projects => peak stays mid-height
             const vis = Object.keys(mgState.cats)
                 .filter(k => mgState.cats[k].o > 0.002 && mgState.cats[k].sw > 1)
                 .sort((a, b) => mgState.cats[a].x - mgState.cats[b].x);
@@ -1107,17 +1096,17 @@
                 const s = mgState.cats[k];
                 const name = mgState.names[k] || k;
                 const cx = s.x, slot = s.sw, o = s.o.toFixed(3);
-                const y = MG_Y_MAX - Math.min(s.c / M, 1) * (MG_Y_MAX - MG_Y_MIN);
+                const y = YMAX - Math.min(s.c / M, 1) * (YMAX - YMIN);
                 pts.push([cx, y]);
 
                 const g = Math.min(MG_GAP, slot * 0.2);
                 const bw = Math.max(slot - g, 0), bx = cx - bw / 2;
-                bars.push(`<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${MG_CHART_H}" fill="url(#mgLight)"/>` +
-                          `<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${MG_CHART_H}" fill="url(#mgDark)" opacity="${s.p.toFixed(3)}"/>`);
+                bars.push(`<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${CH}" fill="url(#mgLight)"/>` +
+                          `<rect x="${bx.toFixed(2)}" y="0" width="${bw.toFixed(2)}" height="${CH}" fill="url(#mgDark)" opacity="${s.p.toFixed(3)}"/>`);
 
                 const num = String(Math.round(s.c)).padStart(2, '0');
                 const cfs = Math.min(38, slot * 0.8 / (num.length * 0.62));
-                counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${MG_CHART_H - 70}" text-anchor="middle" opacity="${o}">${num}</text>`);
+                counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${CH - 50}" text-anchor="middle" opacity="${o}">${num}</text>`);
 
                 const ro = Math.min(26, slot * 0.42);
                 markers.push(`<g opacity="${o}"><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${ro.toFixed(2)}" fill="#ffffff"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${(ro * 0.5).toFixed(2)}" fill="#b45309"/></g>`);
@@ -1125,19 +1114,19 @@
                 const o2 = (s.o * s.o).toFixed(3);
                 if (mgState.dense) {
                     const fs = Math.min(20, Math.max(11, slot * 0.55));
-                    labels.push(`<text class="mg-label" font-size="${fs.toFixed(1)}" transform="translate(${cx.toFixed(2)} ${MG_CHART_H + 16}) rotate(-90)" text-anchor="end" dy="0.35em" opacity="${o2}">${escapeHtml(mgShort(name).toUpperCase())}</text>`);
+                    labels.push(`<text class="mg-label" font-size="${fs.toFixed(1)}" transform="translate(${cx.toFixed(2)} ${CH + 16}) rotate(-90)" text-anchor="end" dy="0.35em" opacity="${o2}">${escapeHtml(mgShort(name).toUpperCase())}</text>`);
                 } else {
                     const w = mgWrap(name, slot);
                     labels.push(`<g opacity="${o2}">` + w.lines.map((ln, li) =>
-                        `<text class="mg-label" font-size="${w.fs.toFixed(1)}" x="${cx.toFixed(2)}" y="${(MG_CHART_H + 46 + li * w.fs * 1.3).toFixed(1)}" text-anchor="middle">${escapeHtml(ln)}</text>`).join('') + `</g>`);
+                        `<text class="mg-label" font-size="${w.fs.toFixed(1)}" x="${cx.toFixed(2)}" y="${(CH + 40 + li * w.fs * 1.3).toFixed(1)}" text-anchor="middle">${escapeHtml(ln)}</text>`).join('') + `</g>`);
                 }
 
                 const tip = `${name}: ${Math.round(s.c)} project(s)` + (mgState.clickable ? ' (click to see the category breakdown)' : '');
                 hits.push(`<rect class="mg-hit${mgState.clickable ? ' mg-click' : ''}" data-key="${escapeHtml(k)}" x="${(cx - slot / 2).toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${H}"><title>${escapeHtml(tip)}</title></rect>`);
             });
 
-            const curve = smoothPath([[0, pts[0][1] + 40], ...pts, [MG_W, pts[pts.length - 1][1] + 40]]);
-            document.getElementById('mgClipPath').setAttribute('d', `${curve} L${MG_W},${MG_CHART_H} L0,${MG_CHART_H} Z`);
+            const curve = smoothPath([[0, pts[0][1] + 40], ...pts, [W, pts[pts.length - 1][1] + 40]]);
+            document.getElementById('mgClipPath').setAttribute('d', `${curve} L${W},${CH} L0,${CH} Z`);
             barsEl.innerHTML = bars.join('');
             document.getElementById('mgCounts').innerHTML = counts.join('');
             document.getElementById('mgMarkers').innerHTML = markers.join('');
@@ -1150,17 +1139,18 @@
             mgState.raf = null; mgState.cats = {}; mgState.names = {}; mgState.max = 1; mgState.ready = false; mgState.view = null;
         }
 
-        /* Tween from whatever is on screen right now to the new set of bars */
         function mgAnimate(keys, counts, clickable, names) {
             const svg = document.getElementById('mgSvg');
             if (!svg) return;
             Object.assign(mgState.names, names || {});
-            const n = keys.length, sw = MG_W / n;
+            const n = keys.length;
+            const box = document.getElementById('graphCharts');
+            const W = Math.max(760, Math.round(box.clientWidth || 1600), n * 28);
+            const sw = W / n;
             const fresh = !mgState.ready;
             let tmax = 1;
             keys.forEach(k => { if (counts[k] > tmax) tmax = counts[k]; });
 
-            /* label area: horizontal wrapped labels for few bars, vertical labels for many */
             mgState.dense = n > MG_DENSE_AFTER;
             mgState.clickable = clickable;
             let labelH;
@@ -1173,9 +1163,13 @@
                 keys.forEach(k => { const w = mgWrap(mgState.names[k] || k, sw); lines = Math.max(lines, w.lines.length); fsMax = Math.max(fsMax, w.fs); });
                 labelH = 40 + lines * fsMax * 1.3 + 20;
             }
-            mgState.H = MG_CHART_H + labelH;
-            svg.setAttribute('viewBox', `0 0 ${MG_W} ${mgState.H}`);
-            svg.style.minWidth = Math.max(760, n * 28) + 'px';
+            mgState.W = W;
+            mgState.CH = Math.max(180, mgFitHeight() - labelH);
+            mgState.H = mgState.CH + labelH;
+            mgState.ymin = mgState.CH * 0.18;
+            mgState.ymax = mgState.CH * 0.71;
+            svg.setAttribute('viewBox', `0 0 ${W} ${mgState.H}`);
+            svg.style.minWidth = W + 'px';
 
             /* targets */
             const target = {};
@@ -1232,7 +1226,6 @@
         }
 
         function renderGraph(projects) {
-            const stats = document.getElementById('graphStats');
             const charts = document.getElementById('graphCharts');
             syncGraphControls();
 
@@ -1241,19 +1234,8 @@
                 return;
             }
 
-            const totalCost = projects.reduce((s, p) => s + (Number(p.cost) || 0), 0);
-            const ongoing = projects.filter(p => p.status === 'Ongoing').length;
-            const completed = projects.filter(p => p.status === 'Completed').length;
-
-            stats.innerHTML =
-                statCardHtml('Total Projects', projects.length.toLocaleString(), 'fa-diagram-project') +
-                statCardHtml('Ongoing', ongoing.toLocaleString(), 'fa-person-digging') +
-                statCardHtml('Completed', completed.toLocaleString(), 'fa-circle-check') +
-                statCardHtml('Total Cost', totalCost.toLocaleString(), 'fa-coins');
-
             const g = GRAPH_VIEWS[graphView];
 
-            /* group by the cleaned-up key; show the spelling used most often */
             const counts = {}, forms = {};
             projects.forEach(p => {
                 const raw = gvClean(g.get(p));
@@ -1280,16 +1262,17 @@
                 const extra = keys.filter(k => !known.includes(k)).sort((a, b) => names[a].localeCompare(names[b]));
                 keys = known.concat(extra);
             } else {
-                keys.sort((a, b) => counts[b] - counts[a] || names[a].localeCompare(names[b]));   // highest first
+                keys.sort((a, b) => counts[b] - counts[a] || names[a].localeCompare(names[b]));
             }
 
             const drillText = Object.keys(graphDrill).map(v => graphDrill[v].label).join(' and ');
             setGraphTitle(`Projects by ${g.label}${drillText ? ' for ' + drillText : ''} (${keys.length})`);
 
-            if (mgState.view !== graphView || !document.getElementById('mgSvg')) {
+            if (mgState.view !== graphView || graphFresh || !document.getElementById('mgSvg')) {
                 mgReset();
                 charts.innerHTML = mgSkeletonHtml();
                 mgState.view = graphView;
+                graphFresh = false;
             }
             mgAnimate(keys, counts, graphView !== 'category', names);
         }
@@ -1310,6 +1293,10 @@
             allProjectsData = data || [];
             applyAdvFilters();
         }
+
+        /* re-fit graph to the screen when the window is resized */
+        let __gResizeT;
+        window.addEventListener('resize', () => { clearTimeout(__gResizeT); __gResizeT = setTimeout(applyAdvFilters, 200); });
 
         window.addEventListener('DOMContentLoaded', () => {
             currentFilter = 'all';
