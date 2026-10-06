@@ -1,43 +1,1041 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Graph — YNAD Construction</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Montserrat', sans-serif; }
+        body { font-family: 'Poppins', sans-serif; }
+
+        #pageLoadingBar { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: transparent; z-index: 99999; pointer-events: none; overflow: hidden; }
+        #pageLoadingProgress { width: 8%; height: 100%; background: linear-gradient(90deg, #b45309, #d97706, #f59e0b, #d97706, #b45309); box-shadow: 0 0 10px rgba(217, 119, 6, 0.70); transition: width 0.45s ease, opacity 0.35s ease; }
+
+        .reveal-fade-left { opacity: 0; transform: translateX(-40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal-fade-left.revealed { opacity: 1; transform: translateX(0); }
+
+        /* ---------- NAV (same as All Projects) ---------- */
+        #mainNav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(0,0,0,0.48); border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease; transform: translateY(0); }
+        #mainNav.nav-hidden { transform: translateY(-100%); }
+        #mainNav.nav-solid { background-color: #ffffff; border-bottom-color: #e5e7eb; box-shadow: 0 6px 18px rgba(15,23,42,0.08); }
+        #mainNav .nav-adaptive { color: #ffffff; transition: color 0.35s ease; }
+        #mainNav.nav-solid .nav-adaptive { color: #1b1d1d; }
+        #mainNav .nav-adaptive-muted { color: rgba(255,255,255,0.85); transition: color 0.35s ease; }
+        #mainNav.nav-solid .nav-adaptive-muted { color: #3a3c3c; }
+        #mainNav .nav-icon-btn { background: rgba(255,255,255,0.1); border: 1px solid transparent;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease; }
+        #mainNav.nav-solid .nav-icon-btn { background: #f1f5f9; border-color: #e2e8f0; }
+        #mainNav .nav-icon-btn:hover { background-color: #d97706; border-color: #d97706; color: #ffffff !important; transform: translateY(-3px) scale(1.08); box-shadow: 0 8px 20px rgba(217,119,6,0.35); }
+        #mainNav #searchIconBtn:hover { transform: scale(1.05); }
+        #searchBoxWrap.search-open #searchIconBtn:hover { transform: translateX(2px) scale(1.05); }
+
+        body.theme-light { background-color: #ffffff; color: #2a2c2c; }
+        body.theme-light #pageHeaderSection { background-color: #ffffff !important; }
+        body.theme-light #settingsDropdownMenu, body.theme-light #userDropdownMenu, body.theme-light #searchDropdownMenu, body.theme-light #menuBox,
+        body.theme-light .graph-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+
+        body.theme-effective-dark { background-color: #131414 !important; color: #e2e8f0; }
+        body.theme-effective-dark #pageHeaderSection { background-color: #131414 !important; }
+        body.theme-effective-dark #settingsDropdownMenu, body.theme-effective-dark #userDropdownMenu, body.theme-effective-dark #searchDropdownMenu,
+        body.theme-effective-dark #menuBox, body.theme-effective-dark .graph-card { background-color: #232525 !important; border-color: #3a3c3c !important; }
+        body.theme-effective-dark .text-slate-900, body.theme-effective-dark .text-slate-800 { color: #ffffff !important; }
+        body.theme-effective-dark .text-slate-600, body.theme-effective-dark .text-slate-500, body.theme-effective-dark .text-slate-400 { color: #c7c5c2 !important; }
+        body.theme-effective-dark #pageHeaderSection h1, body.theme-effective-dark #pageHeaderSection .filter-tab { color: #ffffff !important; }
+        body.theme-effective-dark #searchDropdownMenu input { color: #ffffff !important; }
+        body.theme-effective-dark #searchDropdownMenu input::placeholder { color: #a8a6a3; }
+        body.theme-effective-dark .border-slate-100, body.theme-effective-dark .border-slate-200, body.theme-effective-dark .border-slate-300 { border-color: #3a3c3c !important; }
+        body.theme-effective-dark .bg-slate-50 { background-color: #232525 !important; }
+        body.theme-effective-dark .bg-white { background-color: #232525 !important; }
+        body.theme-effective-dark .hover\:bg-slate-100:hover { background-color: #2a2c2c !important; }
+        body.theme-effective-dark .text-black, body.theme-effective-dark .text-slate-700, body.theme-effective-dark .text-gray-900,
+        body.theme-effective-dark .text-gray-800, body.theme-effective-dark .text-gray-700 { color: #ffffff !important; }
+
+        #settingsDropdownMenu a { transition: background-color 0.22s ease, color 0.22s ease; }
+        body.theme-effective-dark #settingsDropdownMenu a { color: #e2e8f0 !important; }
+        body.theme-effective-dark #settingsDropdownMenu a:hover, body.theme-light #settingsDropdownMenu a:hover { background-color: #d97706 !important; color: #ffffff !important; }
+
+        body.theme-effective-dark #mainNav.nav-solid { background-color: #131414; border-bottom-color: #3a3c3c; }
+        body.theme-effective-dark #mainNav.nav-solid .nav-icon-btn, body.theme-effective-dark #mainNav.nav-solid .theme-mode-switch { background-color: #2a2c2c; border-color: #3a3c3c; }
+        body.theme-effective-dark #mainNav.nav-solid .nav-adaptive { color: #ffffff; }
+        body.theme-effective-dark #mainNav.nav-solid .nav-adaptive-muted { color: #c7c5c2; }
+        body.theme-effective-dark .theme-mode-btn.active { color: #ffffff !important; }
+
+        #userProfileBtn { background: #ffffff; color: #64748b; border-color: #d97706; }
+        #userProfileBtn .profile-fallback-icon { font-size: 15px; line-height: 1; transition: color 0.35s ease, transform 0.25s ease; }
+        #userProfileBtn:hover .profile-fallback-icon { transform: scale(1.05); }
+        #userProfileBtn.is-authenticated { background: transparent; }
+        #userProfileBtn img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        #userProfileBtn .profile-fallback-icon[hidden], #userProfileBtn img[hidden] { display: none !important; }
+        #userDropdownMenu .profile-avatar-large { background: #ffffff; color: #64748b; }
+        #userDropdownMenu .profile-user-name { color: #1b1d1d; }
+        #userDropdownMenu .profile-user-email { color: #64748b; }
+        #userDropdownMenu .auth-action { background: #ffffff; color: #55575a; border: 1px solid #e2e8f0; }
+        #userDropdownMenu .auth-action:hover { background: #d97706; color: #ffffff; border-color: #d97706; }
+        body.theme-effective-dark #userProfileBtn { background: #2a2c2c; border-color: #f59e0b; color: #c7c5c2; }
+        body.theme-effective-dark #userDropdownMenu .profile-avatar-large { background: #2a2c2c; color: #c7c5c2; border-color: #55575a !important; }
+        body.theme-effective-dark #userDropdownMenu .profile-user-name { color: #ffffff !important; }
+        body.theme-effective-dark #userDropdownMenu .profile-user-email { color: #a8a6a3 !important; }
+        body.theme-effective-dark #userDropdownMenu .auth-action { background: #2a2c2c; color: #c7c5c2; border-color: #3a3c3c; }
+        body.theme-effective-dark #userDropdownMenu .auth-action:hover { background: #d97706; color: #ffffff; border-color: #d97706; }
+
+        body.theme-transition, body.theme-transition * { transition-property: color, background-color, border-color, fill, stroke !important; transition-duration: 0.45s !important; transition-timing-function: ease !important; }
+
+        #pageHeaderSection { padding-top: 112px; transition: background-color 0.45s ease; }
+
+        .hamburger-icon { transition: transform 0.2s cubic-bezier(0.4,0,0.2,1); display: inline-block; }
+        .hamburger-icon.clicked { transform: scale(1.25); }
+
+        #pageContentWrapper { transition: filter 0.6s ease-in-out; }
+        #pageContentWrapper.blurred { filter: blur(6px); pointer-events: none; }
+
+        #menuOverlay { position: fixed; inset: 0; z-index: 100; display: flex; justify-content: flex-end; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+            opacity: 0; visibility: hidden; transition: opacity 0.7s ease, visibility 0.7s ease; pointer-events: none; }
+        #menuOverlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        #menuBox { transform: translateX(100%); transition: transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+        #menuOverlay.open #menuBox { transform: translateX(0); }
+
+        #settingsDropdownMenu, #userDropdownMenu { opacity: 0; visibility: hidden; transform: translateY(12px) scale(0.96); transition: all 0.25s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
+        #settingsDropdownMenu.open, #userDropdownMenu.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+
+        #searchBoxWrap { height: 40px; padding-right: 2px; }
+        #homeContactLoginGroup { position: relative; z-index: 5; will-change: transform; transition: transform 0.45s cubic-bezier(0.4,0,0.2,1); }
+        #homeContactLoginGroup.icons-pushed { transform: translateX(-270px); }
+        #searchDropdownMenu { position: absolute; right: 0; top: 50%; transform: translateY(-50%) translateX(12px); width: 40px; height: 40px; border-radius: 999px; opacity: 0; visibility: hidden; overflow: hidden;
+            transition: width 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, visibility 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; white-space: nowrap; }
+        #searchDropdownMenu.open { width: 250px; right: 0; opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0); pointer-events: auto; }
+        @media (min-width: 640px) { #searchDropdownMenu.open { width: 270px; } }
+        #searchDropdownMenu input { padding-right: 38px; }
+        #searchIconBtn { transition: width 0.3s cubic-bezier(0.34,1.56,0.64,1), height 0.3s cubic-bezier(0.34,1.56,0.64,1), background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+        #searchBoxWrap.search-open #searchIconBtn { width: 30px; height: 30px; background-color: #d97706 !important; color: #ffffff !important; border-color: #d97706 !important; transform: translateX(-5px); }
+        #searchBoxWrap.search-open #searchIconBtn:hover { background-color: #b45309 !important; border-color: #b45309 !important; transform: translateX(-5px) scale(1.05); }
+
+        .theme-mode-switch { --theme-index: 1; position: relative; display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid transparent; transition: background-color 0.45s ease, border-color 0.45s ease; }
+        .theme-mode-switch::before { content: ""; position: absolute; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 999px; background: #d97706; transform: translateX(calc(var(--theme-index) * 30px)); transition: transform 0.45s cubic-bezier(0.4,0,0.2,1), background-color 0.35s ease; z-index: 0; pointer-events: none; }
+        #mainNav.nav-solid .theme-mode-switch { background: #f1f5f9; border-color: #e2e8f0; }
+        .theme-mode-btn { position: relative; z-index: 1; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 999px; border: none; background: transparent; color: inherit; opacity: 0.7; cursor: pointer; font-size: 0.72rem; transition: color 0.35s ease, opacity 0.25s ease, transform 0.25s ease; }
+        .theme-mode-btn:hover { opacity: 1; transform: scale(1.08); }
+        .theme-mode-btn.active { color: #ffffff !important; opacity: 1; }
+
+        /* ---------- FILTER TABS + PANEL (same as All Projects) ---------- */
+        #filterTabsContainer { position: relative; }
+        #filterTabIndicator { position: absolute; top: 0; left: 0; z-index: 10; border-radius: 999px; background-color: #d97706;
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1), height 0.3s cubic-bezier(0.4,0,0.2,1); width: 0; height: 0; }
+        .filter-tab { position: relative; z-index: 20; background-color: transparent !important; color: #3a3c3c; transition: all 0.25s ease; }
+        body.theme-effective-dark .filter-tab { background-color: transparent !important; color: #c7c5c2 !important; }
+        .filter-tab.active-text { color: #ffffff !important; }
+        body.theme-effective-dark .filter-tab.active-text { color: #ffffff !important; }
+
+        #advFilterPanel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s cubic-bezier(0.16,1,0.3,1); }
+        #advFilterPanel.open { grid-template-rows: 1fr; }
+        #advFilterPanel > div { overflow: hidden; }
+        .filter-input-caps, .filter-input-caps option { text-transform: uppercase; }
+        .filter-input-caps::placeholder { text-transform: uppercase; }
+        body.theme-effective-dark #advFilterPanel { background-color: #131414 !important; border-bottom-color: #2a2c2c !important; }
+        body.theme-effective-dark #advFilterPanel input, body.theme-effective-dark #advFilterPanel select { background-color: #2a2c2c !important; border-color: #3a3c3c !important; color: #ffffff !important; }
+        body.theme-effective-dark #advFilterPanel label { color: #a8a6a3 !important; }
+        body.theme-effective-dark #pageHeaderSection { border-bottom-color: #2a2c2c !important; }
+
+        /* ---------- GRAPH SECTION ---------- */
+        .graph-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 6px 18px rgba(15,23,42,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .graph-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(15,23,42,0.14); }
+        .bar-track { background: #f1f5f9; height: 10px; border-radius: 999px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #b45309, #f59e0b); transition: width 0.6s cubic-bezier(0.16,1,0.3,1); width: 0; }
+        body.theme-effective-dark .bar-track { background: #2a2c2c; }
+        .stat-value { color: #1b1d1d; }
+        body.theme-effective-dark .stat-value { color: #ffffff; }
     </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col">
 
-    <nav class="bg-slate-900/95 border-b border-white/10 px-8 py-4 flex items-center justify-between">
-        <a href="index.html" class="text-2xl font-bold tracking-widest uppercase">
-            YNAD <span class="text-amber-500 font-light">Construction</span>
-        </a>
-        <a href="index.html" class="text-sm tracking-wider hover:text-amber-500 transition">
-            <i class="fa-solid fa-arrow-left mr-2"></i>BACK TO HOME
-        </a>
-    </nav>
+<body class="bg-white text-slate-800">
 
-    <main class="flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <div class="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mb-6">
-            <i class="fa-solid fa-chart-line text-3xl text-amber-500"></i>
+    <div id="pageLoadingBar" aria-hidden="true"><div id="pageLoadingProgress"></div></div>
+
+    <div id="pageContentWrapper">
+
+        <!-- Header is sourced directly from index.html so one header stays shared. -->
+        <div id="indexHeaderContainer" aria-label="Site header"></div>
+
+        <script>
+        window.__indexHeaderReady = (async function loadIndexHeader() {
+            const container = document.getElementById('indexHeaderContainer');
+            if (!container) return;
+            try {
+                const response = await fetch('index.html', { cache: 'no-store' });
+                if (!response.ok) throw new Error('Unable to load index.html');
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const nav = doc.querySelector('#mainNav');
+                if (!nav) throw new Error('Header #mainNav was not found in index.html');
+                container.replaceChildren(nav.cloneNode(true));
+
+                const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
+                const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
+                if (homeLink) homeLink.href = 'index.html';
+                if (contactLink) {
+                    contactLink.href = 'index.html#siteFooterContainer';
+                    contactLink.addEventListener('click', function (event) {
+                        const footer = document.getElementById('siteFooterContainer');
+                        if (footer) { event.preventDefault(); footer.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                    });
+                }
+                document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
+            } catch (error) {
+                console.error('Shared index header failed to load:', error);
+                container.innerHTML = '';
+            }
+        })();
+        </script>
+
+        <section id="pageHeaderSection" class="py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
+            <h1 id="pageHeadingText" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">Project Graph</h1>
+
+            <div id="filterTabsContainer" class="flex flex-wrap justify-center gap-3 mb-6"></div>
+
+            <button onclick="toggleAdvFilterPanel()" id="advFilterToggleBtn" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 transition cursor-pointer">
+                <i class="fa-solid fa-sliders"></i> <span id="advFilterToggleLabel">Show Filters</span>
+            </button>
+        </section>
+
+        <div id="advFilterPanel" class="bg-white border-b">
+            <div>
+                <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Category</label>
+                        <select id="filterCategory" onchange="applyAdvFilters()" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 bg-white">
+                            <option value="">All Categories</option>
+                            <option value="Masjid">Masjid</option>
+                            <option value="Madrasa">Madrasa</option>
+                            <option value="Markaz">Markaz</option>
+                            <option value="Orphanage">Orphanage</option>
+                            <option value="Ablution">Ablution</option>
+                            <option value="Water Well">Water Well</option>
+                            <option value="Clinic">Clinic</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Organization</label>
+                        <input type="text" id="filterOrganization" onkeyup="applyAdvFilters()" placeholder="e.g. WAMY" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donor Name / ID</label>
+                        <input type="text" id="filterDonor" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Donated Country</label>
+                        <input type="text" id="filterCountry" list="worldCountryList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter country name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <datalist id="worldCountryList"></datalist>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Cost</label>
+                            <div class="relative inline-flex items-center">
+                                <select id="costMode" onchange="onCostModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                    <option value="exact" selected>Exact Cost</option>
+                                    <option value="range">Cost Range</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div id="costExactWrap">
+                            <input type="number" id="filterCostExact" onchange="applyAdvFilters()" placeholder="750000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div id="costRangeWrap" class="hidden items-center gap-2">
+                            <input type="number" id="filterCostMin" onchange="applyAdvFilters()" placeholder="500000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <span class="text-slate-400 text-xs">—</span>
+                            <input type="number" id="filterCostMax" onchange="applyAdvFilters()" placeholder="1800000" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">BD District</label>
+                        <input type="text" id="filterDistrict" list="bdDistrictList" onkeyup="applyAdvFilters()" onchange="applyAdvFilters()" placeholder="Enter district name" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        <datalist id="bdDistrictList"></datalist>
+                    </div>
+
+                    <div class="sm:col-span-2 lg:col-span-2">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Date</label>
+                            <div class="relative inline-flex items-center">
+                                <select id="dateMode" onchange="onDateModeChange()" class="appearance-none bg-transparent text-[10px] font-normal uppercase tracking-wide text-slate-500 pr-3.5 cursor-pointer focus:outline-none">
+                                    <option value="exact" selected>Exact Date</option>
+                                    <option value="range">Date Range</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-[6px] text-slate-400 absolute right-0 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div id="dateExactWrap">
+                            <input type="date" id="filterDateExact" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div id="dateRangeWrap" class="hidden items-center gap-2">
+                            <input type="date" id="filterDateMin" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                            <span class="text-slate-400 text-xs">—</span>
+                            <input type="date" id="filterDateMax" onchange="applyAdvFilters()" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Engineer Name / ID</label>
+                        <input type="text" id="filterEngineer" onkeyup="applyAdvFilters()" placeholder="Name or ID" class="filter-input-caps w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <div class="flex items-end">
+                        <button onclick="resetAdvFilters()" class="text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-amber-600 transition cursor-pointer flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Filters
+                        </button>
+                    </div>
+
+                </div>
+            </div>
         </div>
-        <h1 class="text-2xl md:text-3xl font-light tracking-widest uppercase mb-3">Project Graph</h1>
-        <p class="text-sm text-slate-400 max-w-md leading-relaxed">
-            This page is a placeholder. Project analytics and charts (ongoing / completed / upcoming trends, category breakdowns, timelines) will be built here separately.
-        </p>
-    </main>
 
-    <footer class="py-6 text-center text-xs text-slate-500 border-t border-white/10">
-        &copy; <span id="footerYear"></span> YNAD Construction. All rights reserved.
-    </footer>
+        <!-- GRAPH CONTENT -->
+        <section class="py-12 px-6">
+            <div class="max-w-[1700px] mx-auto">
+                <div id="graphStats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6"></div>
+                <div id="graphCharts" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-slate-400 text-sm tracking-wide uppercase">Loading graph...</div>
+                </div>
+            </div>
+        </section>
+
+        <div id="siteFooterContainer"></div>
+
+        <script>
+        (function(){
+            const container = document.getElementById('siteFooterContainer');
+            if (!container) return;
+            fetch('footer.html', { cache: 'no-store' })
+                .then(response => { if (!response.ok) throw new Error('Unable to load footer.html'); return response.text(); })
+                .then(html => {
+                    const template = document.createElement('template');
+                    template.innerHTML = html;
+                    const scripts = Array.from(template.content.querySelectorAll('script'));
+                    scripts.forEach(script => script.remove());
+                    container.replaceChildren(template.content.cloneNode(true));
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        for (const attr of oldScript.attributes) newScript.setAttribute(attr.name, attr.value);
+                        newScript.textContent = oldScript.textContent;
+                        document.body.appendChild(newScript);
+                        newScript.remove();
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    container.innerHTML = '<div style="padding:32px;text-align:center;color:#a8a6a3;background:#1b1d1d;">Footer failed to load.</div>';
+                });
+        })();
+        </script>
+
+    </div>
+
+    <div id="menuOverlay" onclick="handleOverlayClick(event)">
+        <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+            <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="mt-20 flex-1 flex flex-col">
+                <iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none; width:100%; height:260px;"></iframe>
+            </div>
+            <div class="pb-10"></div>
+        </div>
+    </div>
 
     <script>
-        document.getElementById('footerYear').textContent = new Date().getFullYear();
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
+
+        const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        /* ---------- Shared header scroll behaviour ---------- */
+        (function () {
+            async function initSharedHeaderScroll() {
+                try { if (window.__indexHeaderReady) await window.__indexHeaderReady; } catch (e) {}
+                const nav = document.getElementById('mainNav');
+                if (!nav) return;
+                let lastScrollY = window.scrollY;
+                let ticking = false;
+                function handleNavScroll() {
+                    const currentScrollY = window.scrollY;
+                    nav.classList.toggle('nav-solid', currentScrollY > 4);
+                    if (currentScrollY <= 4) nav.classList.remove('nav-hidden');
+                    else if (currentScrollY > lastScrollY) nav.classList.add('nav-hidden');
+                    else if (currentScrollY < lastScrollY) nav.classList.remove('nav-hidden');
+                    lastScrollY = currentScrollY;
+                    ticking = false;
+                }
+                window.addEventListener('scroll', function () {
+                    if (!ticking) { window.requestAnimationFrame(handleNavScroll); ticking = true; }
+                }, { passive: true });
+                handleNavScroll();
+            }
+            initSharedHeaderScroll();
+        })();
+
+        /* ---------- Auth / profile ---------- */
+        function getUserAvatarUrl(user) {
+            if (!user) return '';
+            const metadata = user.user_metadata || {};
+            const identities = Array.isArray(user.identities) ? user.identities : [];
+            const identityData = identities[0] && identities[0].identity_data ? identities[0].identity_data : {};
+            return metadata.avatar_url || metadata.picture || metadata.profile_image || metadata.photo_url || identityData.avatar_url || identityData.picture || '';
+        }
+        function getUserDisplayName(user) {
+            if (!user) return 'Guest User';
+            const metadata = user.user_metadata || {};
+            return metadata.full_name || metadata.name || metadata.user_name || metadata.username || (user.email ? user.email.split('@')[0] : 'User');
+        }
+        function setProfileImage(img, fallback, url) {
+            if (!img || !fallback) return;
+            if (!url) { img.hidden = true; img.removeAttribute('src'); fallback.hidden = false; return; }
+            img.onload = function () { img.hidden = false; fallback.hidden = true; };
+            img.onerror = function () { img.hidden = true; img.removeAttribute('src'); fallback.hidden = false; };
+            img.src = url;
+        }
+        function updateProfileUI(user) {
+            const profileBtn = document.getElementById('userProfileBtn');
+            const profileImg = document.getElementById('userProfileImage');
+            const profileFallback = document.getElementById('userProfileFallback');
+            const dropdownImg = document.getElementById('userDropdownImage');
+            const dropdownFallback = document.getElementById('userDropdownFallback');
+            const nameEl = document.getElementById('profileUserName');
+            const emailEl = document.getElementById('profileUserEmail');
+            const authAction = document.getElementById('profileAuthAction');
+            const authIcon = document.getElementById('profileAuthActionIcon');
+            const authText = document.getElementById('profileAuthActionText');
+            const loggedIn = !!user;
+            if (profileBtn) { profileBtn.classList.toggle('is-authenticated', loggedIn); profileBtn.title = loggedIn ? 'Profile' : 'Log in'; }
+            const avatarUrl = getUserAvatarUrl(user);
+            setProfileImage(profileImg, profileFallback, avatarUrl);
+            setProfileImage(dropdownImg, dropdownFallback, avatarUrl);
+            if (nameEl) nameEl.textContent = loggedIn ? getUserDisplayName(user) : 'Guest User';
+            if (emailEl) emailEl.textContent = loggedIn ? (user.email || 'Signed in') : 'Not logged in';
+            if (authAction && authIcon && authText) {
+                if (loggedIn) {
+                    authAction.href = '#'; authAction.title = 'Log out';
+                    authIcon.className = 'fa-solid fa-right-from-bracket'; authText.textContent = 'LOG OUT';
+                    authAction.onclick = handleLogout;
+                } else {
+                    authAction.href = 'login.html'; authAction.title = 'Log in';
+                    authIcon.className = 'fa-solid fa-right-to-bracket'; authText.textContent = 'LOG IN';
+                    authAction.onclick = null;
+                }
+            }
+        }
+        async function handleLogout(event) {
+            if (event) event.preventDefault();
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                updateProfileUI(null);
+                const dropdown = document.getElementById('userDropdownMenu');
+                if (dropdown) dropdown.classList.remove('open');
+            } catch (error) { console.error('Logout failed:', error); }
+        }
+        async function initAuthState() {
+            try {
+                if (window.__indexHeaderReady) await window.__indexHeaderReady;
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                updateProfileUI(session ? session.user : null);
+                supabaseClient.auth.onAuthStateChange(function (_event, newSession) { updateProfileUI(newSession ? newSession.user : null); });
+            } catch (error) { console.error('Auth state initialization failed:', error); updateProfileUI(null); }
+        }
+
+        /* ---------- Header dropdowns ---------- */
+        function toggleSettingsDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdownMenu');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
+            if (userDropdown) userDropdown.classList.remove('open');
+            if (searchDropdown) searchDropdown.classList.remove('open');
+            if (searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+            if (iconGroup) iconGroup.classList.remove('icons-pushed');
+            dropdown.classList.toggle('open');
+        }
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdownMenu');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
+            if (searchDropdown) searchDropdown.classList.remove('open');
+            if (searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+            if (settingsDropdown) settingsDropdown.classList.remove('open');
+            if (iconGroup) iconGroup.classList.remove('icons-pushed');
+            dropdown.classList.toggle('open');
+        }
+        function toggleSearchDropdown(event) {
+            event.stopPropagation();
+            const wrap = document.getElementById('searchBoxWrap');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
+            if (userDropdown) userDropdown.classList.remove('open');
+            if (settingsDropdown) settingsDropdown.classList.remove('open');
+            const isOpen = searchDropdown.classList.contains('open');
+            if (!isOpen) {
+                searchDropdown.classList.add('open');
+                wrap.classList.add('search-open');
+                if (iconGroup) iconGroup.classList.add('icons-pushed');
+                document.getElementById('projectSearchInput').focus();
+            } else {
+                const query = document.getElementById('projectSearchInput').value.trim();
+                if (query) executeSearch();
+                else {
+                    searchDropdown.classList.remove('open');
+                    wrap.classList.remove('search-open');
+                    if (iconGroup) iconGroup.classList.remove('icons-pushed');
+                }
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const profileBtn = document.getElementById('userProfileBtn');
+            if (userDropdown && userDropdown.classList.contains('open')) {
+                if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) userDropdown.classList.remove('open');
+            }
+            const settingsDropdown = document.getElementById('settingsDropdownMenu');
+            const settingsBtn = document.getElementById('settingsIconBtn');
+            if (settingsDropdown && settingsDropdown.classList.contains('open')) {
+                if (!settingsDropdown.contains(e.target) && !settingsBtn.contains(e.target)) settingsDropdown.classList.remove('open');
+            }
+            const searchBoxWrap = document.getElementById('searchBoxWrap');
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            if (searchDropdown && searchDropdown.classList.contains('open')) {
+                if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
+                    searchDropdown.classList.remove('open');
+                    searchBoxWrap.classList.remove('search-open');
+                    const iconGroup = document.getElementById('homeContactLoginGroup');
+                    if (iconGroup) iconGroup.classList.remove('icons-pushed');
+                }
+            }
+        });
+
+        /* ---------- Search (filters the graph data) ---------- */
+        let searchQuery = '';
+        function executeSearch() {
+            const input = document.getElementById('projectSearchInput');
+            const feedback = document.getElementById('searchResultFeedback');
+            const query = input.value.trim().toUpperCase();
+
+            if (!query) {
+                searchQuery = '';
+                applyAdvFilters();
+                if (feedback) {
+                    feedback.textContent = 'Please enter project details.';
+                    feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50';
+                }
+                return;
+            }
+
+            searchQuery = query;
+            applyAdvFilters();
+            const matchCount = lastFilteredCount;
+
+            if (feedback) {
+                feedback.classList.remove('hidden');
+                if (matchCount > 0) {
+                    feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50';
+                    feedback.textContent = `Found ${matchCount} matching project(s)!`;
+                    setTimeout(() => {
+                        document.getElementById('searchDropdownMenu').classList.remove('open');
+                        document.getElementById('searchBoxWrap').classList.remove('search-open');
+                        const iconGroup = document.getElementById('homeContactLoginGroup');
+                        if (iconGroup) iconGroup.classList.remove('icons-pushed');
+                        feedback.classList.add('hidden');
+                    }, 3000);
+                } else {
+                    feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50';
+                    feedback.textContent = `No match found for "${query}".`;
+                }
+            }
+        }
+        function handleProjectSearch(event) {
+            if (event.key === 'Enter') executeSearch();
+        }
+
+        /* ---------- Theme ---------- */
+        function setThemeMode(mode) {
+            const validModes = ['light', 'dynamic', 'dark'];
+            if (!validModes.includes(mode)) mode = 'dynamic';
+            const switcher = document.getElementById('themeModeSwitch');
+            const buttons = document.querySelectorAll('.theme-mode-btn');
+            const indexMap = { light: 0, dynamic: 1, dark: 2 };
+            buttons.forEach(function(btn) { btn.classList.toggle('active', btn.getAttribute('data-mode') === mode); });
+            if (switcher) switcher.style.setProperty('--theme-index', indexMap[mode]);
+
+            const body = document.body;
+            body.classList.add('theme-transition');
+            body.classList.remove('theme-light', 'theme-dynamic', 'theme-dark', 'theme-effective-dark');
+            body.classList.add('theme-' + mode);
+
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isEffectiveDark = mode === 'dark' || (mode === 'dynamic' && prefersDark);
+            if (isEffectiveDark) body.classList.add('theme-effective-dark');
+            document.documentElement.classList.toggle('dark', isEffectiveDark);
+
+            try {
+                const menuFrame = document.getElementById('menuLinksFrame');
+                if (menuFrame && menuFrame.contentWindow) menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+            } catch (e) {}
+
+            window.clearTimeout(window.__ynadThemeTransitionTimer);
+            window.__ynadThemeTransitionTimer = window.setTimeout(function() { body.classList.remove('theme-transition'); }, 500);
+            try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
+        }
+
+        window.addEventListener('message', function(e) {
+            if (!e.data || typeof e.data !== 'object') return;
+            if (e.data.type === 'ynad-request-theme') {
+                const isEffectiveDark = document.body.classList.contains('theme-effective-dark');
+                try {
+                    const menuFrame = document.getElementById('menuLinksFrame');
+                    if (menuFrame && menuFrame.contentWindow && e.source === menuFrame.contentWindow) {
+                        menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+                    }
+                } catch (err) {}
+            }
+        });
+
+        (function initThemeMode() {
+            let saved = 'dynamic';
+            try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+            document.addEventListener('DOMContentLoaded', async function() {
+                try { if (window.__indexHeaderReady) await window.__indexHeaderReady; } catch (e) {}
+                setThemeMode(saved);
+                if (window.matchMedia) {
+                    const media = window.matchMedia('(prefers-color-scheme: dark)');
+                    const syncDynamicTheme = function() {
+                        if (document.body.classList.contains('theme-dynamic')) setThemeMode('dynamic');
+                    };
+                    if (media.addEventListener) media.addEventListener('change', syncDynamicTheme);
+                    else if (media.addListener) media.addListener(syncDynamicTheme);
+                }
+            });
+        })();
+
+        /* ---------- Menu overlay ---------- */
+        function openMenuWithEffect() {
+            const icon = document.getElementById('hamburgerBtnIcon');
+            const pageWrapper = document.getElementById('pageContentWrapper');
+            const overlay = document.getElementById('menuOverlay');
+            const menuFrame = document.getElementById('menuLinksFrame');
+            icon.classList.add('clicked');
+            setTimeout(() => {
+                icon.classList.remove('clicked');
+                pageWrapper.classList.add('blurred');
+                setTimeout(() => {
+                    menuFrame.src = 'menu.html';
+                    overlay.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                    menuFrame.onload = function () {
+                        try { menuFrame.contentWindow.postMessage({ type: 'ynad-menu-open' }, '*'); } catch (e) {}
+                    };
+                }, 200);
+            }, 200);
+        }
+        function closeMenuWithEffect() {
+            const overlay = document.getElementById('menuOverlay');
+            const pageWrapper = document.getElementById('pageContentWrapper');
+            const menuFrame = document.getElementById('menuLinksFrame');
+            try { if (menuFrame && menuFrame.contentWindow) menuFrame.contentWindow.postMessage({ type: 'ynad-menu-closing' }, '*'); } catch (e) {}
+            setTimeout(() => {
+                overlay.classList.remove('open');
+                setTimeout(() => {
+                    pageWrapper.classList.remove('blurred');
+                    document.body.style.overflow = 'auto';
+                    menuFrame.src = 'about:blank';
+                }, 400);
+            }, 380);
+        }
+        function handleOverlayClick(event) {
+            if (event.target === document.getElementById('menuOverlay')) closeMenuWithEffect();
+        }
+
+        /* ---------- Reveal animation ---------- */
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('revealed');
+                else entry.target.classList.remove('revealed');
+            });
+        }, { threshold: 0.15 });
+        function observeRevealTargets(root) {
+            root.querySelectorAll('.reveal-fade-left').forEach(el => revealObserver.observe(el));
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        /* ---------- Filter tabs (same as All Projects) ---------- */
+        const FILTER_TAB_DEFS = [
+            { key: 'all', label: 'All' },
+            { key: 'Ongoing', label: 'Ongoing' },
+            { key: 'Completed', label: 'Completed' },
+            { key: 'Upcoming', label: 'Upcoming' }
+        ];
+        const FILTER_HEADING_TEXT = {
+            all: 'Project Graph',
+            Ongoing: 'Ongoing Projects Graph',
+            Completed: 'Completed Projects Graph',
+            Upcoming: 'Upcoming Projects Graph'
+        };
+
+        let allProjectsData = [];
+        let currentFilter = 'all';
+        let filterTabsBuilt = false;
+        let lastFilteredCount = 0;
+
+        function updatePageHeading() {
+            const headingEl = document.getElementById('pageHeadingText');
+            if (!headingEl) return;
+            const newText = FILTER_HEADING_TEXT[currentFilter] || 'Project Graph';
+            if (headingEl.textContent !== newText) headingEl.textContent = newText;
+        }
+
+        function ensureFilterTabsBuilt() {
+            if (filterTabsBuilt) return;
+            const container = document.getElementById('filterTabsContainer');
+            const indicatorHtml = `<div id="filterTabIndicator"></div>`;
+            const buttonsHtml = FILTER_TAB_DEFS.map(t => `
+                <button data-filter="${escapeHtml(t.key)}" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">
+                    <span class="tab-label">${escapeHtml(t.label)}</span> <span class="tab-count">(0)</span>
+                </button>`).join('');
+            container.innerHTML = indicatorHtml + buttonsHtml;
+            container.querySelectorAll('.filter-tab').forEach(btn => btn.addEventListener('click', () => setFilter(btn.getAttribute('data-filter'))));
+            window.addEventListener('resize', () => scheduleIndicatorSync(0));
+            filterTabsBuilt = true;
+        }
+
+        const FILTER_TAB_TRANSITION_MS = 300;
+        let pendingFilterActiveTextTimeout = null;
+        let indicatorSyncTimer = null;
+
+        function scheduleIndicatorSync(delay = 0) {
+            clearTimeout(indicatorSyncTimer);
+            indicatorSyncTimer = setTimeout(() => requestAnimationFrame(moveFilterTabIndicator), delay);
+        }
+        function moveFilterTabIndicator() {
+            const container = document.getElementById('filterTabsContainer');
+            const indicator = document.getElementById('filterTabIndicator');
+            if (!container || !indicator) return;
+            const buttons = Array.from(container.querySelectorAll('.filter-tab'));
+            const activeBtn = buttons.find(b => b.getAttribute('data-filter') === currentFilter);
+            if (!activeBtn) return;
+            buttons.forEach(b => { if (b !== activeBtn) b.classList.remove('active-text'); });
+            indicator.style.width = activeBtn.offsetWidth + 'px';
+            indicator.style.height = activeBtn.offsetHeight + 'px';
+            indicator.style.transform = `translate(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px)`;
+            clearTimeout(pendingFilterActiveTextTimeout);
+            pendingFilterActiveTextTimeout = setTimeout(() => activeBtn.classList.add('active-text'), FILTER_TAB_TRANSITION_MS);
+        }
+        function updateFilterTabCounts(nonStatusFiltered) {
+            const counts = { all: nonStatusFiltered.length, Ongoing: 0, Completed: 0, Upcoming: 0 };
+            nonStatusFiltered.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+            document.getElementById('filterTabsContainer').querySelectorAll('.filter-tab').forEach(btn => {
+                const key = btn.getAttribute('data-filter');
+                btn.querySelector('.tab-count').textContent = `(${counts[key] !== undefined ? counts[key] : 0})`;
+            });
+        }
+        function setFilter(filter) {
+            currentFilter = filter;
+            updatePageHeading();
+            applyAdvFilters();
+        }
+
+        /* ---------- Reference lists ---------- */
+        const WORLD_COUNTRIES = [
+            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+            "Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium",
+            "Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria",
+            "Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad",
+            "Chile","China","Colombia","Comoros","Congo (Brazzaville)","Congo (DRC)","Costa Rica","Croatia","Cuba",
+            "Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador",
+            "Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia",
+            "Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti",
+            "Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+            "Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan",
+            "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+            "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar",
+            "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea",
+            "North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay",
+            "Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis",
+            "Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe",
+            "Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia",
+            "Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan",
+            "Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste",
+            "Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine",
+            "United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu",
+            "Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+        ];
+        const BD_DISTRICTS = [
+            "Bagerhat","Bandarban","Barguna","Barishal","Bhola","Bogura","Brahmanbaria","Chandpur","Chattogram",
+            "Chuadanga","Cox's Bazar","Cumilla","Dhaka","Dinajpur","Faridpur","Feni","Gaibandha","Gazipur",
+            "Gopalganj","Habiganj","Jamalpur","Jashore","Jhalokati","Jhenaidah","Joypurhat","Khagrachhari","Khulna",
+            "Kishoreganj","Kurigram","Kushtia","Lakshmipur","Lalmonirhat","Madaripur","Magura","Manikganj",
+            "Meherpur","Moulvibazar","Munshiganj","Mymensingh","Naogaon","Narail","Narayanganj","Narsingdi",
+            "Natore","Netrokona","Nilphamari","Noakhali","Pabna","Panchagarh","Patuakhali","Pirojpur","Rajbari",
+            "Rajshahi","Rangamati","Rangpur","Satkhira","Shariatpur","Sherpur","Sirajganj","Sunamganj","Sylhet",
+            "Tangail","Thakurgaon"
+        ];
+        function populateReferenceLists() {
+            const countryList = document.getElementById('worldCountryList');
+            if (countryList) countryList.innerHTML = WORLD_COUNTRIES.map(c => `<option value="${escapeHtml(c)}">`).join('');
+            const districtList = document.getElementById('bdDistrictList');
+            if (districtList) districtList.innerHTML = BD_DISTRICTS.map(d => `<option value="${escapeHtml(d)}">`).join('');
+        }
+
+        /* ---------- Advanced filter panel ---------- */
+        function toggleAdvFilterPanel() {
+            const panel = document.getElementById('advFilterPanel');
+            const label = document.getElementById('advFilterToggleLabel');
+            panel.classList.toggle('open');
+            label.textContent = panel.classList.contains('open') ? 'Hide Filters' : 'Show Filters';
+        }
+        function onCostModeChange() {
+            const mode = document.getElementById('costMode').value;
+            const exactWrap = document.getElementById('costExactWrap');
+            const rangeWrap = document.getElementById('costRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden'); rangeWrap.classList.add('hidden'); rangeWrap.classList.remove('flex');
+                document.getElementById('filterCostMin').value = ''; document.getElementById('filterCostMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden'); rangeWrap.classList.remove('hidden'); rangeWrap.classList.add('flex');
+                document.getElementById('filterCostExact').value = '';
+            }
+            applyAdvFilters();
+        }
+        function onDateModeChange() {
+            const mode = document.getElementById('dateMode').value;
+            const exactWrap = document.getElementById('dateExactWrap');
+            const rangeWrap = document.getElementById('dateRangeWrap');
+            if (mode === 'exact') {
+                exactWrap.classList.remove('hidden'); rangeWrap.classList.add('hidden'); rangeWrap.classList.remove('flex');
+                document.getElementById('filterDateMin').value = ''; document.getElementById('filterDateMax').value = '';
+            } else {
+                exactWrap.classList.add('hidden'); rangeWrap.classList.remove('hidden'); rangeWrap.classList.add('flex');
+                document.getElementById('filterDateExact').value = '';
+            }
+            applyAdvFilters();
+        }
+        function resetAdvFilters() {
+            ['filterCategory','filterOrganization','filterDonor','filterCountry','filterCostExact','filterCostMin',
+             'filterCostMax','filterDistrict','filterDateExact','filterDateMin','filterDateMax','filterEngineer'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('costMode').value = 'exact';
+            document.getElementById('dateMode').value = 'exact';
+            document.getElementById('costExactWrap').classList.remove('hidden');
+            document.getElementById('costRangeWrap').classList.add('hidden');
+            document.getElementById('costRangeWrap').classList.remove('flex');
+            document.getElementById('dateExactWrap').classList.remove('hidden');
+            document.getElementById('dateRangeWrap').classList.add('hidden');
+            document.getElementById('dateRangeWrap').classList.remove('flex');
+            searchQuery = '';
+            const si = document.getElementById('projectSearchInput');
+            if (si) si.value = '';
+            applyAdvFilters();
+        }
+
+        function getNonStatusFilteredProjects() {
+            const category = document.getElementById('filterCategory').value.toLowerCase();
+            const organization = document.getElementById('filterOrganization').value.toLowerCase();
+            const donor = document.getElementById('filterDonor').value.toLowerCase();
+            const country = document.getElementById('filterCountry').value.toLowerCase();
+            const district = document.getElementById('filterDistrict').value.toLowerCase();
+            const engineer = document.getElementById('filterEngineer').value.toLowerCase();
+
+            const costMode = document.getElementById('costMode').value;
+            const costExact = parseFloat(document.getElementById('filterCostExact').value);
+            const costMin = parseFloat(document.getElementById('filterCostMin').value);
+            const costMax = parseFloat(document.getElementById('filterCostMax').value);
+
+            const dateMode = document.getElementById('dateMode').value;
+            const dateExact = document.getElementById('filterDateExact').value;
+            const dateMin = document.getElementById('filterDateMin').value;
+            const dateMax = document.getElementById('filterDateMax').value;
+
+            return allProjectsData.filter(p => {
+                if (searchQuery) {
+                    const hay = [p.bd_number, p.ho_number, p.project_name, p.organization, p.donor_name, p.donated_country, p.district].join(' ').toUpperCase();
+                    if (!hay.includes(searchQuery)) return false;
+                }
+                if (category && (p.category || '').toLowerCase() !== category) return false;
+                if (organization && !(p.organization || '').toLowerCase().includes(organization)) return false;
+                if (donor && !(`${p.donor_name || ''} ${p.donor_id || ''}`).toLowerCase().includes(donor)) return false;
+                if (country && !(p.donated_country || '').toLowerCase().includes(country)) return false;
+                if (district && !(p.district || '').toLowerCase().includes(district)) return false;
+                if (engineer && !(`${p.engineer_name || ''} ${p.engineer_id || ''}`).toLowerCase().includes(engineer)) return false;
+
+                if (costMode === 'exact') {
+                    if (!isNaN(costExact) && (p.cost === null || p.cost === undefined || Number(p.cost) !== costExact)) return false;
+                } else {
+                    if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
+                    if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
+                }
+                if (dateMode === 'exact') {
+                    if (dateExact && p.opening_date !== dateExact) return false;
+                } else {
+                    if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
+                    if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
+                }
+                return true;
+            });
+        }
+
+        function applyAdvFilters() {
+            ensureFilterTabsBuilt();
+            const nonStatusFiltered = getNonStatusFilteredProjects();
+            updateFilterTabCounts(nonStatusFiltered);
+            const finalFiltered = currentFilter === 'all' ? nonStatusFiltered : nonStatusFiltered.filter(p => p.status === currentFilter);
+            lastFilteredCount = finalFiltered.length;
+            renderGraph(finalFiltered);
+            scheduleIndicatorSync(0);
+        }
+
+        /* ---------- Graph rendering ---------- */
+        function groupCount(list, keyFn) {
+            const map = {};
+            list.forEach(p => {
+                const k = keyFn(p);
+                if (!k) return;
+                map[k] = (map[k] || 0) + 1;
+            });
+            return Object.entries(map).sort((a, b) => b[1] - a[1]);
+        }
+
+        function barListHtml(title, icon, entries, limit) {
+            const rows = entries.slice(0, limit || 8);
+            const max = rows.length ? rows[0][1] : 0;
+            const body = rows.length
+                ? rows.map(([label, n]) => `
+                    <div class="mb-4 last:mb-0">
+                        <div class="flex items-center justify-between text-[11px] uppercase tracking-wide mb-1.5">
+                            <span class="text-slate-600 truncate pr-3">${escapeHtml(label)}</span>
+                            <span class="font-semibold text-slate-800">${n}</span>
+                        </div>
+                        <div class="bar-track"><div class="bar-fill" data-w="${max ? Math.round((n / max) * 100) : 0}"></div></div>
+                    </div>`).join('')
+                : `<div class="text-xs text-slate-400 uppercase tracking-wide py-8 text-center">No data</div>`;
+            return `
+                <div class="graph-card rounded-lg p-6">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-800 mb-5 flex items-center gap-2">
+                        <i class="fa-solid ${icon} text-amber-600"></i> ${escapeHtml(title)}
+                    </h3>
+                    ${body}
+                </div>`;
+        }
+
+        function statCardHtml(label, value, icon) {
+            return `
+                <div class="graph-card rounded-lg p-6 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid ${icon} text-amber-600"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="stat-value text-xl font-semibold truncate">${escapeHtml(value)}</div>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-500">${escapeHtml(label)}</div>
+                    </div>
+                </div>`;
+        }
+
+        function renderGraph(projects) {
+            const stats = document.getElementById('graphStats');
+            const charts = document.getElementById('graphCharts');
+
+            if (!projects || projects.length === 0) {
+                stats.innerHTML = '';
+                charts.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center text-center py-24 min-h-[320px] text-slate-400">
+                        <i class="fa-solid fa-chart-line text-4xl mb-4 text-slate-300"></i>
+                        <span class="text-sm tracking-wide uppercase">No projects match the selected filters.</span>
+                    </div>`;
+                return;
+            }
+
+            const totalCost = projects.reduce((s, p) => s + (Number(p.cost) || 0), 0);
+            const ongoing = projects.filter(p => p.status === 'Ongoing').length;
+            const completed = projects.filter(p => p.status === 'Completed').length;
+
+            stats.innerHTML =
+                statCardHtml('Total Projects', projects.length.toLocaleString(), 'fa-diagram-project') +
+                statCardHtml('Ongoing', ongoing.toLocaleString(), 'fa-person-digging') +
+                statCardHtml('Completed', completed.toLocaleString(), 'fa-circle-check') +
+                statCardHtml('Total Cost', totalCost.toLocaleString(), 'fa-coins');
+
+            const byStatus = groupCount(projects, p => p.status);
+            const byCategory = groupCount(projects, p => p.category);
+            const byYear = groupCount(projects, p => p.opening_date ? String(p.opening_date).slice(0, 4) : '').sort((a, b) => a[0].localeCompare(b[0]));
+            const byDistrict = groupCount(projects, p => p.district);
+
+            charts.innerHTML =
+                barListHtml('By Status', 'fa-list-check', byStatus, 6) +
+                barListHtml('By Category', 'fa-layer-group', byCategory, 8) +
+                barListHtml('By Year (Opening Date)', 'fa-calendar-days', byYear.slice().sort((a, b) => b[0].localeCompare(a[0])), 10) +
+                barListHtml('Top Districts', 'fa-location-dot', byDistrict, 8);
+
+            requestAnimationFrame(() => {
+                charts.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.getAttribute('data-w') + '%'; });
+            });
+        }
+
+        async function loadAllProjects() {
+            populateReferenceLists();
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('opening_date', { ascending: false, nullsFirst: false });
+
+            if (error) {
+                console.error(error);
+                document.getElementById('graphCharts').innerHTML =
+                    `<div class="col-span-full flex items-center justify-center py-24 min-h-[320px] text-red-500 text-sm">Failed to load projects: ${escapeHtml(error.message)}</div>`;
+                return;
+            }
+            allProjectsData = data || [];
+            applyAdvFilters();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            currentFilter = 'all';
+            loadAllProjects();
+            observeRevealTargets(document);
+            initAuthState();
+
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => scheduleIndicatorSync(50));
+            window.addEventListener('load', () => scheduleIndicatorSync(350));
+
+            const loadingProgress = document.getElementById('pageLoadingProgress');
+            const finishPageLoad = () => {
+                if (!loadingProgress) return;
+                loadingProgress.style.width = '100%';
+                setTimeout(() => { loadingProgress.style.opacity = '0'; }, 250);
+                setTimeout(() => { const bar = document.getElementById('pageLoadingBar'); if (bar) bar.style.display = 'none'; }, 650);
+            };
+            if (loadingProgress) requestAnimationFrame(() => { loadingProgress.style.width = '72%'; });
+            if (document.readyState === 'complete') finishPageLoad();
+            else window.addEventListener('load', finishPageLoad, { once: true });
+        });
     </script>
 </body>
 </html>
