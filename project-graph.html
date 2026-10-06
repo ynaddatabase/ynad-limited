@@ -164,7 +164,7 @@
         /* ---------- MOUNTAIN GRAPH ---------- */
         .mountain-wrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
         .mountain-svg { min-width: 760px; width: 100%; height: auto; display: block; }
-        #mgMarkers { pointer-events: none; }
+        #mgMarkers { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28)); pointer-events: none; }
         .mg-count { font-family: 'Poppins', sans-serif; font-weight: 500; fill: #ffffff; pointer-events: none; }
         .mg-label { font-family: 'Poppins', sans-serif; font-weight: 600; fill: #3a3c3c; letter-spacing: 1px; pointer-events: none; }
         body.theme-effective-dark .mg-label { fill: #e2e8f0; }
@@ -1019,7 +1019,7 @@
 
         /* ---------- Mountain graph ---------- */
         const MG_CATEGORIES = ['Masjid', 'Madrasa', 'Markaz', 'Orphanage', 'Ablution', 'Water Well', 'Clinic'];
-        const MG_GAP = 10, MG_DURATION = 1100, MG_DENSE_AFTER = 12, MG_MIN_AXIS = 4;
+        const MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12, MG_MIN_AXIS = 4;
         const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false, stagger: false, instant: false,
                           W: 1600, CH: 520, H: 650, ymin: 94, ymax: 370 };
 
@@ -1041,24 +1041,6 @@
             return d;
         }
         function mgEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-        /* a marker only sits on a real peak: a bar higher than its neighbours (middle bar of a flat top) */
-        function mgPeaks(keys, counts) {
-            const r = {}, n = keys.length;
-            keys.forEach(k => { r[k] = 0; });
-            if (n === 1) { r[keys[0]] = 1; return r; }
-            let a = 0;
-            while (a < n) {
-                let b = a;
-                while (b + 1 < n && counts[keys[b + 1]] === counts[keys[a]]) b++;
-                const v = counts[keys[a]];
-                const leftLower = a === 0 || counts[keys[a - 1]] < v;
-                const rightLower = b === n - 1 || counts[keys[b + 1]] < v;
-                const flatAll = a === 0 && b === n - 1;
-                if (leftLower && rightLower && !flatAll) r[keys[Math.floor((a + b) / 2)]] = 1;
-                a = b + 1;
-            }
-            return r;
-        }
         function mgBack(t) { const c1 = 1.2, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
         function mgShort(name) { const s = String(name); return s.length > 26 ? s.slice(0, 25) + '…' : s; }
 
@@ -1133,11 +1115,8 @@
                 const cfs = Math.min(38, slot * 0.8 / (num.length * 0.62));
                 counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${CH - 50}" text-anchor="middle" opacity="${o}">${num}</text>`);
 
-                const mv = s.o * s.m;
-                if (mv > 0.01) {
-                    const ro = Math.min(26, slot * 0.42) * (0.55 + 0.45 * s.m);
-                    markers.push(`<g opacity="${mv.toFixed(3)}"><circle cx="${cx.toFixed(2)}" cy="${(y + 4).toFixed(2)}" r="${ro.toFixed(2)}" fill="#000000" opacity="0.22"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${ro.toFixed(2)}" fill="#ffffff"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${(ro * 0.5).toFixed(2)}" fill="#b45309"/></g>`);
-                }
+                const ro = Math.min(26, slot * 0.42);
+                markers.push(`<g opacity="${o}"><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${ro.toFixed(2)}" fill="#ffffff"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${(ro * 0.5).toFixed(2)}" fill="#b45309"/></g>`);
 
                 const o2 = (s.o * s.o).toFixed(3);
                 if (mgState.dense) {
@@ -1201,22 +1180,21 @@
 
             /* targets */
             const target = {};
-            const peaks = mgPeaks(keys, counts);
             keys.forEach((k, i) => {
                 const tx = (i + 0.5) * sw, tp = i % 2 === 0 ? 1 : 0;
                 let cur = mgState.cats[k];
-                if (!cur) cur = mgState.cats[k] = { c: 0, x: tx, sw: fresh ? sw : 0, o: fresh ? 1 : 0, p: tp, m: fresh ? peaks[k] : 0 };
-                else if (cur.o < 0.002 || cur.sw < 1) { cur.x = tx; cur.sw = 0; cur.p = tp; cur.m = 0; }
-                target[k] = { c: counts[k], x: tx, sw: sw, o: 1, p: tp, m: peaks[k] };
+                if (!cur) cur = mgState.cats[k] = { c: 0, x: tx, sw: fresh ? sw : 0, o: fresh ? 1 : 0, p: tp };
+                else if (cur.o < 0.002 || cur.sw < 1) { cur.x = tx; cur.sw = 0; cur.p = tp; }
+                target[k] = { c: counts[k], x: tx, sw: sw, o: 1, p: tp };
             });
             Object.keys(mgState.cats).forEach(k => {
-                if (!target[k]) { const cur = mgState.cats[k]; target[k] = { c: 0, x: cur.x, sw: 0, o: 0, p: cur.p, m: 0 }; }
+                if (!target[k]) { const cur = mgState.cats[k]; target[k] = { c: 0, x: cur.x, sw: 0, o: 0, p: cur.p }; }
             });
             if (fresh) mgState.max = tmax;
             mgState.ready = true;
 
             const from = {};
-            Object.keys(target).forEach(k => { const s = mgState.cats[k]; from[k] = { c: s.c, x: s.x, sw: s.sw, o: s.o, p: s.p, m: s.m }; });
+            Object.keys(target).forEach(k => { const s = mgState.cats[k]; from[k] = { c: s.c, x: s.x, sw: s.sw, o: s.o, p: s.p }; });
             const fromMax = mgState.max;
 
             if (mgState.raf) cancelAnimationFrame(mgState.raf);
@@ -1240,7 +1218,6 @@
                     s.sw = a.sw + (b.sw - a.sw) * e;
                     s.o = a.o + (b.o - a.o) * e;
                     s.p = a.p + (b.p - a.p) * e;
-                    s.m = a.m + (b.m - a.m) * e;
                 });
                 mgState.max = fromMax + (tmax - fromMax) * mgEase(Math.min(1, el / MG_DURATION));
                 if (t >= 1) Object.keys(target).forEach(k => { if (target[k].o === 0) delete mgState.cats[k]; });
@@ -1314,7 +1291,7 @@
                     /* freeze a copy of the current graph (ids renamed so it never clashes with the new one) */
                     ghost = document.createElement('div');
                     ghost.className = 'mg-ghost';
-                    ghost.style.cssText = 'position:absolute;top:0;left:0;width:100%;pointer-events:none;will-change:transform;';
+                    ghost.style.cssText = 'position:absolute;top:0;left:0;width:100%;pointer-events:none;';
                     ghost.innerHTML = charts.innerHTML
                         .replace(/id="(mg\w+)"/g, 'id="old-$1"')
                         .replace(/url\(#(mg\w+)\)/g, 'url(#old-$1)');
