@@ -86,9 +86,10 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .legend-count{font:inherit;color:inherit}
 
-.project-pin{position:relative;width:34px;height:40px;display:flex;align-items:center;justify-content:center}
-.project-pin svg{position:absolute;top:0;left:0;width:34px;height:40px}
-.pin-label{position:relative;top:-6px;color:#fff;font-size:8.5px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none}
+.project-pin{position:relative;width:38px;height:46px;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:auto}
+.project-pin svg{position:absolute;top:0;left:0;width:38px;height:46px;display:block;overflow:visible}
+.pin-label{position:relative;top:-7px;color:#fff;font-size:9px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.55);pointer-events:none;z-index:2;line-height:1}
+.project-pin::after{content:'';position:absolute;top:12px;left:12px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);pointer-events:none;z-index:1}
 .project-pin:hover svg{filter:brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
 
 /* Bangladesh boundary overlay: outline highlight + optional district labels (English names only). */
@@ -437,19 +438,63 @@ function esc(s){
 return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+function normalizeStatus(value){
+const s=String(value==null?'':value).trim().toLowerCase();
+if(s==='ongoing')return'Ongoing';
+if(s==='completed'||s==='complete'||s==='done')return'Completed';
+if(s==='upcoming'||s==='pending')return'Upcoming';
+return String(value==null?'':value).trim();
+}
+
 function getCoords(link){
-if(!link||typeof link!=='string')return null;
+if(link==null)return null;
 try{
-const s=decodeURIComponent(link);
+let s=String(link).trim();
+if(!s)return null;
+try{s=decodeURIComponent(s);}catch(e){}
+
 let m=s.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
 if(m)return{lat:+m[1],lng:+m[2]};
+
 m=s.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
 if(m)return{lat:+m[1],lng:+m[2]};
-m=s.match(/[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+
+m=s.match(/[?&#](?:q|query|ll|center)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
 if(m)return{lat:+m[1],lng:+m[2]};
-m=s.match(/(-?\d{1,3}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/);
+
+m=s.match(/(?:latitude|lat)=(-?\d+(?:\.\d+)?)[^\d-]+(?:longitude|lng|lon)=(-?\d+(?:\.\d+)?)/i);
 if(m)return{lat:+m[1],lng:+m[2]};
+
+/* Generic coordinate pair. Restrict to Bangladesh-ish ranges so a random
+   number pair from a Google Maps URL is not mistaken for coordinates. */
+const pairs=s.match(/(-?\d{1,3}\.\d{3,})\s*[,;|]\s*(-?\d{1,3}\.\d{3,})/g);
+if(pairs){
+for(const pair of pairs){
+const mm=pair.match(/(-?\d{1,3}\.\d{3,})\s*[,;|]\s*(-?\d{1,3}\.\d{3,})/);
+if(!mm)continue;
+const lat=+mm[1],lng=+mm[2];
+if(lat>=20&&lat<=27&&lng>=88&&lng<=93)return{lat,lng};
+}
+}
 }catch(e){}
+return null;
+}
+
+function getProjectCoords(p){
+const latKeys=['latitude','lat','project_latitude','location_lat'];
+const lngKeys=['longitude','lng','lon','project_longitude','location_lng'];
+for(let i=0;i<latKeys.length;i++){
+const lat=Number(p?.[latKeys[i]]),lng=Number(p?.[lngKeys[i]]);
+if(Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180)return{lat,lng};
+}
+const candidates=[
+ p?.location_link,p?.google_maps_link,p?.maps_link,p?.map_link,
+ p?.location_url,p?.location,p?.coordinates,p?.coordinate
+];
+for(const value of candidates){
+const c=getCoords(value);
+if(c)return c;
+}
 return null;
 }
 
@@ -460,25 +505,27 @@ return w.length===1?w[0].slice(0,3).toUpperCase():w.map(x=>x[0]).join('').slice(
 }
 
 function makePin(p){
-const c=COLORS[p.status]||'#64748b';
+const status=normalizeStatus(p.status);
+const c=COLORS[status]||'#64748b';
 return L.divIcon({
-className:'',
-html:`<div class="project-pin"><svg viewBox="0 0 34 40"><path d="M17 0C7.6 0 0 7.6 0 17c0 12.4 17 23 17 23s17-10.6 17-23C34 7.6 26.4 0 17 0z" fill="${c}" stroke="rgba(0,0,0,.25)" stroke-width=".6"/><circle cx="17" cy="16.5" r="10.5" fill="rgba(255,255,255,.18)"/></svg><div class="pin-label">${esc(shortCode(p.project_name))}</div></div>`,
-iconSize:[34,40],
-iconAnchor:[17,40],
-popupAnchor:[0,-38]
+className:'project-marker-icon',
+html:`<div class="project-pin" title="${esc(p.project_name||status||'Project')}"><svg viewBox="0 0 38 46" aria-hidden="true"><path d="M19 1C9.05 1 1 9.05 1 19c0 13.35 18 25 18 25s18-11.65 18-25C37 9.05 28.95 1 19 1z" fill="${c}" stroke="#ffffff" stroke-width="1.6"/><circle cx="19" cy="19" r="7" fill="#ffffff"/></svg><div class="pin-label">${esc(shortCode(p.project_name))}</div></div>`,
+iconSize:[38,46],
+iconAnchor:[19,46],
+popupAnchor:[0,-42]
 });
 }
 
 function popup(p){
-const c=COLORS[p.status]||'#64748b';
+const status=normalizeStatus(p.status);
+const c=COLORS[status]||'#64748b';
 return`<div><div class="popup-title">${esc(p.project_name||'Project')}</div>
 ${p.district?`<div class="popup-row"><span>Location</span><span>${esc(p.district)}</span></div>`:''}
 ${(p.category||p.project_type)?`<div class="popup-row"><span>Category</span><span>${esc(p.category||p.project_type)}</span></div>`:''}
 ${p.organization?`<div class="popup-row"><span>Org</span><span>${esc(p.organization)}</span></div>`:''}
 ${p.donated_country?`<div class="popup-row"><span>Country</span><span>${esc(p.donated_country)}</span></div>`:''}
 ${p.bd_number?`<div class="popup-row"><span>Code</span><span>${esc(p.bd_number)}</span></div>`:''}
-<span class="popup-status" style="background:${c}">${esc(p.status||'N/A')}</span></div>`;
+<span class="popup-status" style="background:${c}">${esc(status||'N/A')}</span></div>`;
 }
 
 /* ---------- Filter reference lists ---------- */
@@ -526,7 +573,7 @@ const dateMax=document.getElementById('filterDateMax').value;
 
 return allProjects.filter(p=>{
 if(category&&String(p.category||p.project_type||'').toLowerCase()!==category)return false;
-if(status&&p.status!==status)return false;
+if(status&&normalizeStatus(p.status)!==status)return false;
 if(organization&&!String(p.organization||'').toLowerCase().includes(organization))return false;
 if(donor&&!`${p.donor_name||''} ${p.donor_id||''}`.toLowerCase().includes(donor))return false;
 if(country&&!String(p.donated_country||'').toLowerCase().includes(country))return false;
@@ -554,7 +601,8 @@ return true;
 function updateStatusSummary(){
 const counts={Ongoing:0,Completed:0,Upcoming:0};
 allProjects.forEach(p=>{
-if(Object.prototype.hasOwnProperty.call(counts,p.status))counts[p.status]++;
+const status=normalizeStatus(p.status);
+if(Object.prototype.hasOwnProperty.call(counts,status))counts[status]++;
 });
 const ongoing=document.getElementById('legendCountOngoing');
 const completed=document.getElementById('legendCountCompleted');
@@ -575,21 +623,31 @@ function applyFilters(){
 const data=getFiltered();
 markerLayer.clearLayers();
 updateStatusSummary();
+
+const mapData=data.filter(p=>Number.isFinite(p._lat)&&Number.isFinite(p._lng));
 const bounds=[];
-data.forEach(p=>{
-L.marker([p._lat,p._lng],{icon:makePin(p)})
+mapData.forEach(p=>{
+L.marker([p._lat,p._lng],{
+icon:makePin(p),
+pane:'projectMarkersPane',
+zIndexOffset:1000
+})
 .bindPopup(popup(p))
 .addTo(markerLayer);
 bounds.push([p._lat,p._lng]);
 });
+
 const n=document.querySelectorAll('#filterCount strong');
-n[0].textContent=data.length;
+n[0].textContent=mapData.length;
 n[1].textContent=allProjects.length;
+
 if(bounds.length){
 map.fitBounds(bounds,{padding:[40,40],maxZoom:12,animate:true});
-if(!initialViewCaptured)map.once('moveend',captureInitialMapView);
-}else{
-captureInitialMapView();
+}
+
+const missingCoords=allProjects.filter(p=>!Number.isFinite(p._lat)||!Number.isFinite(p._lng));
+if(missingCoords.length){
+console.warn(`${missingCoords.length} project(s) have no parseable map coordinates. Check their location_link / map link.`);
 }
 }
 
@@ -648,10 +706,8 @@ if(zout)bindHold(zout,()=>map.zoomOut(),350);
 }
 
 function locateMap(){
-if(allProjects.length){
-const p=allProjects[0];
-map.setView([p._lat,p._lng],map.getZoom());
-}
+const p=allProjects.find(x=>Number.isFinite(x._lat)&&Number.isFinite(x._lng));
+if(p)map.setView([p._lat,p._lng],map.getZoom());
 }
 
 function captureInitialMapView(){
@@ -724,13 +780,15 @@ const{data,error}=await supabaseClient.from('projects').select('*');
 loading.style.display='none';
 if(error){
 console.error('Project loading error:',error);
+loading.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i>Unable to load project data';
+loading.style.display='flex';
 return;
 }
 
 allProjects=(data||[]).map(p=>{
-const c=getCoords(p.location_link);
-return c?{...p,_lat:c.lat,_lng:c.lng}:null;
-}).filter(Boolean);
+const c=getProjectCoords(p);
+return c?{...p,status:normalizeStatus(p.status),_lat:c.lat,_lng:c.lng}:{...p,status:normalizeStatus(p.status),_lat:null,_lng:null};
+});
 
 updateStatusSummary();
 populateReferenceLists();
@@ -747,6 +805,9 @@ dragging:true,
 touchZoom:true,
 boxZoom:true
 }).setView([23.8103,90.4125],8);
+initialMapCenter=map.getCenter();
+initialMapZoom=map.getZoom();
+initialViewCaptured=true;
 
 const mapEl=document.getElementById('leafletMap');
 mapEl.addEventListener('wheel',function(e){
@@ -778,6 +839,11 @@ map.createPane('labelsPane');
 map.getPane('labelsPane').style.zIndex=350;
 map.getPane('labelsPane').style.pointerEvents='none';
 
+/* Keep project pins clearly above the country mask, district boundaries and labels. */
+map.createPane('projectMarkersPane');
+map.getPane('projectMarkersPane').style.zIndex=750;
+map.getPane('projectMarkersPane').style.pointerEvents='auto';
+
 labelsLayer=L.tileLayer(
 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
 {
@@ -799,10 +865,7 @@ document.getElementById('filterToggleBtn').classList.add('show');
 document.getElementById('mapControls').classList.add('collapsed');
 
 loadData();
-setTimeout(()=>{
-map.invalidateSize({animate:false});
-if(!initialViewCaptured)captureInitialMapView();
-},900);
+setTimeout(()=>map.invalidateSize({animate:false}),900);
 setupPanHold();
 }
 
