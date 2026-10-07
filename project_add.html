@@ -440,7 +440,7 @@ function setFieldVisible(w, v) {
 }
 function updateTimelineFieldsVisibility() {
   const st = statusSelect.value;
-  const map = { Ongoing: [1,1,0,0], Opening: [1,1,1,1], Upcoming: [1,0,0,0] };
+  const map = { Ongoing: [1,1,0,0], Completed: [1,1,1,1], Upcoming: [1,0,0,0] };
   const m = map[st] || [1,1,1,1];
   setFieldVisible(fields.a, m[0]); setFieldVisible(fields.s, m[1]);
   setFieldVisible(fields.o, m[2]); setFieldVisible(fields.d, m[3]);
