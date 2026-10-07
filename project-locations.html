@@ -338,7 +338,7 @@ interactive:false
 function applyMaskStyle(type){
 if(!bdMaskPolygon)return;
 if(type==='sat'){
-bdMaskPolygon.setStyle({fillColor:'#0b1220',fillOpacity:0.62});
+bdMaskPolygon.setStyle({fillColor:'#eef2f6',fillOpacity:0.82});
 }else{
 bdMaskPolygon.setStyle({fillColor:'#eef2f6',fillOpacity:0.62});
 }
@@ -363,20 +363,19 @@ await Promise.all(DIVISION_LAYERS.map(async ({name,id})=>{
     L.geoJSON(geojson,{
       style:()=>({
         color:color,
-        weight:1.6,
-        opacity:0.72,
+        weight:1,
+        opacity:0,
         fillColor:color,
-        fillOpacity:0.045,
+        fillOpacity:0,
         interactive:true
       }),
       onEachFeature:(feature,layer)=>{
         layer.bindTooltip(name,{sticky:true,className:'division-tooltip'});
         layer.on('mouseover',function(){
-          this.setStyle({weight:3,opacity:0.98,fillOpacity:0.20});
-          this.bringToFront();
+          this.setStyle({weight:1.6,opacity:0.45,fillOpacity:0.08});
         });
         layer.on('mouseout',function(){
-          this.setStyle({weight:1.6,opacity:0.72,fillOpacity:0.045});
+          this.setStyle({weight:1,opacity:0,fillOpacity:0});
         });
       }
     }).addTo(divisionLayer);
