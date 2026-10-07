@@ -82,15 +82,16 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 .street-btn{top:88px;left:138px;width:40px;height:40px;border-radius:4px;color:#e2a600;font-size:19px}
 
 #mapLegend{position:absolute;left:14px;bottom:12px;z-index:1000;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #ddd;border-radius:7px;box-shadow:0 4px 15px rgba(0,0,0,.12);display:flex;gap:12px;font-size:10px}
-.legend-item{display:flex;align-items:center;gap:5px;color:#334155}
+.legend-item{display:flex;align-items:center;gap:5px;color:#334155}.legend-button{border:0;background:transparent;font:inherit;padding:0;cursor:pointer}.legend-button:hover{color:#0f172a}.legend-button:focus{outline:0}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .legend-count{font:inherit;color:inherit}
 
-.project-pin{position:relative;width:38px;height:46px;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:auto}
-.project-pin svg{position:absolute;top:0;left:0;width:38px;height:46px;display:block;overflow:visible}
-.pin-label{position:relative;top:-7px;color:#fff;font-size:9px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.55);pointer-events:none;z-index:2;line-height:1}
-.project-pin::after{content:'';position:absolute;top:12px;left:12px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);pointer-events:none;z-index:1}
-.project-pin:hover svg{filter:brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.leaflet-marker-icon.project-marker-icon{overflow:visible!important}
+.project-pin{position:relative;width:42px;height:50px;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:auto;filter:drop-shadow(0 3px 4px rgba(15,23,42,.26))}
+.project-pin svg{position:absolute;top:0;left:0;width:42px;height:50px;display:block;overflow:visible;transition:filter .18s ease,transform .18s ease}
+.pin-label{position:relative;top:-7px;color:#fff;font-size:10px;font-weight:800;line-height:1;letter-spacing:-.02em;text-shadow:0 1px 2px rgba(0,0,0,.48);pointer-events:none;z-index:3;white-space:nowrap}
+.project-pin:hover{filter:drop-shadow(0 5px 10px rgba(15,23,42,.34))}
+.project-pin:hover svg{transform:translateY(-1px) scale(1.05);filter:brightness(1.08)}
 
 /* Bangladesh boundary overlay: outline highlight + optional district labels (English names only). */
 .district-label-icon{background:transparent!important;border:0!important}
@@ -205,11 +206,11 @@ html.dark .district-label{background:rgba(15,23,42,.76);color:#e2e8f0;box-shadow
 <option value="exact" selected>Exact Cost</option>
 <option value="range">Cost Range</option>
 </select></div>
-<div id="costExactWrap"><input type="number" id="filterCostExact" class="filter-input" oninput="applyFilters()" placeholder="750000"></div>
+<div id="costExactWrap"><input type="number" id="filterCostExact" class="filter-input" oninput="applyFilters()" placeholder="Enter exact cost"></div>
 <div id="costRangeWrap" class="range-row">
-<input type="number" id="filterCostMin" class="filter-input" oninput="applyFilters()" placeholder="500000">
+<input type="number" id="filterCostMin" class="filter-input" oninput="applyFilters()" placeholder="Minimum">
 <span>—</span>
-<input type="number" id="filterCostMax" class="filter-input" oninput="applyFilters()" placeholder="1800000">
+<input type="number" id="filterCostMax" class="filter-input" oninput="applyFilters()" placeholder="Maximum">
 </div>
 </div>
 
@@ -280,9 +281,9 @@ html.dark .district-label{background:rgba(15,23,42,.76);color:#e2e8f0;box-shadow
 </div>
 
 <div id="mapLegend">
-<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Ongoing <span class="legend-count" id="legendCountOngoing">0</span></div>
-<div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Completed <span class="legend-count" id="legendCountCompleted">0</span></div>
-<div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Upcoming <span class="legend-count" id="legendCountUpcoming">0</span></div>
+<button type="button" class="legend-item legend-button" onclick="setStatusFromSummary('Ongoing')"><span class="legend-dot" style="background:#f59e0b"></span>Ongoing <span class="legend-count" id="legendCountOngoing">0</span></button>
+<button type="button" class="legend-item legend-button" onclick="setStatusFromSummary('Completed')"><span class="legend-dot" style="background:#16a34a"></span>Completed <span class="legend-count" id="legendCountCompleted">0</span></button>
+<button type="button" class="legend-item legend-button" onclick="setStatusFromSummary('Upcoming')"><span class="legend-dot" style="background:#2563eb"></span>Upcoming <span class="legend-count" id="legendCountUpcoming">0</span></button>
 </div>
 </div>
 
@@ -292,6 +293,7 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const COLORS={Ongoing:'#f59e0b',Completed:'#16a34a',Upcoming:'#2563eb'};
 let map,markerLayer,allProjects=[],mapLayer,satLayer,labelsLayer,districtBoundaryLayer,districtLabelsLayer,bdBoundaryLayer,divisionLayer,bdMaskPolygon;
+let districtCenters=new Map();
 let initialMapCenter=L.latLng(23.8103,90.4125),initialMapZoom=8,initialViewCaptured=false;
 
 /* Country outline remains local for fast rendering. Division boundaries are
@@ -407,6 +409,10 @@ const p=feature&&feature.properties?feature.properties:{};
 return p.name||p.NAME_2||p.NAME||p.district||p.DISTRICT||p.shapeName||p.shape_name||'';
 }
 
+function districtKey(value){
+return String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9]+/g,'');
+}
+
 function addDistrictLabel(layer,name){
 if(!name)return;
 const center=layer.getBounds().getCenter();
@@ -423,12 +429,22 @@ const response=await fetch(DISTRICT_GEOJSON_URL,{cache:'force-cache'});
 if(!response.ok)throw new Error(`District GeoJSON HTTP ${response.status}`);
 const geojson=await response.json();
 
+districtCenters.clear();
 districtBoundaryLayer=L.geoJSON(geojson,{
 style:()=>({fill:false,color:'#64748b',weight:1,opacity:.72,interactive:false}),
-onEachFeature:(feature,layer)=>addDistrictLabel(layer,districtName(feature))
+onEachFeature:(feature,layer)=>{
+const name=districtName(feature);
+addDistrictLabel(layer,name);
+if(name){
+const center=layer.getBounds().getCenter();
+ districtCenters.set(districtKey(name),center);
+}
+}
 }).addTo(map);
 
 districtBoundaryLayer.bringToFront();
+applyDistrictLocationFallbacks();
+if(allProjects.length)applyFilters();
 }catch(err){
 console.warn('District boundary layer could not be loaded:',err);
 }
@@ -498,21 +514,29 @@ if(c)return c;
 return null;
 }
 
-function shortCode(n){
-if(!n)return'?';
-const w=String(n).trim().split(/\s+/).filter(Boolean);
-return w.length===1?w[0].slice(0,3).toUpperCase():w.map(x=>x[0]).join('').slice(0,4).toUpperCase();
+function markerNumber(p,index){
+const candidates=[p?.bd_number,p?.ho_number,p?.project_number,p?.project_id,p?.id];
+for(const value of candidates){
+if(value===null||value===undefined||String(value).trim()==='')continue;
+const digits=String(value).match(/\d+/g);
+if(digits&&digits.join('')){
+const joined=digits.join('');
+return joined.length>4?joined.slice(-4):joined;
+}
+}
+return String(index+1);
 }
 
-function makePin(p){
+function makePin(p,index=0){
 const status=normalizeStatus(p.status);
 const c=COLORS[status]||'#64748b';
+const n=markerNumber(p,index);
 return L.divIcon({
 className:'project-marker-icon',
-html:`<div class="project-pin" title="${esc(p.project_name||status||'Project')}"><svg viewBox="0 0 38 46" aria-hidden="true"><path d="M19 1C9.05 1 1 9.05 1 19c0 13.35 18 25 18 25s18-11.65 18-25C37 9.05 28.95 1 19 1z" fill="${c}" stroke="#ffffff" stroke-width="1.6"/><circle cx="19" cy="19" r="7" fill="#ffffff"/></svg><div class="pin-label">${esc(shortCode(p.project_name))}</div></div>`,
-iconSize:[38,46],
-iconAnchor:[19,46],
-popupAnchor:[0,-42]
+html:`<div class="project-pin" title="${esc(p.project_name||status||'Project')}"><svg viewBox="0 0 42 50" aria-hidden="true"><path d="M21 1C9.95 1 1 9.95 1 21c0 13.85 20 27 20 27s20-13.15 20-27C41 9.95 32.05 1 21 1Z" fill="${c}" stroke="#ffffff" stroke-width="1.7"/><circle cx="21" cy="20" r="10.5" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.78)" stroke-width="1.25"/><circle cx="21" cy="20" r="7.3" fill="rgba(0,0,0,.05)"/></svg><div class="pin-label">${esc(n)}</div></div>`,
+iconSize:[42,50],
+iconAnchor:[21,50],
+popupAnchor:[0,-46]
 });
 }
 
@@ -520,7 +544,7 @@ function popup(p){
 const status=normalizeStatus(p.status);
 const c=COLORS[status]||'#64748b';
 return`<div><div class="popup-title">${esc(p.project_name||'Project')}</div>
-${p.district?`<div class="popup-row"><span>Location</span><span>${esc(p.district)}</span></div>`:''}
+${p.district?`<div class="popup-row"><span>Location</span><span>${esc(p.district)}${p._approxLocation?' (approx.)':''}</span></div>`:''}
 ${(p.category||p.project_type)?`<div class="popup-row"><span>Category</span><span>${esc(p.category||p.project_type)}</span></div>`:''}
 ${p.organization?`<div class="popup-row"><span>Org</span><span>${esc(p.organization)}</span></div>`:''}
 ${p.donated_country?`<div class="popup-row"><span>Country</span><span>${esc(p.donated_country)}</span></div>`:''}
@@ -555,11 +579,36 @@ const range=document.getElementById('dateMode').value==='range';
 toggleMode('dateMode','dateExactWrap','dateRangeWrap',range?['filterDateExact']:['filterDateMin','filterDateMax']);
 }
 
+function applyDistrictLocationFallbacks(){
+if(!districtCenters.size||!allProjects.length)return;
+allProjects.forEach(p=>{
+if(Number.isFinite(p._lat)&&Number.isFinite(p._lng))return;
+const center=districtCenters.get(districtKey(p.district));
+if(center){
+ p._lat=center.lat;
+ p._lng=center.lng;
+ p._approxLocation=true;
+}
+});
+}
+
+function cleanText(value){
+return String(value==null?'':value).trim().toLowerCase();
+}
+
+function containsText(value,query){
+const hay=cleanText(value);
+return !query||hay.includes(query);
+}
+
 function getFiltered(){
-const v=id=>document.getElementById(id).value.trim().toLowerCase();
-const category=v('filterCategory'),status=document.getElementById('filterStatus').value;
-const organization=v('filterOrganization'),donor=v('filterDonor'),country=v('filterCountry');
-const district=v('filterDistrict'),engineer=v('filterEngineer');
+const category=cleanText(document.getElementById('filterCategory').value);
+const status=normalizeStatus(document.getElementById('filterStatus').value);
+const organization=cleanText(document.getElementById('filterOrganization').value);
+const donor=cleanText(document.getElementById('filterDonor').value);
+const country=cleanText(document.getElementById('filterCountry').value);
+const district=cleanText(document.getElementById('filterDistrict').value);
+const engineer=cleanText(document.getElementById('filterEngineer').value);
 
 const costMode=document.getElementById('costMode').value;
 const costExact=parseFloat(document.getElementById('filterCostExact').value);
@@ -572,20 +621,24 @@ const dateMin=document.getElementById('filterDateMin').value;
 const dateMax=document.getElementById('filterDateMax').value;
 
 return allProjects.filter(p=>{
-if(category&&String(p.category||p.project_type||'').toLowerCase()!==category)return false;
-if(status&&normalizeStatus(p.status)!==status)return false;
-if(organization&&!String(p.organization||'').toLowerCase().includes(organization))return false;
-if(donor&&!`${p.donor_name||''} ${p.donor_id||''}`.toLowerCase().includes(donor))return false;
-if(country&&!String(p.donated_country||'').toLowerCase().includes(country))return false;
-if(district&&!String(p.district||'').toLowerCase().includes(district))return false;
-if(engineer&&!`${p.engineer_name||''} ${p.engineer_id||''}`.toLowerCase().includes(engineer))return false;
+const projectCategory=cleanText(p.category||p.project_type);
+const projectStatus=normalizeStatus(p.status);
 
-const cost=(p.cost===null||p.cost===undefined||p.cost==='')?null:Number(p.cost);
+if(category&&projectCategory!==category)return false;
+if(status&&projectStatus!==status)return false;
+if(!containsText(p.organization,organization))return false;
+if(!containsText(`${p.donor_name||''} ${p.donor_id||''}`,donor))return false;
+if(!containsText(p.donated_country,country))return false;
+if(!containsText(p.district,district))return false;
+if(!containsText(`${p.engineer_name||''} ${p.engineer_id||''}`,engineer))return false;
+
+const rawCost=p.cost;
+const cost=(rawCost===null||rawCost===undefined||rawCost==='')?null:Number(rawCost);
 if(costMode==='exact'){
-if(!isNaN(costExact)&&(cost===null||cost!==costExact))return false;
+if(Number.isFinite(costExact)&&(cost===null||cost!==costExact))return false;
 }else{
-if(!isNaN(costMin)&&(cost===null||cost<costMin))return false;
-if(!isNaN(costMax)&&(cost===null||cost>costMax))return false;
+if(Number.isFinite(costMin)&&(cost===null||cost<costMin))return false;
+if(Number.isFinite(costMax)&&(cost===null||cost>costMax))return false;
 }
 
 if(dateMode==='exact'){
@@ -594,6 +647,7 @@ if(dateExact&&p.opening_date!==dateExact)return false;
 if(dateMin&&(!p.opening_date||p.opening_date<dateMin))return false;
 if(dateMax&&(!p.opening_date||p.opening_date>dateMax))return false;
 }
+
 return true;
 });
 }
@@ -620,17 +674,18 @@ applyFilters();
 }
 
 function applyFilters(){
+applyDistrictLocationFallbacks();
 const data=getFiltered();
 markerLayer.clearLayers();
 updateStatusSummary();
 
 const mapData=data.filter(p=>Number.isFinite(p._lat)&&Number.isFinite(p._lng));
 const bounds=[];
-mapData.forEach(p=>{
+mapData.forEach((p,index)=>{
 L.marker([p._lat,p._lng],{
-icon:makePin(p),
+icon:makePin(p,index),
 pane:'projectMarkersPane',
-zIndexOffset:1000
+zIndexOffset:2000
 })
 .bindPopup(popup(p))
 .addTo(markerLayer);
@@ -638,27 +693,38 @@ bounds.push([p._lat,p._lng]);
 });
 
 const n=document.querySelectorAll('#filterCount strong');
-n[0].textContent=mapData.length;
-n[1].textContent=allProjects.length;
+if(n[0])n[0].textContent=data.length;
+if(n[1])n[1].textContent=allProjects.length;
 
 if(bounds.length){
-map.fitBounds(bounds,{padding:[40,40],maxZoom:12,animate:true});
+map.fitBounds(bounds,{padding:[60,60],maxZoom:12,animate:true});
+}
+
+if(!data.length){
+console.info('No projects match the current filters.');
 }
 
 const missingCoords=allProjects.filter(p=>!Number.isFinite(p._lat)||!Number.isFinite(p._lng));
 if(missingCoords.length){
-console.warn(`${missingCoords.length} project(s) have no parseable map coordinates. Check their location_link / map link.`);
+console.warn(`${missingCoords.length} project(s) still have no parseable coordinate or district fallback.`,missingCoords.map(p=>p.project_name||p.id));
 }
 }
 
-function resetFilters(){
-['filterCategory','filterStatus','filterOrganization','filterDonor','filterCountry','filterCostExact','filterCostMin','filterCostMax','filterDistrict','filterDateExact','filterDateMin','filterDateMax','filterEngineer'].forEach(id=>document.getElementById(id).value='');
+function clearFilterInputs(){
+['filterCategory','filterStatus','filterOrganization','filterDonor','filterCountry','filterCostExact','filterCostMin','filterCostMax','filterDistrict','filterDateExact','filterDateMin','filterDateMax','filterEngineer'].forEach(id=>{
+const el=document.getElementById(id);
+if(el)el.value='';
+});
 document.getElementById('costMode').value='exact';
 document.getElementById('dateMode').value='exact';
 document.getElementById('costExactWrap').style.display='block';
 document.getElementById('costRangeWrap').classList.remove('show');
 document.getElementById('dateExactWrap').style.display='block';
 document.getElementById('dateRangeWrap').classList.remove('show');
+}
+
+function resetFilters(){
+clearFilterInputs();
 applyFilters();
 }
 
@@ -777,7 +843,6 @@ applyMaskStyle(type);
 async function loadData(){
 const loading=document.getElementById('mapLoadingState');
 const{data,error}=await supabaseClient.from('projects').select('*');
-loading.style.display='none';
 if(error){
 console.error('Project loading error:',error);
 loading.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i>Unable to load project data';
@@ -787,12 +852,17 @@ return;
 
 allProjects=(data||[]).map(p=>{
 const c=getProjectCoords(p);
-return c?{...p,status:normalizeStatus(p.status),_lat:c.lat,_lng:c.lng}:{...p,status:normalizeStatus(p.status),_lat:null,_lng:null};
+return c
+?{...p,status:normalizeStatus(p.status),_lat:c.lat,_lng:c.lng,_approxLocation:false}
+:{...p,status:normalizeStatus(p.status),_lat:null,_lng:null,_approxLocation:false};
 });
 
+clearFilterInputs();
 updateStatusSummary();
 populateReferenceLists();
+applyDistrictLocationFallbacks();
 applyFilters();
+loading.style.display='none';
 }
 
 function init(){
@@ -860,6 +930,7 @@ applyMaskStyle('map');
 loadDivisionBoundaries();
 loadDistrictBoundaries();
 
+clearFilterInputs();
 document.getElementById('filterPanel').classList.add('collapsed');
 document.getElementById('filterToggleBtn').classList.add('show');
 document.getElementById('mapControls').classList.add('collapsed');
