@@ -334,7 +334,7 @@
         </div>
 
         <!-- GRAPH CONTENT -->
-        <section class="py-12 px-6">
+        <section class="pt-8 pb-4 px-6">
             <div class="max-w-[1700px] mx-auto">
                 <!-- stat cards removed (kept hidden so the JS keeps working) -->
                 <div id="graphStats" class="hidden"></div>
@@ -1048,11 +1048,11 @@
                           W: 1600, CH: 520, H: 650, ymin: 94, ymax: 370 };
 
         /* graph height = visible screen-er ekta fraction (aro kom chaile RATIO komao) */
-        const MG_HEIGHT_RATIO = 0.6;   // 1 = full height, 0.5 = ordheyk
+        const MG_HEIGHT_RATIO = 0.85;   // 1 = full height, 0.5 = ordheyk
 
         function mgFitHeight() {
             const bar = document.getElementById('graphViewBar');
-            const used = 76 + 48 + (bar ? bar.offsetHeight : 90) + 32 + 32;
+            const used = 76 + 48 + (bar ? bar.offsetHeight : 90) + 32 + 8;
             const fit = window.innerHeight - used;
             return Math.max(300, Math.round(fit * MG_HEIGHT_RATIO));
         }
@@ -1209,8 +1209,8 @@
             mgState.W = W;
             mgState.CH = Math.max(140, mgFitHeight() - labelH);
             mgState.H = mgState.CH + labelH;
-            mgState.ymin = mgState.CH * 0.18;
-            mgState.ymax = mgState.CH * 0.71;
+            mgState.ymin = mgState.CH * 0.08;
+            mgState.ymax = mgState.CH * 0.55;
             svg.setAttribute('viewBox', `0 0 ${W} ${mgState.H}`);
             svg.style.minWidth = W + 'px';
 
