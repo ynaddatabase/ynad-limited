@@ -84,6 +84,7 @@ iframe{display:block!important;width:100%;border:0!important;margin:0!important;
 #mapLegend{position:absolute;left:14px;bottom:12px;z-index:1000;padding:8px 12px;background:rgba(255,255,255,.97);border:1px solid #ddd;border-radius:7px;box-shadow:0 4px 15px rgba(0,0,0,.12);display:flex;gap:12px;font-size:10px}
 .legend-item{display:flex;align-items:center;gap:5px;color:#334155}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.legend-count{font:inherit;color:inherit}
 
 .project-pin{position:relative;width:34px;height:40px;display:flex;align-items:center;justify-content:center}
 .project-pin svg{position:absolute;top:0;left:0;width:34px;height:40px}
@@ -278,9 +279,9 @@ html.dark .district-label{background:rgba(15,23,42,.76);color:#e2e8f0;box-shadow
 </div>
 
 <div id="mapLegend">
-<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Ongoing</div>
-<div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Completed</div>
-<div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Upcoming</div>
+<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Ongoing <span class="legend-count" id="legendCountOngoing">0</span></div>
+<div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Completed <span class="legend-count" id="legendCountCompleted">0</span></div>
+<div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Upcoming <span class="legend-count" id="legendCountUpcoming">0</span></div>
 </div>
 </div>
 
@@ -550,9 +551,30 @@ return true;
 });
 }
 
+function updateStatusSummary(){
+const counts={Ongoing:0,Completed:0,Upcoming:0};
+allProjects.forEach(p=>{
+if(Object.prototype.hasOwnProperty.call(counts,p.status))counts[p.status]++;
+});
+const ongoing=document.getElementById('legendCountOngoing');
+const completed=document.getElementById('legendCountCompleted');
+const upcoming=document.getElementById('legendCountUpcoming');
+if(ongoing)ongoing.textContent=counts.Ongoing;
+if(completed)completed.textContent=counts.Completed;
+if(upcoming)upcoming.textContent=counts.Upcoming;
+}
+
+function setStatusFromSummary(status){
+const filter=document.getElementById('filterStatus');
+if(!filter)return;
+filter.value=filter.value===status?'':status;
+applyFilters();
+}
+
 function applyFilters(){
 const data=getFiltered();
 markerLayer.clearLayers();
+updateStatusSummary();
 const bounds=[];
 data.forEach(p=>{
 L.marker([p._lat,p._lng],{icon:makePin(p)})
@@ -710,6 +732,7 @@ const c=getCoords(p.location_link);
 return c?{...p,_lat:c.lat,_lng:c.lng}:null;
 }).filter(Boolean);
 
+updateStatusSummary();
 populateReferenceLists();
 applyFilters();
 }
