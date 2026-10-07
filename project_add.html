@@ -453,7 +453,7 @@ statusSelect.addEventListener('change', () => { updateTimelineFieldsVisibility()
 updateTimelineFieldsVisibility();
 
 /* ---- Media category is automatic (from Status); C-Photo only for Opening ---- */
-const MEDIA_MAP = { Ongoing: 'Ongoing', Opening: 'Opening', Upcoming: 'Proposal' };
+const MEDIA_MAP = { Ongoing: 'Ongoing', Completed: 'Opening', Upcoming: 'Proposal' };
 const mediaTypeSelect = { get value() { return MEDIA_MAP[statusSelect.value] || ''; } };
 let mediaMode = 'upload';
 const fieldCPhoto = $('fieldCPhoto'), modeToggle = $('mediaModeToggle');
