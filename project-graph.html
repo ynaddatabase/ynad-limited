@@ -1047,11 +1047,14 @@
         const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false, stagger: false, instant: false,
                           W: 1600, CH: 520, H: 650, ymin: 94, ymax: 370 };
 
-        /* graph + labels fit the visible screen under the tabs/title */
+        /* graph height = visible screen-er ekta fraction (aro kom chaile RATIO komao) */
+        const MG_HEIGHT_RATIO = 0.6;   // 1 = full height, 0.5 = ordheyk
+
         function mgFitHeight() {
             const bar = document.getElementById('graphViewBar');
             const used = 76 + 48 + (bar ? bar.offsetHeight : 90) + 32 + 32;
-            return Math.max(380, window.innerHeight - used);
+            const fit = window.innerHeight - used;
+            return Math.max(300, Math.round(fit * MG_HEIGHT_RATIO));
         }
 
         function smoothPath(pts) {
@@ -1174,7 +1177,7 @@
             const charts = document.getElementById('graphCharts');
             let svg = document.getElementById('mgSvg');
 
-            /* On the first render the page only has the \"Loading graph...\"
+            /* On the first render the page only has the "Loading graph..."
                placeholder. Build the SVG skeleton before drawing the graph. */
             if (!svg && charts) {
                 charts.innerHTML = mgSkeletonHtml();
@@ -1204,7 +1207,7 @@
                 labelH = 40 + lines * fsMax * 1.3 + 20;
             }
             mgState.W = W;
-            mgState.CH = Math.max(180, mgFitHeight() - labelH);
+            mgState.CH = Math.max(140, mgFitHeight() - labelH);
             mgState.H = mgState.CH + labelH;
             mgState.ymin = mgState.CH * 0.18;
             mgState.ymax = mgState.CH * 0.71;
