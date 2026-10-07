@@ -424,12 +424,12 @@ function toggleFilterPanel(){
 
 /* ---------- boundaries ---------- */
 let curType='map';
-const maskColor=()=>document.documentElement.classList.contains('dark')?'#0b1220':'#eef2f6';
+const maskColor=()=>document.documentElement.classList.contains('dark')?'#111827':'#eef2f6';
 function drawMask(rings){
   if(bdBoundaryLayer)map.removeLayer(bdBoundaryLayer);
   bdBoundaryLayer=L.layerGroup().addTo(map);bdMaskPolygon=null;
   if(!rings.length)return;
-  bdMaskPolygon=L.polygon([[[85,-190],[85,190],[-85,190],[-85,-190]],...rings],{stroke:false,fillColor:maskColor(),fillOpacity:.75,interactive:false}).addTo(bdBoundaryLayer);
+  bdMaskPolygon=L.polygon([[[85,-190],[85,190],[-85,190],[-85,-190]],...rings],{stroke:false,fillColor:maskColor(),fillOpacity:.55,interactive:false}).addTo(bdBoundaryLayer);
   L.polygon(rings,{fill:false,color:'#d97706',weight:1.8,opacity:.75,interactive:false}).addTo(bdBoundaryLayer);
   applyMaskStyle(curType);
 }
@@ -449,7 +449,7 @@ function buildMaskFromDivisions(feats){
   }
   drawMask(rings);
 }
-function applyMaskStyle(type){if(bdMaskPolygon)bdMaskPolygon.setStyle({fillColor:maskColor(),fillOpacity:type==='sat'?.88:.75});}
+function applyMaskStyle(type){if(bdMaskPolygon)bdMaskPolygon.setStyle({fillColor:maskColor(),fillOpacity:type==='sat'?.72:.55});}
 async function loadDivisionBoundaries(){
   divisionLayer=L.layerGroup().addTo(map);
   const feats=[];
