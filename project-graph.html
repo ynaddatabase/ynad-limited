@@ -166,6 +166,8 @@
         .mountain-svg { min-width: 760px; width: 100%; height: auto; display: block; }
         #mgMarkers { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28)); pointer-events: none; }
         .mg-count { font-family: 'Poppins', sans-serif; font-weight: 500; fill: #ffffff; pointer-events: none; }
+        .mg-count.mg-count-out { fill: #3a3c3c; font-weight: 600; }
+        body.theme-effective-dark .mg-count.mg-count-out { fill: #e2e8f0; }
         .mg-label { font-family: 'Poppins', sans-serif; font-weight: 600; fill: #3a3c3c; letter-spacing: 1px; pointer-events: none; }
         body.theme-effective-dark .mg-label { fill: #e2e8f0; }
         .mg-hit { fill: transparent; }
@@ -339,7 +341,7 @@
                 <!-- stat cards removed (kept hidden so the JS keeps working) -->
                 <div id="graphStats" class="hidden"></div>
 
-                <div id="graphViewBar" class="flex flex-col items-center gap-4 mb-8">
+                <div id="graphViewBar" class="flex flex-col items-center gap-4 mb-16">
                     <div id="graphViewTabs" class="flex flex-wrap justify-center gap-2"></div>
                     <div id="graphDrillChips" class="flex flex-wrap justify-center gap-2"></div>
                     <div id="graphViewTitle" class="text-xs font-bold uppercase tracking-widest text-slate-500 text-center"></div>
@@ -1043,12 +1045,12 @@
 
         /* ---------- Mountain graph ---------- */
         const MG_CATEGORIES = ['Masjid', 'Madrasa', 'Markaz', 'Orphanage', 'Ablution', 'Water Well', 'Clinic'];
-        const MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12, MG_MIN_AXIS = 4;
+        const MG_GAP = 10, MG_DURATION = 900, MG_DENSE_AFTER = 12, MG_MIN_AXIS = 2;
         const mgState = { names: {}, cats: {}, max: 1, ready: false, raf: null, view: null, dense: false, clickable: false, stagger: false, instant: false,
                           W: 1600, CH: 520, H: 650, ymin: 94, ymax: 370 };
 
         /* graph height = visible screen-er ekta fraction (aro kom chaile RATIO komao) */
-        const MG_HEIGHT_RATIO = 0.85;   // 1 = full height, 0.5 = ordheyk
+        const MG_HEIGHT_RATIO = 0.78;   // 1 = full height, 0.5 = ordheyk
 
         function mgFitHeight() {
             const bar = document.getElementById('graphViewBar');
@@ -1140,9 +1142,15 @@
 
                 const num = String(Math.round(s.c)).padStart(2, '0');
                 const cfs = Math.min(38, slot * 0.8 / (num.length * 0.62));
-                counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${CH - 50}" text-anchor="middle" opacity="${o}">${num}</text>`);
-
                 const ro = Math.min(26, slot * 0.42);
+                const barH = CH - y;
+                if (barH < ro + cfs + 45) {
+                    /* bar too short for the number inside it -> show it above the marker */
+                    counts.push(`<text class="mg-count mg-count-out" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${(y - ro - 12).toFixed(1)}" text-anchor="middle" opacity="${o}">${num}</text>`);
+                } else {
+                    const cy = Math.max(CH - 50, y + ro + cfs + 12);
+                    counts.push(`<text class="mg-count" font-size="${cfs.toFixed(1)}" x="${cx.toFixed(2)}" y="${Math.min(cy, CH - 16).toFixed(1)}" text-anchor="middle" opacity="${o}">${num}</text>`);
+                }
                 markers.push(`<g opacity="${o}"><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${ro.toFixed(2)}" fill="#ffffff"/><circle cx="${cx.toFixed(2)}" cy="${y.toFixed(2)}" r="${(ro * 0.5).toFixed(2)}" fill="#b45309"/></g>`);
 
                 const o2 = (s.o * s.o).toFixed(3);
@@ -1209,8 +1217,8 @@
             mgState.W = W;
             mgState.CH = Math.max(140, mgFitHeight() - labelH);
             mgState.H = mgState.CH + labelH;
-            mgState.ymin = mgState.CH * 0.08;
-            mgState.ymax = mgState.CH * 0.55;
+            mgState.ymin = mgState.CH * 0.22;   // peak (highest count) position
+            mgState.ymax = mgState.CH;          // zero baseline = bottom, so 2 is exactly half of 4
             svg.setAttribute('viewBox', `0 0 ${W} ${mgState.H}`);
             svg.style.minWidth = W + 'px';
 
