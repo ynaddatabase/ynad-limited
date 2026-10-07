@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 <style>
 html,body{margin:0!important;padding:0!important;width:100%;height:100%;overflow:hidden;font-family:Poppins,sans-serif;background:#fff}
 #mapRoot{position:relative;width:100%;height:100%;overflow:hidden;background:#fff}
@@ -149,7 +150,7 @@ const OTHER='#64748b';
 let map,markerLayer,allProjects=[],mapLayer,satLayer,labelsLayer,districtLabelsLayer,bdBoundaryLayer,divisionLayer,bdMaskPolygon;
 let initialMapCenter=L.latLng(23.8103,90.4125),initialMapZoom=8;
 
-/* >>> PASTE your existing BD_COUNTRY_RINGS array here (replace the [] ). Empty = no outside-fade, everything else still works. <<< */
+/* Optional: paste your own high-detail Bangladesh outline here. Leave [] and the outline is built automatically from the division boundaries. */
 const BD_COUNTRY_RINGS=[];
 
 const DIVISION_SERVICE_BASE='https://services5.arcgis.com/FKwcDz27wRAj4HUT/ArcGIS/rest/services/Administrative_Divisions_of_Bangladesh_WFL1/FeatureServer';
@@ -302,7 +303,7 @@ function popup(p){
   +`</div></div>`;
 }
 /* Dark mode: follows ?theme=dark, OS setting, parent page (same-origin) or postMessage({theme:'dark'|'light'}) */
-function setTheme(d){document.documentElement.classList.toggle('dark',!!d);}
+function setTheme(d){document.documentElement.classList.toggle('dark',!!d);applyMaskStyle(curType);}
 function initTheme(){
   const q=new URLSearchParams(location.search).get('theme'),mq=matchMedia('(prefers-color-scheme: dark)');
   if(q)setTheme(q==='dark');
@@ -368,9 +369,9 @@ function getFiltered(){
     return true;
   });
 }
-function updateStatusSummary(){
+function updateStatusSummary(list){
   const c={Ongoing:0,Completed:0,Upcoming:0};
-  allProjects.forEach(p=>{const s=normalizeStatus(p.status);if(s in c)c[s]++;});
+  (list||allProjects).forEach(p=>{const s=normalizeStatus(p.status);if(s in c)c[s]++;});
   Object.keys(c).forEach(k=>{const el=document.getElementById('legendCount'+k);if(el)el.textContent=c[k];});
 }
 function setStatusFromSummary(s){
@@ -381,7 +382,7 @@ const markers=new Map();
 const pinEl=m=>{const e=m.getElement();return e&&e.querySelector('.project-pin');};
 function applyFilters(){
   const data=getFiltered(),want=new Set();
-  updateStatusSummary();
+  updateStatusSummary(data);
   let i=0;
   data.forEach(p=>{
     if(!Number.isFinite(p._plat))return;
@@ -422,22 +423,43 @@ function toggleFilterPanel(){
 }
 
 /* ---------- boundaries ---------- */
-function addBangladeshHighlight(){
+let curType='map';
+const maskColor=()=>document.documentElement.classList.contains('dark')?'#0b1220':'#eef2f6';
+function drawMask(rings){
   if(bdBoundaryLayer)map.removeLayer(bdBoundaryLayer);
-  bdBoundaryLayer=L.layerGroup().addTo(map);
-  if(!BD_COUNTRY_RINGS.length)return;
-  bdMaskPolygon=L.polygon([[[85,-190],[85,190],[-85,190],[-85,-190]],...BD_COUNTRY_RINGS],{stroke:false,fillColor:'#eef2f6',fillOpacity:.62,interactive:false}).addTo(bdBoundaryLayer);
-  L.polygon(BD_COUNTRY_RINGS,{fill:false,color:'#d97706',weight:1.8,opacity:.75,interactive:false}).addTo(bdBoundaryLayer);
+  bdBoundaryLayer=L.layerGroup().addTo(map);bdMaskPolygon=null;
+  if(!rings.length)return;
+  bdMaskPolygon=L.polygon([[[85,-190],[85,190],[-85,190],[-85,-190]],...rings],{stroke:false,fillColor:maskColor(),fillOpacity:.75,interactive:false}).addTo(bdBoundaryLayer);
+  L.polygon(rings,{fill:false,color:'#d97706',weight:1.8,opacity:.75,interactive:false}).addTo(bdBoundaryLayer);
+  applyMaskStyle(curType);
 }
-function applyMaskStyle(type){if(bdMaskPolygon)bdMaskPolygon.setStyle({fillOpacity:type==='sat'?.82:.62});}
+function addBangladeshHighlight(){drawMask(BD_COUNTRY_RINGS);}
+/* Outside Bangladesh stays faded; the country outline is the union of all 8 divisions */
+function buildMaskFromDivisions(feats){
+  if(!feats.length)return;
+  const ext=g=>g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(pg=>pg[0]);
+  const flip=ring=>ring.map(c=>[c[1],c[0]]);
+  let rings;
+  try{
+    const u=feats.reduce((a,b)=>a?turf.union(a,b):b,null);
+    rings=ext(u.geometry).map(flip);
+  }catch(e){
+    console.warn('Union failed, using division rings:',e);
+    rings=[];feats.forEach(ft=>{if(ft.geometry)ext(ft.geometry).forEach(r=>rings.push(flip(r)));});
+  }
+  drawMask(rings);
+}
+function applyMaskStyle(type){if(bdMaskPolygon)bdMaskPolygon.setStyle({fillColor:maskColor(),fillOpacity:type==='sat'?.88:.75});}
 async function loadDivisionBoundaries(){
   divisionLayer=L.layerGroup().addTo(map);
+  const feats=[];
   await Promise.all(DIVISION_LAYERS.map(async({name,id})=>{
     try{
       const r=await fetch(`${DIVISION_SERVICE_BASE}/${id}/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson`,{cache:'force-cache'});
       if(!r.ok)throw new Error(r.status);
       const color=DIVISION_COLORS[name]||'#64748b';
-      L.geoJSON(await r.json(),{
+      const gj=await r.json();feats.push(...(gj.features||[]));
+      L.geoJSON(gj,{
         pane:'divisionPane',
         style:()=>({color,weight:1,opacity:0,fillColor:color,fillOpacity:0}),
         onEachFeature:(f,l)=>{
@@ -448,6 +470,7 @@ async function loadDivisionBoundaries(){
       }).addTo(divisionLayer);
     }catch(e){console.warn('Division boundary failed:',name,e);}
   }));
+  if(!BD_COUNTRY_RINGS.length)buildMaskFromDivisions(feats);
 }
 async function loadDistrictBoundaries(){
   try{
@@ -493,7 +516,7 @@ function toggleControls(){
 }
 function openGoogleMaps(){const c=map.getCenter();window.open(`https://www.google.com/maps/@${c.lat},${c.lng},15z`,'_blank');}
 function setMapType(type){
-  const sat=type==='sat';
+  const sat=type==='sat';curType=type;
   if(sat){map.removeLayer(mapLayer);satLayer.addTo(map);labelsLayer.addTo(map);}
   else{map.removeLayer(satLayer);map.removeLayer(labelsLayer);mapLayer.addTo(map);}
   document.getElementById('satBtn').classList.toggle('active',sat);
