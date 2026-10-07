@@ -445,7 +445,7 @@ function updateTimelineFieldsVisibility() {
   setFieldVisible(fields.a, m[0]); setFieldVisible(fields.s, m[1]);
   setFieldVisible(fields.o, m[2]); setFieldVisible(fields.d, m[3]);
   calculateDelay();
-  const raw = $('section5RawMedia'), vis = (st === 'Ongoing' || st === 'Opening');
+  const raw = $('section5RawMedia'), vis = (st === 'Ongoing' || st === 'Completed');
   raw.classList.toggle('hidden', !vis);
   if (!vis) raw.querySelectorAll('input').forEach(i => i.value = '');
 }
