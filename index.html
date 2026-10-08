@@ -3429,7 +3429,7 @@ if (currentScrollY <= 4) {
             });
 
             menu.classList.toggle('hidden', isOpen);
-
+            clearMenuHover(menu);
             if (isOpen) {
                 menu.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
             } else {
