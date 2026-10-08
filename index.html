@@ -3415,6 +3415,10 @@ function closeMenuWithEffect() {
                  style="transition-delay: ${Math.min(index, 3) * 0.12}s;">
 
                 <div class="recent-project-image zoom-container">
+                                    <div class="card-admin">
+                        <button type="button" class="edit" title="Edit" onclick="editProject(event, '${escapeHtml(project.id)}')"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button type="button" class="del" title="Delete" onclick="askDeleteProject(event, '${escapeHtml(project.id)}', '${escapeHtml((project.project_name || project.local_name || '').replace(/'/g, ''))}')"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
                     <div id="cardImages-${index}" class="recent-project-image-track">
                         ${imagesHtml}
                     </div>
