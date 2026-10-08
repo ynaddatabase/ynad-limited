@@ -304,13 +304,13 @@
             transition: background 0.2s ease, color 0.2s ease;
         }
 
-        .recent-project-action.docs {
-            color: rgba(37, 99, 235, 0.70);
+        .recent-project-action.files {
+            color: #d97706;
         }
 
-        .recent-project-action.docs:hover {
+        .recent-project-action.files:hover {
             color: #fff;
-            background: #2563eb;
+            background: #d97706;
         }
 
         .recent-project-action.media {
@@ -636,7 +636,7 @@ body.theme-light #about {
         body.theme-effective-dark .recent-project-code .code-divider {
             background: #475569 !important;
         }
-        body.theme-effective-dark .recent-project-action.docs {
+        body.theme-effective-dark .recent-project-action.files {
             color: #60a5fa !important;
         }
         body.theme-effective-dark .recent-project-action.media {
@@ -647,9 +647,9 @@ body.theme-light #about {
         }
 
         /* Dark-mode hover: the full action (icon + label) must turn white over the fill. */
-        body.theme-effective-dark .recent-project-action.docs:hover,
-        body.theme-effective-dark .recent-project-action.docs:hover span,
-        body.theme-effective-dark .recent-project-action.docs:hover i,
+        body.theme-effective-dark .recent-project-action.files:hover,
+        body.theme-effective-dark .recent-project-action.files:hover span,
+        body.theme-effective-dark .recent-project-action.files:hover i,
         body.theme-effective-dark .recent-project-action.media:hover,
         body.theme-effective-dark .recent-project-action.media:hover span,
         body.theme-effective-dark .recent-project-action.media:hover i,
@@ -659,8 +659,8 @@ body.theme-light #about {
             color: #ffffff !important;
         }
 
-        body.theme-effective-dark .recent-project-action.docs:hover {
-            background: #2563eb !important;
+        body.theme-effective-dark .recent-project-action.files:hover {
+            background: #d97706 !important;
         }
         body.theme-effective-dark .recent-project-action.media:hover {
             background: #d97706 !important;
@@ -1614,7 +1614,7 @@ body.theme-effective-dark #ae-x:hover {
         body.theme-effective-dark .recent-project-code .code-divider {
             background: #55575a !important;
         }
-        body.theme-effective-dark .recent-project-action.docs { color: #60a5fa !important; }
+        body.theme-effective-dark .recent-project-action.files { color: #f59e0b !important; }
         body.theme-effective-dark .recent-project-action.media { color: #f59e0b !important; }
         body.theme-effective-dark .recent-project-action.location { color: #a8a6a3 !important; }
         body.theme-effective-dark .recent-project-card {
@@ -1752,7 +1752,10 @@ body.theme-effective-dark #ae-x:hover {
             will-change: transform, opacity, filter;
         }
 /* name: official + local */
-.recent-project-info{ padding:6px 19px 6px !important; }
+.recent-project-info{
+  padding:6px 19px 6px !important;
+  position:relative;
+}
 .recent-project-title{ margin:0 !important; line-height:19px !important; }
 .recent-project-local{
   font-size:12px; line-height:17px; font-weight:400;
@@ -1761,25 +1764,621 @@ body.theme-effective-dark #ae-x:hover {
 }
 body.theme-effective-dark .recent-project-local{ color:#cbd5e1 !important; }
 
-/* card click -> project_view */
-.recent-project-image, .recent-project-info{ cursor:pointer; }
+/* Only the photo area opens the project view. The white content area stays non-clickable. */
+.recent-project-image{ cursor:pointer; }
+.recent-project-info,
+.recent-project-bottom{ cursor:default; }
 
-/* edit / delete icons (Alt+Shift+D) */
+/* Edit / delete controls: hidden until Alt+Shift+D, then shown beside the project codes.
+   No circular background; the icons use the site's amber accent. */
 .card-admin{
-  position:absolute; top:10px; right:10px; z-index:50;
-  display:none; gap:8px;
+  position:absolute;
+  right:19px;
+  bottom:29px;
+  z-index:20;
+  display:none;
+  align-items:center;
+  gap:12px;
+  padding:0;
 }
-body.admin-mode .card-admin{ display:flex; animation:adminIn .3s ease; }
-@keyframes adminIn{ from{opacity:0; transform:translateY(-6px) scale(.9)} to{opacity:1; transform:none} }
+body.admin-mode .card-admin{
+  display:flex;
+  animation:adminIn .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes adminIn{
+  from{opacity:0; transform:translateY(5px)}
+  to{opacity:1; transform:translateY(0)}
+}
 .card-admin button{
-  width:34px; height:34px; border-radius:50%; border:none; color:#fff;
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,.35);
-  transition:transform .2s ease, filter .2s ease;
+  width:auto;
+  height:22px;
+  padding:0;
+  margin:0;
+  border:none;
+  border-radius:0;
+  background:transparent !important;
+  color:#d97706;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:none;
+  transition:color .22s ease, transform .22s ease;
 }
-.card-admin button:hover{ transform:scale(1.12); filter:brightness(1.1); }
-.card-admin .edit{ background:#2563eb; }
-.card-admin .del{ background:#dc2626; }
+.card-admin button i{ font-size:12px; }
+.card-admin .edit:hover,
+.card-admin .del:hover{
+  color:#d97706;
+  transform:translateY(-2px) scale(1.08);
+}
+body.theme-effective-dark .card-admin button,
+body.theme-effective-dark .card-admin button:hover{ color:#f59e0b !important; }
+
+/* Files dropdown -------------------------------------------------------
+   The FILES button follows MEDIA's amber accent. Dropdown items are
+   intentionally text-only: hover changes color without adding a fill. */
+.files-menu-wrap{ position:relative; }
+.files-menu{
+  position:absolute;
+  bottom:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%) translateY(4px);
+  min-width:140px;
+  padding:7px 6px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  box-shadow:0 14px 34px rgba(15,23,42,.18);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+  z-index:70;
+  text-align:left;
+}
+.files-menu.open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:translateX(-50%) translateY(0);
+}
+.files-menu-item,
+.files-menu-link{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  min-height:30px;
+  padding:6px 8px;
+  border:none;
+  border-radius:0;
+  background:transparent;
+  color:#64748b;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-decoration:none;
+  text-align:left;
+  cursor:pointer;
+  transition:color .16s ease, transform .16s ease;
+  box-sizing:border-box;
+}
+.files-menu-item:hover,
+.files-menu-item.open,
+.files-menu-link:hover{
+  color:#d97706;
+  background:transparent;
+  transform:translateX(2px);
+}
+.files-menu-item > i,
+.files-menu-link > i{
+  font-size:8px;
+  color:#94a3b8;
+  flex:0 0 auto;
+  transition:color .16s ease;
+}
+.files-menu-item:hover > i,
+.files-menu-item.open > i,
+.files-menu-link:hover > i{
+  color:#d97706;
+}
+.files-submenu{
+  position:absolute;
+  left:calc(100% + 7px);
+  top:-7px;
+  min-width:150px;
+  padding:7px 6px;
+  display:none;
+  flex-direction:column;
+  gap:1px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  box-shadow:0 14px 34px rgba(15,23,42,.18);
+  z-index:71;
+}
+.files-menu-item:hover > .files-submenu,
+.files-menu-item.open > .files-submenu{
+  display:flex;
+}
+.files-submenu a{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  padding:6px 8px;
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:.03em;
+  color:#475569;
+  border-radius:0;
+  text-decoration:none;
+  white-space:nowrap;
+  background:transparent;
+  transition:color .16s ease, transform .16s ease;
+}
+.files-submenu a:hover{
+  background:transparent;
+  color:#d97706;
+  transform:translateX(2px);
+}
+.files-submenu .files-menu-item{
+  min-height:28px;
+  padding:6px 8px;
+}
+.files-submenu .files-submenu{
+  top:-7px;
+}
+.files-submenu.flip-left{
+  left:auto;
+  right:calc(100% + 7px);
+}
+body.theme-effective-dark .files-menu,
+body.theme-effective-dark .files-submenu{
+  background:#1e293b;
+  border-color:#334155;
+}
+body.theme-effective-dark .files-menu-item,
+body.theme-effective-dark .files-menu-link,
+body.theme-effective-dark .files-submenu a{
+  color:#cbd5e1;
+}
+body.theme-effective-dark .files-menu-item:hover,
+body.theme-effective-dark .files-menu-item.open,
+body.theme-effective-dark .files-menu-link:hover,
+body.theme-effective-dark .files-submenu a:hover{
+  color:#f59e0b;
+  background:transparent;
+}
+body.theme-effective-dark .files-menu-item > i,
+body.theme-effective-dark .files-menu-link > i{
+  color:#64748b;
+}
+body.theme-effective-dark .files-menu-item:hover > i,
+body.theme-effective-dark .files-menu-item.open > i,
+body.theme-effective-dark .files-menu-link:hover > i{
+  color:#f59e0b;
+}
+
+/* Make edit/delete controls use the exact same accent as MEDIA. */
+.card-admin button{ color:#d97706; }
+.card-admin .edit:hover,
+.card-admin .del:hover{ color:#d97706; }
+body.theme-effective-dark .card-admin button,
+body.theme-effective-dark .card-admin .edit:hover,
+body.theme-effective-dark .card-admin .del:hover{ color:#f59e0b !important; }
+
+/* Delete confirmation / success modal ------------------------------- */
+#deleteOverlay{
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(15,23,42,.62);
+  backdrop-filter:blur(6px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .28s ease, visibility .28s ease;
+}
+#deleteOverlay.open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+#deleteModalBox{
+  width:100%;
+  max-width:430px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  box-shadow:0 28px 80px rgba(15,23,42,.32);
+  padding:30px 30px 28px;
+  text-align:center;
+  transform:translateY(14px) scale(.965);
+  opacity:0;
+  transition:transform .32s cubic-bezier(.16,1,.3,1), opacity .25s ease;
+}
+#deleteOverlay.open #deleteModalBox{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+.delete-trash-scene{
+  width:82px;
+  height:82px;
+  margin:0 auto 12px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.delete-trash{
+  position:relative;
+  width:52px;
+  height:58px;
+  filter:drop-shadow(0 8px 16px rgba(217,119,6,.22));
+}
+.delete-trash-body{
+  position:absolute;
+  left:7px;
+  right:7px;
+  bottom:1px;
+  height:43px;
+  border:none;
+  border-radius:7px 7px 11px 11px;
+  background:linear-gradient(180deg,#f59e0b 0%,#d97706 100%);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  transform-origin:center bottom;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 7px 14px rgba(217,119,6,.18);
+}
+.delete-trash-body::before,
+.delete-trash-body::after{
+  content:"";
+  position:absolute;
+  top:9px;
+  bottom:7px;
+  width:3px;
+  border-radius:99px;
+  background:rgba(255,255,255,.68);
+}
+.delete-trash-body::before{ left:16px; }
+.delete-trash-body::after{ right:16px; }
+.delete-trash-body i{
+  position:relative;
+  z-index:2;
+  font-size:18px;
+  text-shadow:0 1px 4px rgba(120,53,15,.18);
+}
+.delete-trash-lid{
+  position:absolute;
+  left:0;
+  top:5px;
+  width:52px;
+  height:10px;
+  border:none;
+  border-radius:6px;
+  background:#b45309;
+  transform-origin:92% 85%;
+  transform:rotate(-12deg) translateY(-3px);
+  transition:transform .55s cubic-bezier(.34,1.56,.64,1), background .25s ease;
+  z-index:3;
+  box-shadow:0 3px 7px rgba(120,53,15,.18);
+}
+.delete-trash-lid::after{
+  content:"";
+  position:absolute;
+  left:19px;
+  top:-7px;
+  width:14px;
+  height:7px;
+  border-radius:4px 4px 2px 2px;
+  background:#b45309;
+}
+#deleteModalBox.is-deleting .delete-trash-lid{
+  transform:rotate(0deg) translateY(0);
+}
+#deleteModalBox.is-deleting .delete-trash-body{
+  animation:trashCloseBounce .55s ease-in-out .08s;
+}
+@keyframes trashCloseBounce{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.06) translateY(-2px)}
+  100%{transform:scale(1)}
+}
+#deleteModalBox.delete-success .delete-trash-body{
+  animation:trashSuccess .45s ease-out;
+}
+#deleteModalBox.delete-success .delete-trash{
+  filter:drop-shadow(0 8px 18px rgba(217,119,6,.30));
+}
+@keyframes trashSuccess{
+  0%{transform:translateY(0) scale(1)}
+  45%{transform:translateY(-5px) scale(1.08)}
+  100%{transform:translateY(0) scale(1)}
+}
+.delete-project-summary{
+  margin:0 0 21px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.delete-project-name{
+  margin:0;
+  max-width:100%;
+  font-size:17px;
+  line-height:1.35;
+  font-weight:700;
+  color:#0f172a;
+  word-break:break-word;
+}
+.delete-project-codes{
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#334155;
+  font-size:12px;
+  line-height:1.4;
+  font-weight:700;
+}
+.delete-project-codes .slash{
+  color:#94a3b8;
+  font-weight:500;
+}
+.delete-project-location{
+  margin:0;
+  color:#64748b;
+  font-size:10px;
+  line-height:1.5;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#deleteModalTitle{
+  margin:0 0 5px;
+  color:#0f172a;
+  font-size:19px;
+  line-height:1.3;
+  font-weight:700;
+}
+#deleteModalMessage{
+  margin:0 0 17px;
+  color:#64748b;
+  font-size:11px;
+  line-height:1.65;
+}
+.delete-modal-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.delete-modal-btn{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  height:42px;
+  border-radius:9px;
+  padding:0 16px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.02em;
+  cursor:pointer;
+  background:#fff;
+  border:1px solid #d97706;
+  color:#d97706;
+  transition:color .28s ease, border-color .28s ease, transform .2s ease;
+}
+.delete-modal-btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#d97706;
+  transform:translateX(-101%);
+  transition:transform .34s cubic-bezier(.65,0,.35,1);
+  z-index:-1;
+}
+.delete-modal-btn:hover::before{
+  transform:translateX(0);
+}
+.delete-modal-btn:hover{
+  color:#fff;
+  border-color:#d97706;
+}
+.delete-modal-btn:active{ transform:scale(.985); }
+.delete-modal-btn:disabled{
+  opacity:.72;
+  cursor:default;
+}
+.delete-modal-btn:disabled::before{ transform:translateX(0); }
+#deleteErr{
+  margin:0 0 14px;
+  padding:9px 11px;
+  border:1px solid #fecaca;
+  border-radius:8px;
+  background:#fff1f2;
+  color:#b91c1c;
+  font-size:10px;
+  line-height:1.5;
+  text-align:center;
+  display:none;
+}
+#deleteSuccessText{
+  display:none;
+  margin:2px 0 18px;
+  color:#b45309;
+  font-size:11px;
+  font-weight:600;
+}
+#deleteModalBox.delete-success #deleteSuccessText{ display:block; }
+#deleteModalBox.delete-success #deleteModalMessage,
+#deleteModalBox.delete-success .delete-project-summary,
+#deleteModalBox.delete-success .delete-modal-actions,
+#deleteModalBox.delete-success #deleteErr{
+  display:none !important;
+}
+body.theme-effective-dark #deleteModalBox{
+  background:#1e293b;
+  border-color:#334155;
+}
+body.theme-effective-dark #deleteModalTitle{ color:#f8fafc; }
+body.theme-effective-dark #deleteModalMessage{ color:#94a3b8; }
+body.theme-effective-dark .delete-project-name{ color:#f8fafc; }
+body.theme-effective-dark .delete-project-codes{ color:#e2e8f0; }
+body.theme-effective-dark .delete-project-location{ color:#94a3b8; }
+body.theme-effective-dark .delete-modal-btn{
+  background:#1e293b;
+  border-color:#f59e0b;
+  color:#f59e0b;
+}
+body.theme-effective-dark .delete-modal-btn::before{ background:#f59e0b; }
+body.theme-effective-dark .delete-modal-btn:hover{ color:#131414; }
+body.theme-effective-dark #deleteSuccessText{ color:#f59e0b; }
+
+
+/* ================================================================
+   FINAL UI TUNING
+   FILES follows the same interaction pattern as MEDIA/LOCATION:
+   normal state = text/icon only; hover/focus = filled action.
+   DELETE icon: flat filled orange circle, white trash graphic, no shadow.
+   ================================================================ */
+
+.recent-project-action.files{
+    color:rgba(37, 99, 235, 0.70) !important;
+    background:transparent !important;
+    border:none !important;
+    border-radius:4px !important;
+    box-shadow:none !important;
+    opacity:1 !important;
+}
+.recent-project-action.files:hover,
+.recent-project-action.files:focus-visible{
+    color:#ffffff !important;
+    background:#2563eb !important;
+    box-shadow:none !important;
+}
+.recent-project-action.files i,
+.recent-project-action.files span{
+    color:inherit !important;
+}
+body.theme-effective-dark .recent-project-action.files{
+    color:#60a5fa !important;
+    background:transparent !important;
+}
+body.theme-effective-dark .recent-project-action.files:hover,
+body.theme-effective-dark .recent-project-action.files:focus-visible{
+    color:#ffffff !important;
+    background:#2563eb !important;
+}
+body.theme-effective-dark .recent-project-action.files i,
+body.theme-effective-dark .recent-project-action.files span{
+    color:inherit !important;
+}
+
+/* Keep every FILES dropdown item transparent; only its text/icon changes color. */
+.files-menu-item,
+.files-menu-item:hover,
+.files-menu-item.open,
+.files-menu-link,
+.files-menu-link:hover,
+.files-submenu a,
+.files-submenu a:hover{
+    background:transparent !important;
+    box-shadow:none !important;
+}
+.files-menu-item:hover,
+.files-menu-item.open,
+.files-menu-link:hover,
+.files-submenu a:hover{
+    color:#d97706 !important;
+    transform:translateX(2px);
+}
+.files-menu-item:hover > i,
+.files-menu-item.open > i,
+.files-menu-link:hover > i{
+    color:#d97706 !important;
+}
+
+/* Flat creative delete icon: reference-like filled orange circle,
+   white trash can, absolutely no shadow/filter. */
+.delete-trash-scene{
+    width:88px !important;
+    height:88px !important;
+    margin:0 auto 14px !important;
+}
+.delete-trash{
+    width:78px !important;
+    height:78px !important;
+    border-radius:50% !important;
+    background:#d97706 !important;
+    filter:none !important;
+    box-shadow:none !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    overflow:visible !important;
+}
+.delete-trash-body{
+    position:relative !important;
+    left:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    width:auto !important;
+    height:auto !important;
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+    color:#ffffff !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    transform:none !important;
+}
+.delete-trash-body::before,
+.delete-trash-body::after{
+    display:none !important;
+}
+.delete-trash-body i{
+    position:relative !important;
+    z-index:2 !important;
+    font-size:34px !important;
+    line-height:1 !important;
+    color:#ffffff !important;
+    text-shadow:none !important;
+}
+.delete-trash-lid,
+.delete-trash-lid::after{
+    display:none !important;
+}
+#deleteModalBox.is-deleting .delete-trash{
+    animation:deleteIconPulse .55s cubic-bezier(.34,1.56,.64,1);
+}
+#deleteModalBox.delete-success .delete-trash{
+    animation:deleteIconSuccess .45s ease-out;
+}
+@keyframes deleteIconPulse{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.08) rotate(-4deg)}
+    100%{transform:scale(1)}
+}
+@keyframes deleteIconSuccess{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.12)}
+    100%{transform:scale(1)}
+}
+
 </style>
 </head>
 
@@ -2138,18 +2737,36 @@ body.admin-mode .card-admin{ display:flex; animation:adminIn .3s ease; }
         </script>
 
     </div>
-    <div id="deleteOverlay" class="fixed inset-0 z-[300] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="if(event.target===this) closeDeleteModal()">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-7 text-center border border-slate-200">
-            <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
-                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+    <div id="deleteOverlay" aria-hidden="true" onclick="if(event.target===this) closeDeleteModal()">
+        <div id="deleteModalBox" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+            <div class="delete-trash-scene" aria-hidden="true">
+                <div class="delete-trash">
+                    <div class="delete-trash-lid" aria-hidden="true"></div>
+                    <div class="delete-trash-body">
+                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                    </div>
+                </div>
             </div>
-            <h3 class="text-base font-semibold text-slate-900 mb-1">Delete Project?</h3>
-            <p class="text-xs text-slate-500 leading-relaxed mb-1">Apni ki sotti <strong id="deleteProjectName" class="text-slate-800"></strong> delete korte chan?</p>
-            <p class="text-[11px] text-red-500 mb-5">Eta ar ferot ana jabe na.</p>
-            <p id="deleteErr" class="hidden text-[11px] text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4"></p>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
-                <button type="button" id="deleteYesBtn" onclick="confirmDeleteProject()" class="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition cursor-pointer">Yes, Delete</button>
+
+            <h3 id="deleteModalTitle">Delete Project?</h3>
+            <p id="deleteModalMessage">This project will be permanently deleted.</p>
+
+            <div class="delete-project-summary">
+                <p id="deleteProjectName" class="delete-project-name"></p>
+                <p class="delete-project-codes">
+                    <span id="deleteProjectBd"></span>
+                    <span class="slash">/</span>
+                    <span id="deleteProjectHo"></span>
+                </p>
+                <p id="deleteProjectLocation" class="delete-project-location"></p>
+            </div>
+
+            <p id="deleteErr"></p>
+            <p id="deleteSuccessText">Project deleted successfully.</p>
+
+            <div class="delete-modal-actions">
+                <button type="button" class="delete-modal-btn delete-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" id="deleteYesBtn" class="delete-modal-btn delete-modal-confirm" onclick="confirmDeleteProject()">Yes, Delete</button>
             </div>
         </div>
     </div>
@@ -2681,6 +3298,16 @@ if (currentScrollY <= 4) {
                     menu.querySelectorAll('.media-menu-item.open').forEach(function(item) {
                         item.classList.remove('open');
                     });
+                }
+            });
+
+            // Close any open DOCUMENTS dropdown menus when clicking outside them
+            document.querySelectorAll('.files-menu.open').forEach(function(menu) {
+                const wrap = menu.closest('.files-menu-wrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    menu.classList.remove('open');
+                    const btn = wrap.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
                 }
             });
         });
@@ -3389,6 +4016,16 @@ function closeMenuWithEffect() {
             return html;
         }
 
+        function buildOngoingReportLinksHtml(totalOngoingReports) {
+            const count = Number(totalOngoingReports) || 0;
+            if (count <= 0) return '';
+            let html = '';
+            for (let n = count; n >= 1; n--) {
+                html += `<a href="#" onclick="return false;">${ordinalSuffix(n)} report</a>\n`;
+            }
+            return html;
+        }
+
         // Handles photo_urls whether it's stored as a real array (jsonb),
         // a stringified JSON array, or a comma-separated string.
         function normalizePhotoUrls(raw) {
@@ -3429,10 +4066,6 @@ function closeMenuWithEffect() {
                  style="transition-delay: ${Math.min(index, 3) * 0.12}s;">
 
                 <div class="recent-project-image zoom-container">
-                                    <div class="card-admin">
-                        <button type="button" class="edit" title="Edit" onclick="editProject(event, '${escapeHtml(project.id)}')"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button type="button" class="del" title="Delete" onclick="askDeleteProject(event, '${escapeHtml(project.id)}', '${escapeHtml((project.project_name || project.local_name || '').replace(/'/g, ''))}')"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
                     <div id="cardImages-${index}" class="recent-project-image-track">
                         ${imagesHtml}
                     </div>
@@ -3444,7 +4077,17 @@ function closeMenuWithEffect() {
                             ${project.project_name ? `<h4 class="recent-project-title">${escapeHtml(project.project_name)}</h4>` : ''}
                             ${(project.local_name && project.local_name !== project.project_name) || !project.project_name ? `<div class="recent-project-local">${escapeHtml(project.local_name || '')}</div>` : ''}
                             <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
-                            </div>
+                        </div>
+
+                        <div class="card-admin" aria-label="Project actions">
+                            <button type="button" class="edit" title="Edit Project" onclick="editProject(event, '${escapeHtml(project.id)}')">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button" class="del" title="Delete Project" onclick="askDeleteProject(event, '${escapeHtml(project.id)}')">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
                         ${(project.bd_number || project.ho_number) ? `
                         <div class="recent-project-code">
                             ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
@@ -3454,13 +4097,37 @@ function closeMenuWithEffect() {
                     </div>
 
                     <div class="recent-project-actions">
-                        <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}"
-                           target="${project.documents_url ? '_blank' : '_self'}"
-                           class="recent-project-action docs"
-                           ${project.documents_url ? '' : 'onclick="return false;"'}>
-                            <i class="fa-solid fa-file-lines"></i>
-                            <span>DOCUMENTS</span>
-                        </a>
+                        <div class="files-menu-wrap relative">
+                            <button type="button" onclick="toggleFilesMenu(event, ${index})" class="recent-project-action files w-full cursor-pointer" aria-expanded="false">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <span>FILES</span>
+                            </button>
+
+                            <div id="filesMenu-${index}" class="files-menu" role="menu">
+                                <div class="files-menu-item" data-sub="report-${index}">
+                                    <span>REPORT</span><i class="fa-solid fa-chevron-right"></i>
+                                    <div class="files-submenu">
+                                        <a href="${project.report_url ? escapeHtml(project.report_url) : '#'}"
+                                           target="${project.report_url ? '_blank' : '_self'}"
+                                           ${project.report_url ? '' : 'onclick="return false;"'}>
+                                            OPENING REPORT
+                                        </a>
+                                        <div class="files-menu-item" data-sub="ongoing-report-${index}">
+                                            <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
+                                            <div class="files-submenu">
+                                                ${buildOngoingReportLinksHtml(project.ongoing_report_count ?? project.ongoing_video_count ?? 3)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a class="files-menu-link" href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}"
+                                   target="${project.documents_url ? '_blank' : '_self'}"
+                                   ${project.documents_url ? '' : 'onclick="return false;"'}>
+                                    DOCUMENTS
+                                </a>
+                            </div>
+                        </div>
 
                         <div class="media-menu-wrap relative">
                             <button type="button" onclick="toggleMediaMenu(event, ${index})" class="recent-project-action media w-full cursor-pointer">
@@ -3866,19 +4533,45 @@ function closeMenuWithEffect() {
             animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
-        /* ---- Alt+Shift+D: toggle edit/delete icons ---- */
+        /* ---- Admin mode + Escape handling ---- */
         document.addEventListener('keydown', e => {
             if (e.altKey && e.shiftKey && e.code === 'KeyD') {
                 e.preventDefault();
                 document.body.classList.toggle('admin-mode');
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                const overlay = document.getElementById('deleteOverlay');
+                if (overlay && overlay.classList.contains('open') && !deleteBusy) {
+                    closeDeleteModal();
+                    return;
+                }
+
+                document.body.classList.remove('admin-mode');
+
+                document.querySelectorAll('.files-menu.open').forEach(menu => {
+                    menu.classList.remove('open');
+                    const btn = menu.closest('.files-menu-wrap')?.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+
+                document.querySelectorAll('.media-menu:not(.hidden)').forEach(menu => {
+                    menu.classList.add('hidden');
+                    menu.querySelectorAll('.media-menu-item.open').forEach(item => item.classList.remove('open'));
+                });
             }
         });
 
-        /* ---- Card click -> project_view.html ---- */
+        /* ---- Card click -> project_view.html ----
+           Only the image area is a project link. White card content stays non-clickable. */
         document.addEventListener('click', e => {
-            const card = e.target.closest('#mainProjectSlider .recent-project-card');
+            const imageArea = e.target.closest('#mainProjectSlider .recent-project-image');
+            if (!imageArea) return;
+
+            const card = imageArea.closest('.recent-project-card');
             if (!card || !card.dataset.id) return;
-            if (e.target.closest('.recent-project-actions, .card-admin')) return;
+
             window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
         });
 
@@ -3891,35 +4584,206 @@ function closeMenuWithEffect() {
             document.body.style.overflow = 'hidden';
         }
 
+        /* ---- Files dropdown ---- */
+        function toggleFilesMenu(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const menu = document.getElementById('filesMenu-' + index);
+            if (!menu) return;
+
+            document.querySelectorAll('.files-menu.open').forEach(other => {
+                if (other !== menu) {
+                    other.classList.remove('open');
+                    other.querySelectorAll('.files-menu-item.open').forEach(item => item.classList.remove('open'));
+                    const btn = other.closest('.files-menu-wrap')?.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            const willOpen = !menu.classList.contains('open');
+            menu.classList.toggle('open', willOpen);
+            const btn = menu.closest('.files-menu-wrap')?.querySelector('button');
+            if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+
+            if (willOpen) {
+                requestAnimationFrame(() => positionFilesSubmenus(menu));
+            }
+        }
+
+        function positionFilesSubmenus(menu) {
+            if (!menu) return;
+            menu.querySelectorAll('.files-submenu').forEach(sub => {
+                sub.classList.remove('flip-left');
+                const rect = sub.getBoundingClientRect();
+                if (rect.right > window.innerWidth - 8) {
+                    sub.classList.add('flip-left');
+                }
+            });
+        }
+
+        // Files submenu: REPORT -> OPENING REPORT / ONGOING -> numbered reports.
+        // No filled hover background; the item simply changes to the site amber.
+        document.addEventListener('click', function(e) {
+            const item = e.target.closest('.files-menu-item');
+            if (!item) return;
+            if (e.target.closest('a')) return;
+
+            e.stopPropagation();
+            const menu = item.closest('.files-menu');
+            if (!menu) return;
+
+            menu.querySelectorAll(':scope > .files-menu-item.open').forEach(other => {
+                if (other !== item) other.classList.remove('open');
+            });
+
+            item.classList.toggle('open');
+            if (item.classList.contains('open')) {
+                requestAnimationFrame(() => positionFilesSubmenus(menu));
+            }
+        });
+
+        document.addEventListener('mouseover', function(e) {
+            const item = e.target.closest('.files-menu-item');
+            if (!item) return;
+            const menu = item.closest('.files-menu');
+            if (!menu) return;
+
+            if (item.parentElement === menu) {
+                menu.querySelectorAll(':scope > .files-menu-item.open').forEach(other => {
+                    if (other !== item) other.classList.remove('open');
+                });
+            }
+
+            requestAnimationFrame(() => positionFilesSubmenus(menu));
+        });
+
         /* ---- Delete with confirmation ---- */
         let deleteTargetId = null;
-        function askDeleteProject(e, id, name) {
+        let deleteBusy = false;
+
+        function askDeleteProject(e, id) {
+            e.preventDefault();
             e.stopPropagation();
+
+            const card = e.target.closest('.recent-project-card');
+            if (!card) return;
+
             deleteTargetId = id;
-            document.getElementById('deleteProjectName').textContent = name || 'this project';
-            document.getElementById('deleteErr').classList.add('hidden');
-            const ov = document.getElementById('deleteOverlay');
-            ov.classList.remove('hidden'); ov.classList.add('flex');
-        }
-        function closeDeleteModal() {
-            deleteTargetId = null;
-            const ov = document.getElementById('deleteOverlay');
-            ov.classList.add('hidden'); ov.classList.remove('flex');
-        }
-        async function confirmDeleteProject() {
-            if (!deleteTargetId) return;
-            const btn = document.getElementById('deleteYesBtn');
-            btn.disabled = true; btn.textContent = 'Deleting...';
-            const { data, error } = await supabaseClient.from('projects').delete().eq('id', deleteTargetId).select();
-            btn.disabled = false; btn.textContent = 'Yes, Delete';
+            deleteBusy = false;
+
+            const modal = document.getElementById('deleteModalBox');
+            const overlay = document.getElementById('deleteOverlay');
+            const deleteName = document.getElementById('deleteProjectName');
+            const deleteBd = document.getElementById('deleteProjectBd');
+            const deleteHo = document.getElementById('deleteProjectHo');
+            const deleteLocation = document.getElementById('deleteProjectLocation');
             const err = document.getElementById('deleteErr');
+            const yesBtn = document.getElementById('deleteYesBtn');
+
+            deleteName.textContent = card.dataset.projectName || 'Untitled Project';
+            deleteBd.textContent = card.dataset.projectCode || '—';
+            deleteHo.textContent = card.dataset.hoNumber
+                ? 'HO-' + String(card.dataset.hoNumber).replace(/^HO-/i, '')
+                : '—';
+            deleteLocation.textContent = card.dataset.location || '—';
+
+            modal.classList.remove('is-deleting', 'delete-success');
+            err.textContent = '';
+            err.style.display = 'none';
+            yesBtn.disabled = false;
+            yesBtn.textContent = 'Yes, Delete';
+
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeDeleteModal() {
+            if (deleteBusy) return;
+
+            deleteTargetId = null;
+            const overlay = document.getElementById('deleteOverlay');
+            const modal = document.getElementById('deleteModalBox');
+
+            overlay.classList.remove('open');
+            overlay.setAttribute('aria-hidden', 'true');
+            modal.classList.remove('is-deleting', 'delete-success');
+            document.getElementById('deleteErr').textContent = '';
+            document.getElementById('deleteErr').style.display = 'none';
+            document.querySelectorAll('.files-menu.open').forEach(menu => {
+                menu.classList.remove('open');
+                menu.querySelectorAll('.files-menu-item.open').forEach(item => item.classList.remove('open'));
+            });
+        }
+
+        async function confirmDeleteProject() {
+            if (!deleteTargetId || deleteBusy) return;
+
+            const btn = document.getElementById('deleteYesBtn');
+            const modal = document.getElementById('deleteModalBox');
+            const err = document.getElementById('deleteErr');
+
+            deleteBusy = true;
+            err.textContent = '';
+            err.style.display = 'none';
+
+            modal.classList.add('is-deleting');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .delete()
+                .eq('id', deleteTargetId)
+                .select();
+
             if (error || !data || data.length === 0) {
-                err.textContent = error ? error.message : 'Delete hoyni. Supabase e projects table-er DELETE policy (RLS) check koro.';
-                err.classList.remove('hidden');
+                deleteBusy = false;
+                modal.classList.remove('is-deleting');
+                btn.disabled = false;
+                btn.textContent = 'Yes, Delete';
+                err.textContent = error
+                    ? error.message
+                    : 'The project could not be deleted. Please check the database delete permission.';
+                err.style.display = 'block';
                 return;
             }
-            closeDeleteModal();
-            loadProjects(); loadHeroSlides(); loadHeroStats(); refreshProjectLocationMap();
+
+            modal.classList.remove('is-deleting');
+            modal.classList.add('delete-success');
+            btn.textContent = 'Deleted';
+
+            setTimeout(() => {
+                const card = document.querySelector(
+                    '#mainProjectSlider .recent-project-card[data-id="' +
+                    CSS.escape(String(deleteTargetId)) +
+                    '"]'
+                );
+
+                if (card) {
+                    card.style.transition = 'opacity .45s ease, transform .45s ease, filter .45s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(.96) translateY(8px)';
+                    card.style.filter = 'blur(2px)';
+                }
+            }, 160);
+
+            setTimeout(() => {
+                const overlay = document.getElementById('deleteOverlay');
+                const modalBox = document.getElementById('deleteModalBox');
+
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                modalBox.classList.remove('delete-success');
+
+                deleteBusy = false;
+                deleteTargetId = null;
+
+                loadProjects();
+                loadHeroSlides();
+                loadHeroStats();
+                refreshProjectLocationMap();
+            }, 900);
         }
         // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
