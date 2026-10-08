@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YNAD System — Project Record</title>
 <script>
-/* ---- Theme sync with index page: scans saved theme settings ---- */
+/* ---- Theme sync with index page ---- */
 function readTheme() {
   const stores = [];
   try { stores.push(localStorage); } catch (e) {}
@@ -70,15 +70,14 @@ tailwind.config = {
   #formProgressTrack { position:relative; flex:1 1 auto; height:22px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; margin:0 .5in; }
   #formProgressFill { height:100%; width:0%; border-radius:999px; background:rgba(255,140,0,0.4); transition:width .35s ease; }
   #formProgressLabel { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:800; color:#fff; letter-spacing:.05em; text-shadow:0 1px 2px rgba(0,0,0,.6); pointer-events:none; }
-  /* Media fields: same size everywhere */
   .mf { height:3rem; padding:0 1rem; font-size:.8rem; }
   .mf::file-selector-button { margin-right:.75rem; border:0; border-radius:.5rem; padding:.3rem .75rem; background:rgba(255,140,0,.2); color:#fb923c; font-weight:700; font-size:.7rem; cursor:pointer; }
   .orgbox { background:#121216; border:1px solid rgba(255,140,0,.3); }
   html.light .orgbox { background:#fff; }
-  /* Media mode switch */
   .mm-track { position:relative; width:48px; height:24px; border-radius:999px; background:rgba(255,140,0,.3); border:1px solid rgba(255,140,0,.5); }
   .mm-knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#ff8c00; transition: transform .25s ease; }
   #mediaModeToggle[aria-checked="true"] .mm-knob, #contactRoleToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
+  textarea.tabbed { tab-size: 4; white-space: pre; overflow-x: auto; }
   /* ---- LIGHT MODE ---- */
   html.light body { background-color:#fff7ed; color:#1c1917;
     background-image: radial-gradient(at 0% 0%, rgba(234,88,12,0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255,140,0,0.10) 0px, transparent 50%); }
@@ -160,6 +159,9 @@ tailwind.config = {
               <input id="pHoDigits" data-rule="num" type="text" inputmode="numeric" disabled class="w-full bg-transparent px-3 py-3 text-sm outline-none border-none" placeholder="12345">
             </div>
             <input type="hidden" id="pHo">
+          </div>
+          <div id="existingBanner" class="sm:col-span-2 hidden rounded-xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-xs font-bold text-amber-300">
+            <i class="fa-solid fa-circle-info mr-2"></i><span id="existingText"></span>
           </div>
           <div>
             <label class="label">Status <span class="text-red-500">*</span></label>
@@ -275,10 +277,30 @@ tailwind.config = {
         </div>
       </section>
 
-      <!-- 05 -->
+      <!-- 05 Info -->
+      <section class="glass-panel rounded-3xl p-6 sm:p-8">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">05. Info</h3>
+        <div class="space-y-5">
+          <div>
+            <label class="label">Details</label>
+            <textarea id="pDetails" rows="4" class="no-upper field w-full rounded-xl px-4 py-3 text-sm" placeholder="Project details..."></textarea>
+          </div>
+          <div>
+            <label class="label">Features <span class="hint text-zinc-400 normal-case font-normal">(Feature 1 [TAB] Feature 2 [TAB] Feature 3)</span></label>
+            <textarea id="pFeatures" data-tab rows="5" class="tabbed no-upper field w-full rounded-xl px-4 py-3 text-sm"></textarea>
+          </div>
+          <div>
+            <label class="label">Overview <span class="hint text-zinc-400 normal-case font-normal">(Title [TAB] Overview Text [ENTER])</span></label>
+            <textarea id="pOverview" data-tab rows="6" class="tabbed no-upper field w-full rounded-xl px-4 py-3 text-sm"></textarea>
+          </div>
+          <div id="infoPreview" class="hidden rounded-2xl border border-orange-500/20 p-4 space-y-5"></div>
+        </div>
+      </section>
+
+      <!-- 06 Media -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
         <div class="flex items-center justify-between gap-3 mb-4 pb-2 border-b border-orange-500/20">
-          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">05. Media, Photos & Documents</h3>
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">06. Media, Photos & Documents</h3>
           <button type="button" id="mediaModeToggle" role="switch" aria-checked="false" title="Switch between file upload and link paste" class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer">
             <span id="mmUp" class="text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span>
             <span class="mm-track"><span class="mm-knob"></span></span>
@@ -291,23 +313,28 @@ tailwind.config = {
             <span id="mediaCatChip" class="text-[11px] font-extrabold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-0.5 rounded-full">—</span>
           </div>
           <div class="sm:col-span-2">
-            <label class="label">Documents (PDF / JPG / PNG)</label>
+            <label class="label mlabel" data-up="Documents (PDF / JPG / PNG)" data-link="Documents Link">Documents (PDF / JPG / PNG)</label>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pDocsLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE DOCUMENT LINK"></div>
           </div>
+          <div id="fieldReport" class="sm:col-span-2 hidden">
+            <label class="label mlabel" data-up="Report (PDF Only)" data-link="Report Link">Report (PDF Only)</label>
+            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pReport" type="file" accept=".pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
+            <div data-mode="link" class="hidden"><input id="pReportLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE REPORT LINK"></div>
+          </div>
           <div id="fieldCPhoto" class="sm:col-span-2 hidden">
-            <label class="label">C-Photo (Single Photo)</label>
+            <label class="label mlabel" data-up="C-Photo (Single Photo)" data-link="C-Photo Link">C-Photo (Single Photo)</label>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pCPhoto" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pCPhotoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE C-PHOTO LINK"></div>
           </div>
           <div class="sm:col-span-2">
-            <label class="label">Photos (Max 10 Qty)</label>
+            <label class="label mlabel" data-up="Photos (Max 15 Qty)" data-link="Photos Link">Photos (Max 15 Qty)</label>
             <div data-mode="upload">
               <label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label>
-              <p class="hint text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 10 IMAGES SIMULTANEOUSLY.</p>
+              <p class="hint text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 15 IMAGES SIMULTANEOUSLY.</p>
             </div>
             <div data-mode="link" class="hidden">
-              <input id="pPhotosLink" type="text" class="no-upper mf field w-full rounded-xl" placeholder="PASTE PHOTO LINKS — SEPARATE WITH COMMA OR SPACE (MAX 10)">
+              <input id="pPhotosLink" type="text" class="no-upper mf field w-full rounded-xl" placeholder="PASTE PHOTO LINKS — SEPARATE WITH COMMA OR SPACE">
             </div>
           </div>
           <div class="sm:col-span-2">
@@ -317,17 +344,17 @@ tailwind.config = {
         </div>
       </section>
 
-      <!-- 05 -->
+      <!-- 07 Raw media -->
       <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">06. Raw Media (Photos & Videos)</h3>
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">07. Raw Media (Photos & Videos)</h3>
         <div class="grid sm:grid-cols-2 gap-5">
           <div>
-            <label class="label">Raw Photos</label>
+            <label class="label mlabel" data-up="Raw Photos" data-link="Raw Photos Link">Raw Photos</label>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pRawPhotosLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK"></div>
           </div>
           <div>
-            <label class="label">Raw Videos</label>
+            <label class="label mlabel" data-up="Raw Videos" data-link="Raw Videos Link">Raw Videos</label>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawVideos" type="file" accept="video/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pRawVideoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW VIDEOS LINK"></div>
           </div>
@@ -367,7 +394,7 @@ const STORAGE_BUCKET = 'project-media';
 const COUNTRIES = "AFGHANISTAN,ALBANIA,ALGERIA,ANDORRA,ANGOLA,ANTIGUA AND BARBUDA,ARGENTINA,ARMENIA,AUSTRALIA,AUSTRIA,AZERBAIJAN,BAHAMAS,BAHRAIN,BANGLADESH,BARBADOS,BELARUS,BELGIUM,BELIZE,BENIN,BHUTAN,BOLIVIA,BOSNIA AND HERZEGOVINA,BOTSWANA,BRAZIL,BRUNEI,BULGARIA,BURKINA FASO,BURUNDI,CABO VERDE,CAMBODIA,CAMEROON,CANADA,CENTRAL AFRICAN REPUBLIC,CHAD,CHILE,CHINA,COLOMBIA,COMOROS,CONGO,COSTA RICA,CROATIA,CUBA,CYPRUS,CZECHIA,DENMARK,DJIBOUTI,DOMINICA,DOMINICAN REPUBLIC,ECUADOR,EGYPT,EL SALVADOR,EQUATORIAL GUINEA,ERITREA,ESTONIA,ESWATINI,ETHIOPIA,FIJI,FINLAND,FRANCE,GABON,GAMBIA,GEORGIA,GERMANY,GHANA,GREECE,GRENADA,GUATEMALA,GUINEA,GUINEA-BISSAU,GUYANA,HAITI,HONDURAS,HUNGARY,ICELAND,INDIA,INDONESIA,IRAN,IRAQ,IRELAND,ISRAEL,ITALY,IVORY COAST,JAMAICA,JAPAN,JORDAN,KAZAKHSTAN,KENYA,KIRIBATI,KUWAIT,KYRGYZSTAN,LAOS,LATVIA,LEBANON,LESOTHO,LIBERIA,LIBYA,LIECHTENSTEIN,LITHUANIA,LUXEMBOURG,MADAGASCAR,MALAWI,MALAYSIA,MALDIVES,MALI,MALTA,MARSHALL ISLANDS,MAURITANIA,MAURITIUS,MEXICO,MICRONESIA,MOLDOVA,MONACO,MONGOLIA,MONTENEGRO,MOROCCO,MOZAMBIQUE,MYANMAR,NAMIBIA,NAURU,NEPAL,NETHERLANDS,NEW ZEALAND,NICARAGUA,NIGER,NIGERIA,NORTH KOREA,NORTH MACEDONIA,NORWAY,OMAN,PAKISTAN,PALAU,PALESTINE,PANAMA,PAPUA NEW GUINEA,PARAGUAY,PERU,PHILIPPINES,POLAND,PORTUGAL,QATAR,ROMANIA,RUSSIA,RWANDA,SAINT KITTS AND NEVIS,SAINT LUCIA,SAINT VINCENT AND THE GRENADINES,SAMOA,SAN MARINO,SAO TOME AND PRINCIPE,SAUDI ARABIA,SENEGAL,SERBIA,SEYCHELLES,SIERRA LEONE,SINGAPORE,SLOVAKIA,SLOVENIA,SOLOMON ISLANDS,SOMALIA,SOUTH AFRICA,SOUTH KOREA,SOUTH SUDAN,SPAIN,SRI LANKA,SUDAN,SURINAME,SWEDEN,SWITZERLAND,SYRIA,TAIWAN,TAJIKISTAN,TANZANIA,THAILAND,TIMOR-LESTE,TOGO,TONGA,TRINIDAD AND TOBAGO,TUNISIA,TURKEY,TURKMENISTAN,TUVALU,UAE,UGANDA,UKRAINE,UNITED KINGDOM,UNITED STATES,URUGUAY,UZBEKISTAN,VANUATU,VATICAN CITY,VENEZUELA,VIETNAM,YEMEN,ZAMBIA,ZIMBABWE";
 $('countryList').innerHTML = COUNTRIES.split(',').map(c => `<option value="${c}">`).join('');
 
-/* ---- Input rules: numbers-only / letters-only ---- */
+/* ---- Input rules ---- */
 const RULES = {
   num: v => v.replace(/[^0-9]/g, ''),
   dec: v => { v = v.replace(/[^0-9.]/g, ''); const i = v.indexOf('.'); return i < 0 ? v : v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, ''); },
@@ -426,10 +453,33 @@ function updateBdPrefix() {
   }
   syncBdHiddenValue(); syncHoHiddenValue();
 }
-bdDigitsInput.addEventListener('input', syncBdHiddenValue);
+bdDigitsInput.addEventListener('input', () => { syncBdHiddenValue(); scheduleExistingCheck(); });
 hoDigitsInput.addEventListener('input', syncHoHiddenValue);
-categorySelect.addEventListener('change', updateBdPrefix);
+categorySelect.addEventListener('change', () => { updateBdPrefix(); scheduleExistingCheck(); });
 updateBdPrefix();
+
+/* ---- Existing project check (same BD-Number = update mode) ---- */
+let existing = null, existTimer = null;
+function showExisting() {
+  const b = $('existingBanner');
+  b.classList.toggle('hidden', !existing);
+  if (existing) $('existingText').textContent =
+    `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
+}
+function scheduleExistingCheck() {
+  clearTimeout(existTimer);
+  existTimer = setTimeout(checkExisting, 600);
+}
+async function checkExisting() {
+  const bd = bdHiddenInput.value;
+  if (!bd) { existing = null; showExisting(); return; }
+  try {
+    const { data, error } = await supabaseClient.from('projects').select('*').eq('bd_number', bd).limit(1);
+    if (bdHiddenInput.value !== bd) return;
+    existing = (!error && data && data[0]) || null;
+  } catch (e) { existing = null; }
+  showExisting();
+}
 
 /* ---- Status -> timeline + raw media visibility ---- */
 const statusSelect = $('pStatus');
@@ -452,7 +502,7 @@ function updateTimelineFieldsVisibility() {
 statusSelect.addEventListener('change', () => { updateTimelineFieldsVisibility(); updateMediaUI(); });
 updateTimelineFieldsVisibility();
 
-/* ---- Media category is automatic (from Status); C-Photo only for Opening ---- */
+/* ---- Media category (from Status); C-Photo only for Opening; Report for Ongoing/Opening ---- */
 const MEDIA_MAP = { Ongoing: 'Ongoing', Completed: 'Opening', Upcoming: 'Proposal' };
 const mediaTypeSelect = { get value() { return MEDIA_MAP[statusSelect.value] || ''; } };
 let mediaMode = 'upload';
@@ -462,6 +512,9 @@ function updateMediaUI() {
   const showC = mediaTypeSelect.value === 'Opening';
   fieldCPhoto.classList.toggle('hidden', !showC);
   if (!showC) { $('pCPhoto').value = ''; $('pCPhotoLink').value = ''; }
+  const showReport = ['Ongoing', 'Opening'].includes(mediaTypeSelect.value);
+  $('fieldReport').classList.toggle('hidden', !showReport);
+  if (!showReport) { $('pReport').value = ''; $('pReportLink').value = ''; }
   $('mediaCatChip').textContent = (mediaTypeSelect.value || '—').toUpperCase();
   document.querySelectorAll('[data-mode]').forEach(el => {
     const on = el.dataset.mode === mediaMode;
@@ -471,6 +524,7 @@ function updateMediaUI() {
   modeToggle.setAttribute('aria-checked', mediaMode === 'link');
   $('mmUp').classList.toggle('text-orange-400', mediaMode === 'upload');
   $('mmLink').classList.toggle('text-orange-400', mediaMode === 'link');
+  document.querySelectorAll('.mlabel').forEach(l => l.textContent = mediaMode === 'link' ? l.dataset.link : l.dataset.up);
   refreshFileLabels();
   updateFormProgress();
 }
@@ -483,7 +537,7 @@ function refreshFileLabels() {
 document.addEventListener('change', e => { if (e.target.type === 'file') refreshFileLabels(); });
 modeToggle.addEventListener('click', () => { mediaMode = mediaMode === 'upload' ? 'link' : 'upload'; updateMediaUI(); });
 
-/* ---- Single Lat,Lng box -> auto address (Nominatim + Overpass / OpenStreetMap) ---- */
+/* ---- Single Lat,Lng box -> auto address ---- */
 let geoTimer = null, geoSeq = 0;
 const geoStatus = $('geoStatus');
 function parseCoords() {
@@ -536,6 +590,32 @@ async function reverseGeocode(lat, lng) {
 }
 $('pCoords').addEventListener('input', onCoordInput);
 
+/* ---- Info: Tab key + parsing + live preview ---- */
+const escHtml = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+document.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('keydown', e => {
+  if (e.key === 'Tab' && !e.shiftKey) {
+    e.preventDefault();
+    t.setRangeText('\t', t.selectionStart, t.selectionEnd, 'end');
+    t.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}));
+const parseFeatures = () => $('pFeatures').value.split(/[\t\n]+/).map(s => s.trim()).filter(Boolean);
+const parseOverview = () => $('pOverview').value.split('\n').map(l => {
+  const p = l.trim().split(/\t+|\s{2,}/);
+  return { key: (p.shift() || '').trim(), value: p.join(' ').trim() };
+}).filter(r => r.key);
+
+function renderInfoPreview() {
+  const f = parseFeatures(), o = parseOverview(), box = $('infoPreview');
+  box.classList.toggle('hidden', !f.length && !o.length);
+  box.innerHTML =
+    (o.length ? `<div><div class="text-xl font-light tracking-wide mb-3">OVERVIEW</div>` +
+      o.map(r => `<div class="grid grid-cols-2 gap-4 py-1.5 text-sm"><span class="opacity-70">${escHtml(r.key)}</span><span>${escHtml(r.value)}</span></div>`).join('') + `</div>` : '') +
+    (f.length ? `<div><div class="text-xl font-light tracking-wide mb-3">FEATURES</div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3 text-sm">` +
+      f.map(x => `<div class="flex gap-3"><span class="opacity-60">—</span><span>${escHtml(x)}</span></div>`).join('') + `</div></div>` : '');
+}
+['pFeatures', 'pOverview'].forEach(id => $(id).addEventListener('input', renderInfoPreview));
+
 /* ---- Organization list (Alt+Shift+D shows the edit pen) ---- */
 const ORG_KEY = 'ynad_orgs';
 const getOrgs = () => { try { return JSON.parse(localStorage.getItem(ORG_KEY)) || []; } catch (e) { return []; } };
@@ -581,7 +661,7 @@ function updateFormProgress() {
 projectFormEl.addEventListener('input', updateFormProgress);
 projectFormEl.addEventListener('change', updateFormProgress);
 
-/* ---- Upload helpers ---- */
+/* ---- Upload helper ---- */
 async function uploadFileAndGetUrl(folder, file) {
   const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
@@ -593,11 +673,13 @@ async function uploadFileAndGetUrl(folder, file) {
 function resetUI() {
   projectFormEl.reset();
   updateBdPrefix();
+  existing = null; showExisting();
   delayReasonContainer.classList.add('hidden');
   geoStatus.textContent = 'PASTE LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
   updateTimelineFieldsVisibility();
   updateMediaUI();
   setContactRole('Responsible');
+  renderInfoPreview();
 }
 $('clearFormBtn').addEventListener('click', resetUI);
 
@@ -611,27 +693,33 @@ projectFormEl.addEventListener('submit', async function (e) {
   if ($('pCoords').value.trim() && !parseCoords()) { alert('INVALID LATITUDE, LONGITUDE! EXAMPLE: 23.810331, 90.412521'); return; }
 
   const photoLinks = $('pPhotosLink').value.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-  if ($('pPhotos').files.length > 10 || photoLinks.length > 10) { alert('YOU CAN ADD A MAXIMUM OF 10 PHOTOS!'); return; }
+  if (mediaMode === 'upload' && $('pPhotos').files.length > 15) { alert('MAXIMUM 15 PHOTOS IN UPLOAD MODE!'); return; }
+
+  await checkExisting();
+  if (existing && !confirm(`"${existing.bd_number}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
 
   const btn = document.querySelector('#projectForm button[type="submit"]');
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
 
-  let documentsUrl = null, cPhotoUrl = null, photoUrls = [], rawPhotos = null, rawVideos = null;
+  let documentsUrl = null, cPhotoUrl = null, reportUrl = null, photoUrls = [], rawPhotos = null, rawVideos = null;
+  const spin = t => btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ${t}`;
   try {
     if (mediaMode === 'upload') {
-      if ($('pDocs').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Document...'; documentsUrl = await uploadFileAndGetUrl('documents', $('pDocs').files[0]); }
-      if (mediaTypeSelect.value === 'Opening' && $('pCPhoto').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading C-Photo...'; cPhotoUrl = await uploadFileAndGetUrl('cphotos', $('pCPhoto').files[0]); }
+      if ($('pDocs').files.length) { spin('Uploading Document...'); documentsUrl = await uploadFileAndGetUrl('documents', $('pDocs').files[0]); }
+      if ($('pReport').files.length) { spin('Uploading Report...'); reportUrl = await uploadFileAndGetUrl('reports', $('pReport').files[0]); }
+      if (mediaTypeSelect.value === 'Opening' && $('pCPhoto').files.length) { spin('Uploading C-Photo...'); cPhotoUrl = await uploadFileAndGetUrl('cphotos', $('pCPhoto').files[0]); }
       if ($('pPhotos').files.length) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Photos...';
+        spin('Uploading Photos...');
         for (const f of $('pPhotos').files) photoUrls.push(await uploadFileAndGetUrl('photos', f));
       }
       const rp = [], rv = [];
-      if ($('pRawPhotos').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Raw Photos...'; for (const f of $('pRawPhotos').files) rp.push(await uploadFileAndGetUrl('raw-photos', f)); }
-      if ($('pRawVideos').files.length) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Raw Videos...'; for (const f of $('pRawVideos').files) rv.push(await uploadFileAndGetUrl('raw-videos', f)); }
+      if ($('pRawPhotos').files.length) { spin('Uploading Raw Photos...'); for (const f of $('pRawPhotos').files) rp.push(await uploadFileAndGetUrl('raw-photos', f)); }
+      if ($('pRawVideos').files.length) { spin('Uploading Raw Videos...'); for (const f of $('pRawVideos').files) rv.push(await uploadFileAndGetUrl('raw-videos', f)); }
       rawPhotos = rp.join(', ') || null; rawVideos = rv.join(', ') || null;
     } else {
       documentsUrl = $('pDocsLink').value.trim() || null;
+      reportUrl = $('pReportLink').value.trim() || null;
       cPhotoUrl = mediaTypeSelect.value === 'Opening' ? ($('pCPhotoLink').value.trim() || null) : null;
       photoUrls = photoLinks;
       rawPhotos = $('pRawPhotosLink').value.trim() || null;
@@ -644,7 +732,7 @@ projectFormEl.addEventListener('submit', async function (e) {
     return;
   }
 
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';
+  spin('Saving...');
   const v = id => $(id).value.trim() || null;
   const cc = parseCoords(), lat = cc ? cc.lat : null, lng = cc ? cc.lng : null;
 
@@ -681,22 +769,44 @@ projectFormEl.addEventListener('submit', async function (e) {
     contact_designation: v('pContactDesignation'),
     beneficiary_person: v('pBeneficiaryPerson'),
     contact_phone: v('pContactPhone'),
+    info_details: v('pDetails'),
+    info_features: parseFeatures(),
+    info_overview: parseOverview(),
     media_category: mediaTypeSelect.value || null,
     video_link: v('pVideo'),
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
     photo_urls: photoUrls,
+    report_urls: reportUrl ? [{ url: reportUrl, date: new Date().toISOString().slice(0, 10) }] : [],
     raw_photos_link: rawPhotos,
     raw_video_link: rawVideos
   };
 
-  const { error } = await supabaseClient.from('projects').insert([record]).select();
+  let error;
+  if (existing) {
+    /* Update mode: only non-empty values overwrite; photos/reports/raw media are appended */
+    const u = {};
+    Object.entries(record).forEach(([k, val]) => {
+      if (val === null || val === '' || (Array.isArray(val) && !val.length)) return;
+      u[k] = val;
+    });
+    if (!record.contact_name) delete u.contact_role;
+    const join = (a, b) => [a, b].filter(Boolean).join(', ') || null;
+    u.photo_urls = [...(existing.photo_urls || []), ...photoUrls];
+    u.report_urls = [...(existing.report_urls || []), ...record.report_urls];
+    const rp = join(existing.raw_photos_link, rawPhotos), rv = join(existing.raw_video_link, rawVideos);
+    if (rp) u.raw_photos_link = rp;
+    if (rv) u.raw_video_link = rv;
+    ({ error } = await supabaseClient.from('projects').update(u).eq('id', existing.id));
+  } else {
+    ({ error } = await supabaseClient.from('projects').insert([record]).select());
+  }
   btn.disabled = false; btn.innerHTML = originalHtml;
   if (error) { console.error(error); alert('SAVE FAILED: ' + error.message); return; }
   resetUI();
 });
 
-/* ---- Contact person role switch (left = Responsible, right = Beneficiary) ---- */
+/* ---- Contact person role switch ---- */
 let contactRole = 'Responsible';
 function setContactRole(r) {
   contactRole = r;
