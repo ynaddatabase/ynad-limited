@@ -3457,69 +3457,96 @@ if (currentScrollY <= 4) {
             e.stopPropagation();
         });
 
-        // Universal hover navigation for both FILES and MEDIA. A small delay prevents
-        // the submenu from disappearing while the pointer crosses its small fly-out gap.
-        const hoverTimers = new WeakMap();
+// ===== FILES / MEDIA hover navigation (event delegation + proper reset) =====
+const MENU_ITEM_SEL = '.files-menu-item, .media-menu-item';
+const MENU_WRAP_SEL = '.files-menu-wrap, .media-menu-wrap';
+const hoverTimers = new WeakMap();
+const wrapTimers  = new WeakMap();
 
-        document.addEventListener('mouseover', function(e) {
-            const item = e.target.closest('.files-menu-item, .media-menu-item');
-            if (!item || !item.parentElement) return;
+// Sob nested hover/open state reset kore
+function clearMenuHover(menu) {
+    if (!menu) return;
+    menu.querySelectorAll(MENU_ITEM_SEL).forEach(function (item) {
+        item.classList.remove('open', 'hover-open');
+        const t = hoverTimers.get(item);
+        if (t) clearTimeout(t);
+    });
+    menu.querySelectorAll('.files-submenu, .media-submenu').forEach(function (s) {
+        s.classList.remove('flip-left');
+    });
+}
 
-            const parent = item.parentElement;
-            const sub = item.querySelector(':scope > .files-submenu, :scope > .media-submenu');
-            if (!sub) return;
+// Puro FILES / MEDIA popup bondho + reset
+function resetMenuWrap(wrap) {
+    const menu = wrap.querySelector('.files-menu, .media-menu');
+    if (!menu) return;
+    if (menu.classList.contains('files-menu')) {
+        menu.classList.remove('open');
+        const btn = wrap.querySelector('button');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    } else {
+        menu.classList.add('hidden');
+    }
+    clearMenuHover(menu);
+}
 
-            const oldTimer = hoverTimers.get(item);
-            if (oldTimer) clearTimeout(oldTimer);
+document.addEventListener('mouseover', function (e) {
+    // Wrap-er bhitore mouse phire ashle pending close cancel
+    const wrap = e.target.closest(MENU_WRAP_SEL);
+    if (wrap) {
+        const wt = wrapTimers.get(wrap);
+        if (wt) clearTimeout(wt);
+    }
 
-            // Only one row at the same level controls the visible fly-out.
-            Array.from(parent.children).forEach(function(sibling) {
-                if (sibling !== item && sibling.classList && sibling.classList.contains('hover-open')) {
-                    sibling.classList.remove('hover-open');
-                }
-            });
+    const item = e.target.closest(MENU_ITEM_SEL);
+    if (!item || !item.parentElement) return;
 
-            item.classList.add('hover-open');
+    const oldTimer = hoverTimers.get(item);
+    if (oldTimer) clearTimeout(oldTimer);
 
-            requestAnimationFrame(function() {
-                sub.classList.remove('flip-left');
-                const rect = sub.getBoundingClientRect();
-                if (rect.right > window.innerWidth - 8) sub.classList.add('flip-left');
-            });
-        });
+    // Same level-er onno sibling-er submenu bondho
+    Array.from(item.parentElement.children).forEach(function (sibling) {
+        if (sibling !== item && sibling.classList && sibling.classList.contains('hover-open')) {
+            sibling.classList.remove('hover-open');
+        }
+    });
 
-        document.addEventListener('mouseout', function(e) {
-            const item = e.target.closest('.files-menu-item, .media-menu-item');
-            if (!item || !item.contains(e.relatedTarget)) return;
+    const sub = item.querySelector(':scope > .files-submenu, :scope > .media-submenu');
+    if (!sub) return;
 
-            const oldTimer = hoverTimers.get(item);
-            if (oldTimer) clearTimeout(oldTimer);
+    item.classList.add('hover-open');
+    requestAnimationFrame(function () {
+        sub.classList.remove('flip-left');
+        if (sub.getBoundingClientRect().right > window.innerWidth - 8) sub.classList.add('flip-left');
+    });
+});
 
-            const timer = setTimeout(function() {
-                // If the pointer is still anywhere inside this item/submenu, keep it open.
+document.addEventListener('mouseout', function (e) {
+    // 1) Nested item gulo: mouse ber hoye gele (ancestor shoho) submenu bondho
+    let el = e.target.closest(MENU_ITEM_SEL);
+    while (el) {
+        const item = el;
+        const stillInside = e.relatedTarget && item.contains(e.relatedTarget);
+        if (!stillInside) {
+            const old = hoverTimers.get(item);
+            if (old) clearTimeout(old);
+            hoverTimers.set(item, setTimeout(function () {
                 if (!item.matches(':hover')) item.classList.remove('hover-open');
-            }, 180);
-            hoverTimers.set(item, timer);
-        });
+            }, 180));
+        }
+        el = item.parentElement ? item.parentElement.closest(MENU_ITEM_SEL) : null;
+    }
 
-        // Close the whole FILES / MEDIA popup when the pointer leaves its
-        // entire wrapper. This prevents a previously opened popup from
-        // remaining stuck on screen.
-        document.querySelectorAll('.files-menu-wrap, .media-menu-wrap').forEach(function(wrap) {
-            wrap.addEventListener('pointerleave', function() {
-                const menu = wrap.querySelector('.files-menu, .media-menu');
-                if (!menu) return;
-                menu.classList.add(menu.classList.contains('files-menu') ? 'closed-by-pointer' : 'hidden');
-                if (menu.classList.contains('files-menu')) {
-                    menu.classList.remove('open', 'closed-by-pointer');
-                    const btn = wrap.querySelector('button');
-                    if (btn) btn.setAttribute('aria-expanded', 'false');
-                }
-                menu.querySelectorAll('.files-menu-item.open, .media-menu-item.open, .hover-open').forEach(function(item) {
-                    item.classList.remove('open', 'hover-open');
-                });
-            });
-        });
+    // 2) Puro FILES / MEDIA area theke mouse ber hoye gele sob kichu reset
+    const wrap = e.target.closest(MENU_WRAP_SEL);
+    if (wrap && !(e.relatedTarget && wrap.contains(e.relatedTarget))) {
+        const old = wrapTimers.get(wrap);
+        if (old) clearTimeout(old);
+        wrapTimers.set(wrap, setTimeout(function () {
+            if (!wrap.matches(':hover')) resetMenuWrap(wrap);
+        }, 250));
+    }
+});
 
         // Search Projects Functionality with 3 seconds auto-close delay
         function executeSearch() {
