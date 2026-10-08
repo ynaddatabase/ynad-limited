@@ -3435,7 +3435,7 @@ function closeMenuWithEffect() {
                         <div class="recent-project-code">
                             ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
                             ${(project.bd_number && project.ho_number) ? `<span class="code-divider"></span>` : ''}
-                            ${project.ho_number ? `<span>HO-${escapeHtml(project.ho_number)}</span>` : ''}
+                            ${project.ho_number ? `<span>HO-${escapeHtml(String(project.ho_number).replace(/^HO-/i,''))}</span>` : ''}
                         </div>` : ''}
                     </div>
 
