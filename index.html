@@ -1751,7 +1751,35 @@ body.theme-effective-dark #ae-x:hover {
         body.page-transitioning #pageContentWrapper {
             will-change: transform, opacity, filter;
         }
+/* name: official + local */
+.recent-project-info{ padding:6px 19px 6px !important; }
+.recent-project-title{ margin:0 !important; line-height:19px !important; }
+.recent-project-local{
+  font-size:12px; line-height:17px; font-weight:400;
+  color:rgba(0,0,0,.65);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+body.theme-effective-dark .recent-project-local{ color:#cbd5e1 !important; }
 
+/* card click -> project_view */
+.recent-project-image, .recent-project-info{ cursor:pointer; }
+
+/* edit / delete icons (Alt+Shift+D) */
+.card-admin{
+  position:absolute; top:10px; right:10px; z-index:50;
+  display:none; gap:8px;
+}
+body.admin-mode .card-admin{ display:flex; animation:adminIn .3s ease; }
+@keyframes adminIn{ from{opacity:0; transform:translateY(-6px) scale(.9)} to{opacity:1; transform:none} }
+.card-admin button{
+  width:34px; height:34px; border-radius:50%; border:none; color:#fff;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+  transition:transform .2s ease, filter .2s ease;
+}
+.card-admin button:hover{ transform:scale(1.12); filter:brightness(1.1); }
+.card-admin .edit{ background:#2563eb; }
+.card-admin .del{ background:#dc2626; }
 </style>
 </head>
 
