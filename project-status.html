@@ -6,8 +6,13 @@
     <title>Project Status Overview — YNAD Construction</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- PDF libraries (Table view -> Download PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- html2canvas: renders the table exactly as the browser shows it (Bangla / Arabic shaping stays correct) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
 
@@ -1024,6 +1029,74 @@
         body.theme-effective-dark #pageHeaderSection {
             border-bottom-color: #2a2c2c !important;
         }
+
+        /* ================================================================
+           VIEW SWITCH (Card / Table)
+           ================================================================ */
+        .view-switch-wrap { position: absolute; top: 120px; right: 24px; z-index: 30; }
+        @media (max-width: 767px) {
+            .view-switch-wrap { position: static; display: flex; justify-content: center; margin-bottom: 16px; }
+        }
+        .view-switch {
+            display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+        }
+        .view-switch-btn {
+            display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px;
+            font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+            color: #55575a; background: transparent; border: none; cursor: pointer;
+            transition: background-color .25s ease, color .25s ease;
+        }
+        .view-switch-btn:hover { color: #d97706; }
+        .view-switch-btn.active { background: #d97706; color: #fff !important; }
+        body.theme-effective-dark .view-switch { background: #2a2c2c; border-color: #3a3c3c; }
+        body.theme-effective-dark .view-switch-btn { color: #c7c5c2; }
+
+        /* ================================================================
+           TABLE VIEW  (13 columns, some columns hold 2 stacked lines)
+           ================================================================ */
+        #projectsTableWrap { display: none; max-width: 1700px; margin: 0 auto; }
+        #projectsTableWrap.show { display: block; }
+        .table-toolbar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
+        .table-action-btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+            border: 1px solid #d97706; color: #d97706; background: transparent; cursor: pointer;
+            transition: background-color .2s ease, color .2s ease;
+        }
+        .table-action-btn:hover { background: #d97706; color: #fff; }
+        .table-scroll { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .projects-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        .projects-table thead th {
+            background: #d97706; color: #fff; text-align: center; padding: 10px 8px;
+            font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600;
+            vertical-align: middle;
+        }
+        .projects-table tbody td { padding: 9px 8px; border-top: 1px solid #e2e8f0; color: #3a3c3c; vertical-align: middle; text-align: center; }
+        .projects-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .projects-table tbody tr:hover { background: #fffbeb; }
+
+        /* Stacked lines inside one cell / heading (same line height so rows line up) */
+        .projects-table .cell-line { line-height: 18px; min-height: 18px; white-space: nowrap; }
+        .projects-table thead th .cell-line { line-height: 16px; min-height: 16px; }
+        .projects-table thead th .head-title { font-weight: 700; margin-bottom: 2px; }
+        .projects-table thead th .head-sub { font-weight: 500; opacity: .92; }
+
+        body.theme-effective-dark .table-scroll { border-color: #3a3c3c; }
+        body.theme-effective-dark .projects-table tbody td { color: #e2e8f0; border-top-color: #3a3c3c; }
+        body.theme-effective-dark .projects-table tbody tr:nth-child(even) { background: #1b1d1d; }
+        body.theme-effective-dark .projects-table tbody tr:hover { background: #2a2c2c; }
+
+        /* ===== TABLE ANIMATION: heading wipes left->right, then body drops out of the heading ===== */
+        .projects-table thead { position: relative; z-index: 2; }
+        .projects-table tbody { position: relative; z-index: 1; }
+        @keyframes headWipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+        @keyframes bodyDrop {
+            from { clip-path: inset(0 0 100% 0); transform: translateY(-40px); opacity: 0; }
+            to   { clip-path: inset(0 0 0 0);    transform: translateY(0);     opacity: 1; }
+        }
+        .projects-table.table-anim thead { animation: headWipe .7s cubic-bezier(.4,0,.2,1) both; }
+        .projects-table.table-anim tbody { animation: bodyDrop .8s .7s cubic-bezier(.16,1,.3,1) both; }
     </style>
 </head>
 
@@ -1087,7 +1160,20 @@
         </script>
 
         <!-- Page Header + Status Filter Tabs -->
-        <section id="pageHeaderSection" class="py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
+        <section id="pageHeaderSection" class="relative py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
+
+            <!-- VIEW SWITCH: Card / Table -->
+            <div class="view-switch-wrap">
+                <div class="view-switch" id="viewSwitch">
+                    <button type="button" class="view-switch-btn active" data-view="card" onclick="setViewMode('card')">
+                        <i class="fa-solid fa-table-cells-large"></i> Card
+                    </button>
+                    <button type="button" class="view-switch-btn" data-view="table" onclick="setViewMode('table')">
+                        <i class="fa-solid fa-table-list"></i> Table
+                    </button>
+                </div>
+            </div>
+
             <h1 id="pageHeadingText" class="text-xl md:text-2xl font-light tracking-widest uppercase mb-3 reveal-fade-left" style="color: rgba(0,0,0,0.7); margin-bottom: calc(0.75rem + 0.3in);">Project Status Overview</h1>
 
             <div id="filterTabsContainer" class="flex flex-wrap justify-center gap-3 mb-6"></div>
@@ -1195,10 +1281,28 @@
             </div>
         </div>
 
-        <!-- Project Grid -->
+        <!-- Project Grid + Table -->
         <section class="py-12 px-6">
             <div id="allProjectsGrid" class="projects-grid max-w-[1700px] mx-auto grid grid-cols-4 gap-6">
                 <div class="col-span-full flex items-center justify-center py-24 min-h-[420px] text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
+            </div>
+
+            <!-- TABLE VIEW -->
+            <div id="projectsTableWrap">
+                <div class="table-toolbar">
+                    <button type="button" class="table-action-btn" onclick="printProjectTable()">
+                        <i class="fa-solid fa-print"></i> Print
+                    </button>
+                    <button type="button" class="table-action-btn" onclick="downloadProjectTablePDF()">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF
+                    </button>
+                </div>
+                <div class="table-scroll">
+                    <table class="projects-table" id="projectsTable">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -2230,10 +2334,10 @@
                 if (engineer && !(`${p.engineer_name || ''} ${p.engineer_id || ''}`).toLowerCase().includes(engineer)) return false;
 
                 if (costMode === 'exact') {
-                    if (!isNaN(costExact) && (p.cost === null || p.cost === undefined || Number(p.cost) !== costExact)) return false;
+                    if (!isNaN(costExact) && (getCost(p) == null || Number(getCost(p)) !== costExact)) return false;
                 } else {
-                    if (!isNaN(costMin) && (p.cost === null || p.cost === undefined || p.cost < costMin)) return false;
-                    if (!isNaN(costMax) && (p.cost === null || p.cost === undefined || p.cost > costMax)) return false;
+                    if (!isNaN(costMin) && (getCost(p) == null || Number(getCost(p)) < costMin)) return false;
+                    if (!isNaN(costMax) && (getCost(p) == null || Number(getCost(p)) > costMax)) return false;
                 }
 
                 if (dateMode === 'exact') {
@@ -2257,8 +2361,324 @@
                 ? nonStatusFiltered
                 : nonStatusFiltered.filter(p => computeProjectStatus(p) === currentFilter);
 
-            renderProjectGrid(finalFiltered);
+            renderCurrentView(finalFiltered);
             scheduleIndicatorSync(0);
+        }
+
+        /* ================= VIEW MODE (Card / Table) ================= */
+        let currentView = 'card';
+        let lastFilteredProjects = [];
+
+        const getCost = p => (p.project_cost !== undefined && p.project_cost !== null) ? p.project_cost : p.cost;
+
+        /* ================================================================
+           TABLE COLUMNS — 13 columns.
+           Each column has:
+             heads : heading lines (stacked one under another)
+             title : (optional) a main heading shown above the heads (used by Timeline)
+             get   : returns an ARRAY of lines, one per head (stacked in the cell)
+           "Contact Role" column is removed (it is still used to decide the
+           Designation / Beneficiary line).
+           ================================================================ */
+        const TABLE_COLUMNS = [
+            { heads: ['SL'],
+              get: (p, i) => [i + 1] },
+
+            { heads: ['BD No.', 'HO No.'],
+              get: p => [p.bd_number, p.ho_number] },
+
+            { heads: ['Official Name', 'Local Name'],
+              get: p => [p.project_name, p.local_name] },
+
+            { heads: ['Category'],
+              get: p => [p.category] },
+
+            { heads: ['Status', 'Overview'],
+              get: p => [p.status, computeProjectStatus(p)] },
+
+            { heads: ['Organization', 'Donor Name'],
+              get: p => [p.organization, p.donor_name] },
+
+            { heads: ['Cost (BDT)'],
+              get: p => {
+                  const c = getCost(p);
+                  return [(c !== null && c !== undefined && c !== '') ? Number(c).toLocaleString('en-US') : ''];
+              } },
+
+            { heads: ['Location'],
+              get: p => [p.district] },
+
+            { title: 'Timeline',
+              heads: [],
+              labels: ['Approved: ', 'Started: ', 'Opening: ', 'Opened: '],
+              get: p => [p.approval_date, p.start_date, p.opening_date, p.opened_date] },
+
+            { heads: ['Site Engineer'],
+              get: p => [p.engineer_name] },
+
+            { heads: ['Update Notes'],
+              get: p => [p.update_notes] },
+
+            { heads: ['Contact Name', 'Designation / Beneficiary'],
+              get: p => [
+                  p.contact_name,
+                  p.contact_role === 'Beneficiary' ? p.beneficiary_person : p.contact_designation
+              ] },
+
+            { heads: ['Phone'],
+              get: p => [p.contact_phone] }
+        ];
+
+        function isEmptyVal(v) {
+            return v === null || v === undefined || v === '';
+        }
+
+        function fmtCell(v) {
+            return isEmptyVal(v) ? '-' : String(v);
+        }
+
+        /* Plain-text heading lines of a column (used for PDF) */
+        function headLines(c) {
+            return c.title ? [c.title, ...c.heads] : c.heads;
+        }
+
+        /* Heading HTML of a column (used on screen and in print) */
+        function headHtml(c) {
+            if (c.title) {
+                return `<div class="cell-line head-title">${escapeHtml(c.title)}</div>` +
+                       c.heads.map(h => `<div class="cell-line head-sub">${escapeHtml(h)}</div>`).join('');
+            }
+            return c.heads.map(h => `<div class="cell-line">${escapeHtml(h)}</div>`).join('');
+        }
+
+        /* Every row = array of 13 cells, each cell = array of lines */
+        function tableRowsData(projects) {
+            return projects.map((p, i) => TABLE_COLUMNS.map(c => {
+                const raw = c.get(p, i);
+                // keep only the lines that really have a value (with optional label, e.g. "Approved: ")
+                const lines = [];
+                raw.forEach((v, k) => {
+                    if (!isEmptyVal(v)) lines.push((c.labels ? c.labels[k] : '') + String(v));
+                });
+                // nothing at all in this cell -> exactly ONE dash
+                return lines.length ? lines : ['-'];
+            }));
+        }
+
+        function cellHtml(lines) {
+            return lines.map(l => `<div class="cell-line">${escapeHtml(l)}</div>`).join('');
+        }
+
+        function setViewMode(mode) {
+            currentView = mode === 'table' ? 'table' : 'card';
+            document.querySelectorAll('.view-switch-btn').forEach(b =>
+                b.classList.toggle('active', b.getAttribute('data-view') === currentView));
+            renderCurrentView(lastFilteredProjects);
+            if (currentView === 'table') playTableAnimation();
+        }
+
+        function playTableAnimation() {
+            const t = document.getElementById('projectsTable');
+            t.classList.remove('table-anim');
+            void t.offsetWidth;
+            t.classList.add('table-anim');
+        }
+
+        function renderCurrentView(projects) {
+            lastFilteredProjects = projects || [];
+            const grid = document.getElementById('allProjectsGrid');
+            const tableWrap = document.getElementById('projectsTableWrap');
+
+            if (currentView === 'table') {
+                grid.style.display = 'none';
+                tableWrap.classList.add('show');
+                renderProjectTable(lastFilteredProjects);
+            } else {
+                tableWrap.classList.remove('show');
+                grid.style.display = '';
+                renderProjectGrid(lastFilteredProjects);
+            }
+        }
+
+        function renderProjectTable(projects) {
+            const thead = document.querySelector('#projectsTable thead');
+            const tbody = document.querySelector('#projectsTable tbody');
+            thead.innerHTML = '<tr>' + TABLE_COLUMNS.map(c => `<th>${headHtml(c)}</th>`).join('') + '</tr>';
+
+            if (!projects.length) {
+                tbody.innerHTML = `<tr><td colspan="${TABLE_COLUMNS.length}" style="text-align:center;padding:40px;">No projects match the selected filters.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = tableRowsData(projects)
+                .map(row => '<tr>' + row.map(lines => `<td>${cellHtml(lines)}</td>`).join('') + '</tr>')
+                .join('');
+        }
+
+        function currentFilterLabel() {
+            const t = STATUS_TAB_DEFS.find(x => x.key === currentFilter);
+            return t ? t.label : 'All';
+        }
+
+        /* ================================================================
+           DOWNLOAD PDF
+           jsPDF cannot shape Bangla / Arabic text, so the table is first
+           drawn by the browser (html2canvas) and then placed into the PDF
+           page by page, with the heading repeated on every page.
+
+           SHIFT: html2canvas draws Bangla/Arabic fonts a little lower than
+           the browser does. Top padding is reduced and bottom padding is
+           increased by SHIFT px (total height unchanged) so the text sits
+           in the exact middle of the orange heading and every row.
+           Still too low -> increase SHIFT (5, 6). Too high -> decrease (3, 2).
+        ================================================================ */
+        async function downloadProjectTablePDF() {
+            if (!window.jspdf || !window.html2canvas) { alert('PDF library failed to load.'); return; }
+            if (!lastFilteredProjects.length) { alert('No projects to export.'); return; }
+
+            const btn = document.querySelector('.table-action-btn .fa-file-pdf');
+            const btnWrap = btn ? btn.parentElement : null;
+            const oldBtnHtml = btnWrap ? btnWrap.innerHTML : '';
+            if (btnWrap) { btnWrap.disabled = true; btnWrap.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing...'; }
+
+            const holder = document.createElement('div');
+            try {
+                const { jsPDF } = window.jspdf;
+                const rows = tableRowsData(lastFilteredProjects);
+
+                const SHIFT = 4;
+
+                holder.id = 'pdfHolder';
+                holder.style.cssText = 'position:fixed;left:-99999px;top:0;width:1400px;background:#ffffff;';
+                holder.innerHTML = `
+                <style>
+                    #pdfHolder, #pdfHolder * { box-sizing: border-box; }
+                    #pdfHolder table { width: 1400px; border-collapse: collapse; background: #fff;
+                        font-family: 'Noto Sans Bengali', 'Noto Naskh Arabic', Arial, 'Nirmala UI', 'Segoe UI', Tahoma, sans-serif;
+                        font-size: 12px; color: #222; }
+                    #pdfHolder th { background: #d97706; color: #fff; text-align: center; vertical-align: middle;
+                        padding: ${10 - SHIFT}px 8px ${10 + SHIFT}px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+                    #pdfHolder td { text-align: center; vertical-align: middle; padding: ${9 - SHIFT}px 8px ${9 + SHIFT}px;
+                        border-bottom: 1px solid #ddd; color: #222; background: #fff; }
+                    #pdfHolder tbody tr:nth-child(even) td { background: #f8fafc; }
+                    #pdfHolder .cell-line { line-height: 18px; min-height: 18px; white-space: nowrap; }
+                    #pdfHolder th .cell-line { line-height: 16px; min-height: 16px; }
+                    #pdfHolder .head-title { font-weight: 700; }
+                </style>
+                <table>
+                    <thead><tr>${TABLE_COLUMNS.map(c => `<th>${headHtml(c)}</th>`).join('')}</tr></thead>
+                    <tbody>${rows.map(r => '<tr>' + r.map(lines => `<td>${cellHtml(lines)}</td>`).join('') + '</tr>').join('')}</tbody>
+                </table>`;
+                document.body.appendChild(holder);
+
+                // let the browser lay the text out, then wait until Bangla / Arabic fonts are loaded
+                await new Promise(r => requestAnimationFrame(() => r()));
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                await new Promise(r => setTimeout(r, 500));
+
+                const table = holder.querySelector('table');
+                const SCALE = 2;
+                const canvas = await html2canvas(table, { scale: SCALE, backgroundColor: '#ffffff', useCORS: true });
+
+                // measure heading + every row (in canvas pixels)
+                const tableTop = table.getBoundingClientRect().top;
+                const headH = Math.round(table.tHead.getBoundingClientRect().height * SCALE);
+                const bodyRows = Array.from(table.tBodies[0].rows).map(tr => {
+                    const rc = tr.getBoundingClientRect();
+                    return { top: Math.round((rc.top - tableTop) * SCALE), h: Math.round(rc.height * SCALE) };
+                });
+
+                // A4 landscape page
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                const pageW = doc.internal.pageSize.getWidth();
+                const pageH = doc.internal.pageSize.getHeight();
+                const marginX = 20, titleArea = 46, marginBottom = 20;
+                const ptPerPx = (pageW - marginX * 2) / canvas.width;
+                const availPx = Math.floor((pageH - titleArea - marginBottom) / ptPerPx);
+
+                // split rows into pages
+                const pages = [];
+                let cur = [], curH = headH;
+                bodyRows.forEach(r => {
+                    if (cur.length && curH + r.h > availPx) { pages.push(cur); cur = []; curH = headH; }
+                    cur.push(r); curH += r.h;
+                });
+                if (cur.length) pages.push(cur);
+
+                const dateStr = new Date().toLocaleDateString('en-GB');
+                pages.forEach((pageRows, pi) => {
+                    if (pi > 0) doc.addPage('a4', 'landscape');
+
+                    const first = pageRows[0];
+                    const last = pageRows[pageRows.length - 1];
+                    const blockH = (last.top + last.h) - first.top;
+
+                    const slice = document.createElement('canvas');
+                    slice.width = canvas.width;
+                    slice.height = headH + blockH;
+                    const ctx = slice.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, slice.width, slice.height);
+                    ctx.drawImage(canvas, 0, 0, canvas.width, headH, 0, 0, canvas.width, headH);
+                    ctx.drawImage(canvas, 0, first.top, canvas.width, blockH, 0, headH, canvas.width, blockH);
+
+                    // Title + sub-title centered on the page
+                    doc.setFontSize(13);
+                    doc.text('YNAD Construction - Project Status Overview', pageW / 2, 24, { align: 'center' });
+                    doc.setFontSize(8);
+                    doc.text(`Status: ${currentFilterLabel()}  |  Total: ${lastFilteredProjects.length}  |  Date: ${dateStr}  |  Page ${pi + 1} / ${pages.length}`, pageW / 2, 38, { align: 'center' });
+
+                    doc.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG',
+                        marginX, titleArea, slice.width * ptPerPx, slice.height * ptPerPx);
+                });
+
+                doc.save('project-status-' + new Date().toISOString().slice(0, 10) + '.pdf');
+            } catch (err) {
+                console.error('PDF export failed:', err);
+                alert('PDF download failed. Please try again.');
+            } finally {
+                if (holder.parentNode) holder.parentNode.removeChild(holder);
+                if (btnWrap) { btnWrap.disabled = false; btnWrap.innerHTML = oldBtnHtml; }
+            }
+        }
+
+        function printProjectTable() {
+            const head = '<tr>' + TABLE_COLUMNS.map(c => `<th>${headHtml(c)}</th>`).join('') + '</tr>';
+            const body = tableRowsData(lastFilteredProjects)
+                .map(r => '<tr>' + r.map(lines => `<td>${cellHtml(lines)}</td>`).join('') + '</tr>').join('');
+
+            const w = window.open('', '_blank');
+            if (!w) { alert('Please allow pop-ups to print.'); return; }
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Project Status Overview</title>
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+            <style>
+                @page { size: A4 landscape; margin: 8mm; }
+                * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                html, body { margin: 0; padding: 0; background: #ffffff; }
+                body { font-family: Arial, 'Noto Sans Bengali', 'Noto Naskh Arabic', 'Nirmala UI', 'Segoe UI', Tahoma, sans-serif; color: #222; }
+                h2 { margin: 0 0 4px; font-size: 18px; font-weight: 400; text-align: center; }
+                p { margin: 0 0 12px; font-size: 12px; color: #000; text-align: center; }
+                /* Same look as the PDF: table drawn at 1400px, then scaled down to fit A4 landscape */
+                .print-zoom { zoom: 0.75; }
+                table { width: 1400px; border-collapse: collapse; background: #fff; font-size: 12px; }
+                th { background: #d97706 !important; color: #fff; text-align: center; vertical-align: middle;
+                     padding: 10px 8px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+                td { text-align: center; vertical-align: middle; padding: 9px 8px; border-bottom: 1px solid #ddd; color: #222; background: #fff; }
+                tbody tr:nth-child(even) td { background: #f8fafc; }
+                .cell-line { line-height: 18px; min-height: 18px; white-space: nowrap; }
+                th .cell-line { line-height: 16px; min-height: 16px; }
+                .head-title { font-weight: 700; }
+                thead { display: table-header-group; }
+                tr { page-break-inside: avoid; }
+            </style></head><body>
+            <h2>YNAD Construction — Project Status Overview</h2>
+            <p>Status: ${escapeHtml(currentFilterLabel())} | Total: ${lastFilteredProjects.length} | Date: ${new Date().toLocaleDateString('en-GB')}</p>
+            <div class="print-zoom"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
+            </body></html>`);
+            w.document.close();
+            w.focus();
+            const doPrint = () => { try { w.print(); } catch (e) {} };
+            const fontsReady = (w.document.fonts && w.document.fonts.ready) ? w.document.fonts.ready : Promise.resolve();
+            Promise.race([fontsReady, new Promise(r => setTimeout(r, 1500))]).then(() => setTimeout(doPrint, 200));
         }
 
         function renderProjectGrid(projects) {
