@@ -104,7 +104,7 @@ tailwind.config = {
           <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-400 text-black font-black grid place-items-center shadow-neon">
             <i class="fa-solid fa-plus text-lg animate-pulse"></i>
           </div>
-          <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
+          <h1 id="pageTitle" class="text-lg sm:text-xl font-normal tracking-tight text-white uppercase">Project Add</h1>
         </div>
         <div id="formProgressTrack"><div id="formProgressFill"></div><span id="formProgressLabel">0%</span></div>
         <div id="scrollKnob" class="scroll-knob" title="Drag to scroll">
@@ -459,18 +459,21 @@ categorySelect.addEventListener('change', () => { updateBdPrefix(); scheduleExis
 updateBdPrefix();
 
 /* ---- Existing project check (same BD-Number = update mode) ---- */
-let existing = null, existTimer = null;
+/* editRecord = project opened via ?edit=<id> (Edit button on index page) */
+let existing = null, existTimer = null, editRecord = null;
 function showExisting() {
   const b = $('existingBanner');
   b.classList.toggle('hidden', !existing);
-  if (existing) $('existingText').textContent =
-    `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
+  if (existing) $('existingText').textContent = editRecord
+    ? `EDIT MODE: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). EMPTY TEXT FIELDS WILL BE CLEARED. NEW PHOTOS, REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`
+    : `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
 }
 function scheduleExistingCheck() {
   clearTimeout(existTimer);
   existTimer = setTimeout(checkExisting, 600);
 }
 async function checkExisting() {
+  if (editRecord) { existing = editRecord; showExisting(); return; }
   const bd = bdHiddenInput.value;
   if (!bd) { existing = null; showExisting(); return; }
   try {
@@ -673,7 +676,8 @@ async function uploadFileAndGetUrl(folder, file) {
 function resetUI() {
   projectFormEl.reset();
   updateBdPrefix();
-  existing = null; showExisting();
+  editRecord = null; existing = null; showExisting();
+  $('pageTitle').textContent = 'Project Add';
   delayReasonContainer.classList.add('hidden');
   geoStatus.textContent = 'PASTE LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
   updateTimelineFieldsVisibility();
@@ -696,7 +700,7 @@ projectFormEl.addEventListener('submit', async function (e) {
   if (mediaMode === 'upload' && $('pPhotos').files.length > 15) { alert('MAXIMUM 15 PHOTOS IN UPLOAD MODE!'); return; }
 
   await checkExisting();
-  if (existing && !confirm(`"${existing.bd_number}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
+  if (existing && !editRecord && !confirm(`"${existing.bd_number}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
 
   const btn = document.querySelector('#projectForm button[type="submit"]');
   const originalHtml = btn.innerHTML;
@@ -784,9 +788,14 @@ projectFormEl.addEventListener('submit', async function (e) {
 
   let error;
   if (existing) {
-    /* Update mode: only non-empty values overwrite; photos/reports/raw media are appended */
+    /* Update mode.
+       - Normal (BD-number match): only non-empty values overwrite.
+       - Edit mode (?edit=id): empty text fields are cleared too.
+       - Photos / reports / raw media / documents / C-photo are always kept unless new ones are given. */
     const u = {};
+    const keepOld = ['photo_urls', 'report_urls', 'raw_photos_link', 'raw_video_link', 'documents_url', 'c_photo_url'];
     Object.entries(record).forEach(([k, val]) => {
+      if (editRecord && !keepOld.includes(k)) { u[k] = val; return; }
       if (val === null || val === '' || (Array.isArray(val) && !val.length)) return;
       u[k] = val;
     });
@@ -803,6 +812,7 @@ projectFormEl.addEventListener('submit', async function (e) {
   }
   btn.disabled = false; btn.innerHTML = originalHtml;
   if (error) { console.error(error); alert('SAVE FAILED: ' + error.message); return; }
+  if (editRecord) { alert('PROJECT UPDATED SUCCESSFULLY'); location.reload(); return; }
   resetUI();
 });
 
@@ -847,6 +857,45 @@ $('contactRoleToggle').addEventListener('click', () => setContactRole(contactRol
   window.addEventListener('scroll', update);
   window.addEventListener('resize', update);
   update();
+})();
+
+/* ---- Edit mode: ?edit=<project id> prefills the whole form ---- */
+(async function loadForEdit() {
+  const id = new URLSearchParams(location.search).get('edit');
+  if (!id) return;
+  const { data: d, error } = await supabaseClient.from('projects').select('*').eq('id', id).maybeSingle();
+  if (error || !d) { alert('PROJECT NOT FOUND'); return; }
+  editRecord = d;
+  $('pageTitle').textContent = 'Edit Project';
+  const set = (k, val) => { $(k).value = (val === null || val === undefined) ? '' : val; };
+  const day = x => (x || '').slice(0, 10);
+
+  set('pName', d.project_name); set('pLocalName', d.local_name);
+  $('pCategory').value = d.category || ''; updateBdPrefix();
+  set('pBdDigits', (d.bd_number || '').replace(/^[A-Z]+-/i, ''));
+  set('pHoDigits', (d.ho_number || '').replace(/^HO-/i, ''));
+  syncBdHiddenValue(); syncHoHiddenValue();
+  $('pStatus').value = d.status || ''; updateTimelineFieldsVisibility(); updateMediaUI();
+
+  if (d.organization && ![...$('pOrg').options].some(o => o.value === d.organization)) {
+    $('pOrg').insertAdjacentHTML('beforeend', `<option value="${escHtml(d.organization)}" class="bg-zinc-900 text-white">${escHtml(d.organization)}</option>`);
+  }
+  set('pOrg', d.organization); set('pDonor', d.donor_name); set('pDonorId', d.donor_id);
+  set('pCountry', d.donated_country); set('pCost', d.project_cost);
+  if (d.latitude != null && d.longitude != null) set('pCoords', `${d.latitude}, ${d.longitude}`);
+  set('pDivision', d.division); set('pDistrict', d.district); set('pThana', d.thana);
+  set('pPostOffice', d.post_office); set('pUnion', d.union_name); set('pVillage', d.village);
+  set('pApproval', day(d.approval_date)); set('pStart', day(d.start_date));
+  set('pOpening', day(d.opening_date)); set('pOpened', day(d.opened_date)); calculateDelay();
+  set('pEngineer', d.engineer_name); set('pUpdate', d.update_notes); set('pDelayReason', d.delay_reason);
+  setContactRole(d.contact_role || 'Responsible');
+  set('pContactName', d.contact_name); set('pContactDesignation', d.contact_designation);
+  set('pBeneficiaryPerson', d.beneficiary_person); set('pContactPhone', d.contact_phone);
+  set('pDetails', d.info_details); set('pVideo', d.video_link);
+  set('pFeatures', (d.info_features || []).join('\t'));
+  set('pOverview', (d.info_overview || []).map(r => `${r.key}\t${r.value}`).join('\n'));
+  renderInfoPreview();
+  existing = d; showExisting(); updateFormProgress();
 })();
 
 updateMediaUI();
