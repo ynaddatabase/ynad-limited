@@ -3403,6 +3403,8 @@ function closeMenuWithEffect() {
 
             return `
             <div id="project-card-${index}"
+            <div id="project-card-${index}"
+     data-id="${escapeHtml(project.id)}"
                  data-project-code="${escapeHtml(project.bd_number)}"
                  data-ho-number="${escapeHtml(project.ho_number)}"
                  data-project-name="${escapeHtml(project.project_name)}"
