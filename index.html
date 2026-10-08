@@ -3852,7 +3852,61 @@ function closeMenuWithEffect() {
             animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
+        /* ---- Alt+Shift+D: toggle edit/delete icons ---- */
+        document.addEventListener('keydown', e => {
+            if (e.altKey && e.shiftKey && e.code === 'KeyD') {
+                e.preventDefault();
+                document.body.classList.toggle('admin-mode');
+            }
+        });
 
+        /* ---- Card click -> project_view.html ---- */
+        document.addEventListener('click', e => {
+            const card = e.target.closest('#mainProjectSlider .recent-project-card');
+            if (!card || !card.dataset.id) return;
+            if (e.target.closest('.recent-project-actions, .card-admin')) return;
+            window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
+        });
+
+        /* ---- Edit: project_add.html with data prefilled ---- */
+        function editProject(e, id) {
+            e.stopPropagation();
+            document.getElementById('projectAddFrame').src = 'project_add.html?edit=' + encodeURIComponent(id);
+            document.getElementById('projectAddOverlay').classList.add('open');
+            document.getElementById('projectAddMinimizedTab').classList.remove('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /* ---- Delete with confirmation ---- */
+        let deleteTargetId = null;
+        function askDeleteProject(e, id, name) {
+            e.stopPropagation();
+            deleteTargetId = id;
+            document.getElementById('deleteProjectName').textContent = name || 'this project';
+            document.getElementById('deleteErr').classList.add('hidden');
+            const ov = document.getElementById('deleteOverlay');
+            ov.classList.remove('hidden'); ov.classList.add('flex');
+        }
+        function closeDeleteModal() {
+            deleteTargetId = null;
+            const ov = document.getElementById('deleteOverlay');
+            ov.classList.add('hidden'); ov.classList.remove('flex');
+        }
+        async function confirmDeleteProject() {
+            if (!deleteTargetId) return;
+            const btn = document.getElementById('deleteYesBtn');
+            btn.disabled = true; btn.textContent = 'Deleting...';
+            const { data, error } = await supabaseClient.from('projects').delete().eq('id', deleteTargetId).select();
+            btn.disabled = false; btn.textContent = 'Yes, Delete';
+            const err = document.getElementById('deleteErr');
+            if (error || !data || data.length === 0) {
+                err.textContent = error ? error.message : 'Delete hoyni. Supabase e projects table-er DELETE policy (RLS) check koro.';
+                err.classList.remove('hidden');
+                return;
+            }
+            closeDeleteModal();
+            loadProjects(); loadHeroSlides(); loadHeroStats(); refreshProjectLocationMap();
+        }
         // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
             loadProjects();
