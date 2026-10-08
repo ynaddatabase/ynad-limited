@@ -1309,7 +1309,7 @@ body.theme-light #about {
             color: #334155;
             border-radius: 5px;
             cursor: default;
-            transition: background .15s ease, color .15s ease;
+            transition: background .15s ease, color .15s ease, transform .16s ease;
         }
         .media-menu-item:hover,
         .media-menu-item.open {
@@ -1341,8 +1341,13 @@ body.theme-light #about {
             z-index: 61;
         }
         .media-menu-item:hover .media-submenu,
-        .media-menu-item.open .media-submenu {
+        .media-menu-item.hover-open > .media-submenu {
             display: flex;
+        }
+        /* Clicked items remain selected, but selection alone never locks a submenu open. */
+        .media-menu-item.open {
+            background: transparent;
+            color: #d97706;
         }
         /* If the submenu would run off the right edge of the viewport, this
            class (applied by JS at open-time) flips it to fly out to the
@@ -1361,7 +1366,7 @@ body.theme-light #about {
             border-radius: 5px;
             text-decoration: none;
             white-space: nowrap;
-            transition: background .15s ease, color .15s ease;
+            transition: background .15s ease, color .15s ease, transform .16s ease;
         }
         .media-submenu a:hover {
             background: #d97706;
@@ -1901,8 +1906,12 @@ body.theme-effective-dark .card-admin button:hover{ color:#f59e0b !important; }
   z-index:71;
 }
 .files-menu-item:hover > .files-submenu,
-.files-menu-item.open > .files-submenu{
+.files-menu-item.hover-open > .files-submenu{
   display:flex;
+}
+/* Clicked items remain selected, but selection alone never locks a submenu open. */
+.files-menu-item.open > .files-submenu{
+  display:none;
 }
 .files-submenu a{
   display:block;
@@ -1934,6 +1943,25 @@ body.theme-effective-dark .card-admin button:hover{ color:#f59e0b !important; }
 .files-submenu.flip-left{
   left:auto;
   right:calc(100% + 7px);
+}
+
+/* Raise the active project card above its siblings while a fly-out menu is open. */
+.recent-project-card:has(.files-menu.open),
+.recent-project-card:has(.media-menu:not(.hidden)){
+  z-index:200 !important;
+}
+.recent-project-card:has(.files-menu-item.open),
+.recent-project-card:has(.media-menu-item.open){
+  z-index:201 !important;
+}
+
+/* MEDIA menu items use the same small right-swipe motion as FILES. */
+.media-menu-item:hover,
+.media-menu-item.open{
+  transform:translateX(2px);
+}
+.media-submenu a:hover{
+  transform:translateX(2px);
 }
 body.theme-effective-dark .files-menu,
 body.theme-effective-dark .files-submenu{
@@ -2296,17 +2324,31 @@ body.theme-effective-dark .recent-project-action.files span{
     background:transparent !important;
     box-shadow:none !important;
 }
-.files-menu-item:hover,
+ .files-menu-item:hover,
 .files-menu-item.open,
 .files-menu-link:hover,
 .files-submenu a:hover{
-    color:#d97706 !important;
+    color:#2563eb !important;
     transform:translateX(2px);
 }
 .files-menu-item:hover > i,
 .files-menu-item.open > i,
 .files-menu-link:hover > i{
-    color:#d97706 !important;
+    color:#2563eb !important;
+}
+.files-submenu a{
+    transition:color .16s ease, transform .16s ease;
+}
+body.theme-effective-dark .files-menu-item:hover,
+body.theme-effective-dark .files-menu-item.open,
+body.theme-effective-dark .files-menu-link:hover,
+body.theme-effective-dark .files-submenu a:hover{
+    color:#60a5fa !important;
+}
+body.theme-effective-dark .files-menu-item:hover > i,
+body.theme-effective-dark .files-menu-item.open > i,
+body.theme-effective-dark .files-menu-link:hover > i{
+    color:#60a5fa !important;
 }
 
 /* Flat creative delete icon: reference-like filled orange circle,
@@ -2379,6 +2421,57 @@ body.theme-effective-dark .recent-project-action.files span{
     100%{transform:scale(1)}
 }
 
+        /* Project card MEDIA dropdown — text-only hover (no orange fill).
+           OPENING / ONGOING / PROPOSAL stay on a clean white surface; only
+           their text/icon turns amber when hovered or selected. */
+        .media-menu .media-menu-item:hover,
+        .media-menu .media-menu-item.open {
+            background: transparent !important;
+            color: #d97706 !important;
+            transform: none;
+        }
+        .media-menu .media-menu-item:hover i,
+        .media-menu .media-menu-item.open i {
+            color: #d97706 !important;
+        }
+        .media-menu .media-submenu a:hover {
+            background: transparent !important;
+            color: #d97706 !important;
+            transform: translateX(2px);
+        }
+        body.theme-effective-dark .media-menu .media-menu-item {
+            color: #cbd5e1;
+        }
+        body.theme-effective-dark .media-menu .media-menu-item:hover,
+        body.theme-effective-dark .media-menu .media-menu-item.open,
+        body.theme-effective-dark .media-menu .media-menu-item:hover i,
+        body.theme-effective-dark .media-menu .media-menu-item.open i,
+        body.theme-effective-dark .media-menu .media-submenu a:hover {
+            color: #f59e0b !important;
+        }
+
+
+/* ================================================================
+   FINAL DROPDOWN NAV BEHAVIOR
+   - FILES / MEDIA top-level popup opens from its button click.
+   - Nested REPORT / ONGOING / OPENING / PROPOSAL popups are hover-only.
+   - Clicking a nested row never locks/restarts its submenu.
+   - When the pointer leaves the whole popup area, it closes.
+   ================================================================ */
+.media-menu .media-menu-item > .media-submenu,
+.files-menu .files-menu-item > .files-submenu{
+    display:none !important;
+}
+.media-menu .media-menu-item:hover > .media-submenu,
+.files-menu .files-menu-item:hover > .files-submenu,
+.media-menu .media-menu-item.hover-open > .media-submenu,
+.files-menu .files-menu-item.hover-open > .files-submenu{
+    display:flex !important;
+}
+.media-menu .media-menu-item.open,
+.files-menu .files-menu-item.open{
+    background:transparent !important;
+}
 </style>
 </head>
 
@@ -3319,12 +3412,20 @@ if (currentScrollY <= 4) {
             if (!menu) return;
             const isOpen = !menu.classList.contains('hidden');
 
-            // Close all other open media menus first
+            // Close all other project-action dropdowns first so FILES / MEDIA
+            // can never stay open together. The window click handler cannot do
+            // this reliably because this function intentionally stops bubbling.
             document.querySelectorAll('.media-menu').forEach(function(m) {
                 if (m !== menu) {
                     m.classList.add('hidden');
                     m.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
                 }
+            });
+            document.querySelectorAll('.files-menu.open').forEach(function(m) {
+                m.classList.remove('open');
+                m.querySelectorAll('.files-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
+                const btn = m.closest('.files-menu-wrap')?.querySelector('button');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             });
 
             menu.classList.toggle('hidden', isOpen);
@@ -3346,46 +3447,77 @@ if (currentScrollY <= 4) {
             }
         }
 
-        // Tap-to-open for OPENING / ONGOING / PROPOSAL rows (submenu also
-        // opens on hover via CSS for pointer devices; this makes it work on
-        // touch too, and lets only one submenu be open at a time).
+        // Nested FILES / MEDIA rows are hover-only. Clicking them does not
+        // select, lock, or restart the submenu. The browser/CSS hover state
+        // alone controls which fly-out is visible.
         document.addEventListener('click', function(e) {
-            const item = e.target.closest('.media-menu-item');
-            if (!item) return;
-            if (e.target.closest('.media-submenu')) return; // let submenu links behave normally
+            const nestedItem = e.target.closest('.media-menu-item, .files-menu-item');
+            if (!nestedItem) return;
+            if (nestedItem.closest('.media-submenu, .files-submenu')) return;
             e.stopPropagation();
-            const menu = item.closest('.media-menu');
-            menu.querySelectorAll('.media-menu-item').forEach(function(i) {
-                if (i !== item) i.classList.remove('open');
-            });
-            item.classList.toggle('open');
-
-            // Re-check overflow for this row's submenu right after toggling open.
-            const sub = item.querySelector('.media-submenu');
-            if (sub && item.classList.contains('open')) {
-                requestAnimationFrame(function() {
-                    sub.classList.remove('flip-left');
-                    const rect = sub.getBoundingClientRect();
-                    if (rect.right > window.innerWidth - 8) {
-                        sub.classList.add('flip-left');
-                    }
-                });
-            }
         });
 
-        // Also flip on hover, for mouse users who never click (CSS opens the
-        // submenu on :hover directly, so JS needs to check on mouseenter too).
+        // Universal hover navigation for both FILES and MEDIA. A small delay prevents
+        // the submenu from disappearing while the pointer crosses its small fly-out gap.
+        const hoverTimers = new WeakMap();
+
         document.addEventListener('mouseover', function(e) {
-            const item = e.target.closest('.media-menu-item');
-            if (!item) return;
-            const sub = item.querySelector('.media-submenu');
+            const item = e.target.closest('.files-menu-item, .media-menu-item');
+            if (!item || !item.parentElement) return;
+
+            const parent = item.parentElement;
+            const sub = item.querySelector(':scope > .files-submenu, :scope > .media-submenu');
             if (!sub) return;
+
+            const oldTimer = hoverTimers.get(item);
+            if (oldTimer) clearTimeout(oldTimer);
+
+            // Only one row at the same level controls the visible fly-out.
+            Array.from(parent.children).forEach(function(sibling) {
+                if (sibling !== item && sibling.classList && sibling.classList.contains('hover-open')) {
+                    sibling.classList.remove('hover-open');
+                }
+            });
+
+            item.classList.add('hover-open');
+
             requestAnimationFrame(function() {
                 sub.classList.remove('flip-left');
                 const rect = sub.getBoundingClientRect();
-                if (rect.right > window.innerWidth - 8) {
-                    sub.classList.add('flip-left');
+                if (rect.right > window.innerWidth - 8) sub.classList.add('flip-left');
+            });
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const item = e.target.closest('.files-menu-item, .media-menu-item');
+            if (!item || !item.contains(e.relatedTarget)) return;
+
+            const oldTimer = hoverTimers.get(item);
+            if (oldTimer) clearTimeout(oldTimer);
+
+            const timer = setTimeout(function() {
+                // If the pointer is still anywhere inside this item/submenu, keep it open.
+                if (!item.matches(':hover')) item.classList.remove('hover-open');
+            }, 180);
+            hoverTimers.set(item, timer);
+        });
+
+        // Close the whole FILES / MEDIA popup when the pointer leaves its
+        // entire wrapper. This prevents a previously opened popup from
+        // remaining stuck on screen.
+        document.querySelectorAll('.files-menu-wrap, .media-menu-wrap').forEach(function(wrap) {
+            wrap.addEventListener('pointerleave', function() {
+                const menu = wrap.querySelector('.files-menu, .media-menu');
+                if (!menu) return;
+                menu.classList.add(menu.classList.contains('files-menu') ? 'closed-by-pointer' : 'hidden');
+                if (menu.classList.contains('files-menu')) {
+                    menu.classList.remove('open', 'closed-by-pointer');
+                    const btn = wrap.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
                 }
+                menu.querySelectorAll('.files-menu-item.open, .media-menu-item.open, .hover-open').forEach(function(item) {
+                    item.classList.remove('open', 'hover-open');
+                });
             });
         });
 
@@ -3578,19 +3710,90 @@ if (currentScrollY <= 4) {
             minimizedTab.classList.remove('show');
         }
 
-        // Close Project Add Modal — only triggered by the X button (no outside-click / no Escape key)
-        function closeProjectAddModal() {
+        // Edit-session state. The homepage refreshes ONLY when an edited project
+        // actually changed in Supabase. Closing an unchanged edit keeps the current
+        // card/slider/scroll state exactly as it is.
+        let activeEditProjectId = null;
+        let activeEditProjectSnapshot = null;
+
+        function canonicalizeProjectValue(value) {
+            if (Array.isArray(value)) return value.map(canonicalizeProjectValue);
+            if (value && typeof value === 'object') {
+                const out = {};
+                Object.keys(value).sort().forEach(function(key) {
+                    out[key] = canonicalizeProjectValue(value[key]);
+                });
+                return out;
+            }
+            return value;
+        }
+
+        function createProjectEditSnapshot(row) {
+            if (!row) return null;
+            const copy = {};
+            Object.keys(row).sort().forEach(function(key) {
+                // These are technical metadata and should not count as an edit.
+                if (key === 'created_at' || key === 'updated_at') return;
+                copy[key] = canonicalizeProjectValue(row[key]);
+            });
+            return JSON.stringify(copy);
+        }
+
+        async function fetchProjectEditSnapshot(id) {
+            try {
+                const result = await supabaseClient
+                    .from('projects')
+                    .select('*')
+                    .eq('id', id)
+                    .maybeSingle();
+                return result && result.data ? createProjectEditSnapshot(result.data) : null;
+            } catch (err) {
+                console.error('Project edit snapshot error:', err);
+                return null;
+            }
+        }
+
+        // Close Project Add Modal — if this was an edit session, refresh only
+        // when the saved project data is actually different from the opening state.
+        async function closeProjectAddModal() {
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
             const minimizedTab = document.getElementById('projectAddMinimizedTab');
+            const wasEditing = !!activeEditProjectId;
+            const editId = activeEditProjectId;
+            const openingSnapshot = activeEditProjectSnapshot;
+
             overlay.classList.remove('open');
             document.body.style.overflow = 'auto';
             minimizedTab.classList.remove('show');
-            setTimeout(() => { frame.src = 'about:blank'; }, 500); // reset after animation finishes
-            loadProjects(); // refresh homepage cards in case a new project was just added
-            loadHeroSlides(); // refresh hero slideshow too in case a new project was just added
-            loadHeroStats(); // refresh Ongoing/Completed/Upcoming counters too
-            refreshProjectLocationMap(); // refresh the project location map too
+            setTimeout(() => { frame.src = 'about:blank'; }, 500);
+
+            // Clear edit state immediately so a later open starts clean.
+            activeEditProjectId = null;
+            activeEditProjectSnapshot = null;
+
+            if (wasEditing) {
+                const currentSnapshot = await fetchProjectEditSnapshot(editId);
+                const changed = !!openingSnapshot && !!currentSnapshot && openingSnapshot !== currentSnapshot;
+
+                if (changed) {
+                    await Promise.all([
+                        loadProjects(),
+                        loadHeroSlides(),
+                        loadHeroStats(),
+                        refreshProjectLocationMap()
+                    ]);
+                }
+                return;
+            }
+
+            // New-project mode keeps the previous behavior: refresh after close.
+            await Promise.all([
+                loadProjects(),
+                loadHeroSlides(),
+                loadHeroStats(),
+                refreshProjectLocationMap()
+            ]);
         }
 
         // Minimize Project Add Modal — hides the box WITHOUT resetting the iframe, so form data stays intact
@@ -4576,9 +4779,15 @@ function closeMenuWithEffect() {
         });
 
         /* ---- Edit: project_add.html with data prefilled ---- */
-        function editProject(e, id) {
+        async function editProject(e, id) {
             e.stopPropagation();
-            document.getElementById('projectAddFrame').src = 'project_add.html?edit=' + encodeURIComponent(id);
+
+            // Capture the exact opening state before the editor is shown.
+            activeEditProjectId = id;
+            activeEditProjectSnapshot = await fetchProjectEditSnapshot(id);
+
+            const frame = document.getElementById('projectAddFrame');
+            frame.src = 'project_add.html?edit=' + encodeURIComponent(id);
             document.getElementById('projectAddOverlay').classList.add('open');
             document.getElementById('projectAddMinimizedTab').classList.remove('show');
             document.body.style.overflow = 'hidden';
@@ -4591,6 +4800,14 @@ function closeMenuWithEffect() {
 
             const menu = document.getElementById('filesMenu-' + index);
             if (!menu) return;
+
+            // Close every MEDIA dropdown before opening FILES, and also close
+            // other FILES dropdowns. This keeps only one project-action menu
+            // visible at a time.
+            document.querySelectorAll('.media-menu:not(.hidden)').forEach(other => {
+                other.classList.add('hidden');
+                other.querySelectorAll('.media-menu-item.open').forEach(item => item.classList.remove('open'));
+            });
 
             document.querySelectorAll('.files-menu.open').forEach(other => {
                 if (other !== menu) {
@@ -4622,41 +4839,6 @@ function closeMenuWithEffect() {
             });
         }
 
-        // Files submenu: REPORT -> OPENING REPORT / ONGOING -> numbered reports.
-        // No filled hover background; the item simply changes to the site amber.
-        document.addEventListener('click', function(e) {
-            const item = e.target.closest('.files-menu-item');
-            if (!item) return;
-            if (e.target.closest('a')) return;
-
-            e.stopPropagation();
-            const menu = item.closest('.files-menu');
-            if (!menu) return;
-
-            menu.querySelectorAll(':scope > .files-menu-item.open').forEach(other => {
-                if (other !== item) other.classList.remove('open');
-            });
-
-            item.classList.toggle('open');
-            if (item.classList.contains('open')) {
-                requestAnimationFrame(() => positionFilesSubmenus(menu));
-            }
-        });
-
-        document.addEventListener('mouseover', function(e) {
-            const item = e.target.closest('.files-menu-item');
-            if (!item) return;
-            const menu = item.closest('.files-menu');
-            if (!menu) return;
-
-            if (item.parentElement === menu) {
-                menu.querySelectorAll(':scope > .files-menu-item.open').forEach(other => {
-                    if (other !== item) other.classList.remove('open');
-                });
-            }
-
-            requestAnimationFrame(() => positionFilesSubmenus(menu));
-        });
 
         /* ---- Delete with confirmation ---- */
         let deleteTargetId = null;
