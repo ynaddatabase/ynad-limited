@@ -2928,7 +2928,7 @@ if (currentScrollY <= 4) {
             }
 
             // If the form was already loaded (e.g. previously minimized), don't reload it — keep the data intact.
-            const alreadyLoaded = frame.src && frame.src.indexOf('project_add.html') !== -1;
+            const alreadyLoaded = frame.src && frame.src.indexOf('project_add.html') !== -1 && frame.src.indexOf('edit=') === -1;
             if (!alreadyLoaded) {
                 frame.src = 'project_add.html'; // must be in the same folder/repo as index.html
             }
