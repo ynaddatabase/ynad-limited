@@ -3427,9 +3427,10 @@ function closeMenuWithEffect() {
                 <div class="recent-project-bottom">
                     <div class="recent-project-info">
                         <div class="recent-project-info-left">
-                            <h4 class="recent-project-title">${escapeHtml(project.project_name || '')}</h4>
+                            ${project.project_name ? `<h4 class="recent-project-title">${escapeHtml(project.project_name)}</h4>` : ''}
+                            ${(project.local_name && project.local_name !== project.project_name) || !project.project_name ? `<div class="recent-project-local">${escapeHtml(project.local_name || '')}</div>` : ''}
                             <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
-                        </div>
+                            </div>
                         ${(project.bd_number || project.ho_number) ? `
                         <div class="recent-project-code">
                             ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
