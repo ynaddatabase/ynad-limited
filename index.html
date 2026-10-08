@@ -4846,6 +4846,7 @@ function closeMenuWithEffect() {
             });
 
             const willOpen = !menu.classList.contains('open');
+            clearMenuHover(menu);
             menu.classList.toggle('open', willOpen);
             const btn = menu.closest('.files-menu-wrap')?.querySelector('button');
             if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
