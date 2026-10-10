@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Management — YNAD Construction</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Poppins',sans-serif}
+#pmTop{padding:112px 24px 40px;text-align:center;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.pm-tabs{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:14px}
+.pm-ind{position:absolute;top:0;left:0;width:0;height:0;border-radius:999px;background:#d97706;z-index:10;transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s,height .3s}
+.pm-tab{position:relative;z-index:20;padding:8px 18px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#3a3c3c;background:transparent;cursor:pointer;transition:color .2s}
+.pm-tab.on{color:#fff}
+.pm-wrap{max-width:1400px;margin:0 auto;padding:40px 24px}
+.pm-scroll{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
+.pm-table{width:100%;border-collapse:collapse;font-size:12px}
+.pm-table th{background:#d97706;color:#fff;padding:11px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;text-align:center}
+.pm-table td{padding:10px;border-top:1px solid #e2e8f0;color:#3a3c3c;text-align:center;vertical-align:middle}
+.pm-table td.l,.pm-table th.l{text-align:left}
+.pm-table tbody tr:nth-child(even){background:#f8fafc}
+.pm-table tbody tr:hover{background:#fffbeb}
+.pm-act{display:inline-flex;gap:14px}
+.pm-act button{color:#d97706;font-size:13px;background:transparent;cursor:pointer;transition:transform .2s}
+.pm-act button:hover{transform:translateY(-2px) scale(1.12)}
+body.theme-effective-dark #pmTop{background:#131414;border-color:#2a2c2c}
+body.theme-effective-dark #pmTop h1{color:#fff!important}
+body.theme-effective-dark .pm-tab{color:#c7c5c2}
+body.theme-effective-dark .pm-tab.on{color:#fff}
+body.theme-effective-dark .pm-scroll{border-color:#3a3c3c}
+body.theme-effective-dark .pm-table td{color:#e2e8f0;border-color:#3a3c3c}
+body.theme-effective-dark .pm-table tbody tr:nth-child(even){background:#1b1d1d}
+body.theme-effective-dark .pm-table tbody tr:hover{background:#2a2c2c}
+body.theme-effective-dark .pm-act button{color:#f59e0b}
+/* delete modal */
+#pmDel{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.62);backdrop-filter:blur(6px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s,visibility .28s}
+#pmDel.open{opacity:1;visibility:visible;pointer-events:auto}
+#pmDelBox{width:100%;max-width:430px;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:30px;text-align:center;transform:translateY(14px) scale(.965);transition:transform .32s cubic-bezier(.16,1,.3,1)}
+#pmDel.open #pmDelBox{transform:none}
+.pm-ico{width:78px;height:78px;margin:0 auto 14px;border-radius:50%;background:#d97706;color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center}
+#pmDelBox.busy .pm-ico{animation:pmPop .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pmPop{45%{transform:scale(1.08) rotate(-4deg)}}
+#pmDelBox h3{font-size:19px;font-weight:700;color:#0f172a;margin:0 0 5px}
+#pmDelBox p{margin:0}
+.pm-msg{color:#64748b;font-size:11px;margin-bottom:14px!important}
+.pm-nm{font-size:17px;font-weight:700;color:#0f172a}
+.pm-cd{font-size:12px;font-weight:700;color:#334155;margin-top:4px!important}
+.pm-lc{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:4px 0 20px!important}
+#pmDelErr{display:none;margin-bottom:14px!important;padding:9px 11px;border:1px solid #fecaca;border-radius:8px;background:#fff1f2;color:#b91c1c;font-size:10px}
+#pmDelOk{display:none;color:#b45309;font-size:12px;font-weight:600;margin:6px 0 4px!important}
+#pmDelBox.ok .pm-hide{display:none}
+#pmDelBox.ok #pmDelOk{display:block}
+.pm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pm-btn{position:relative;isolation:isolate;overflow:hidden;height:42px;border-radius:9px;font-size:11px;font-weight:700;border:1px solid #d97706;color:#d97706;background:#fff;cursor:pointer;transition:color .28s}
+.pm-btn::before{content:"";position:absolute;inset:0;background:#d97706;transform:translateX(-101%);transition:transform .34s cubic-bezier(.65,0,.35,1);z-index:-1}
+.pm-btn:hover{color:#fff}.pm-btn:hover::before{transform:none}
+.pm-btn:disabled{opacity:.72;cursor:default}
+body.theme-effective-dark #pmDelBox{background:#232525;border-color:#3a3c3c}
+body.theme-effective-dark #pmDelBox h3,body.theme-effective-dark .pm-nm{color:#fff}
+body.theme-effective-dark .pm-cd{color:#e2e8f0}
+body.theme-effective-dark .pm-btn{background:#232525;border-color:#f59e0b;color:#f59e0b}
+body.theme-effective-dark .pm-btn::before{background:#f59e0b}
+body.theme-effective-dark .pm-btn:hover{color:#131414}
+</style>
+</head>
+<body class="bg-white text-slate-800">
+
+<div id="pageContentWrapper">
+  <div id="indexHeaderContainer"></div>
+
+  <section id="pmTop">
+    <h1 class="text-xl md:text-2xl font-light tracking-widest uppercase" style="color:rgba(0,0,0,.7);margin-bottom:calc(.75rem + .3in)">Project Management</h1>
+    <div id="statusTabs" class="pm-tabs"></div>
+    <div id="catTabs" class="pm-tabs" style="margin-bottom:0"></div>
+  </section>
+
+  <section class="pm-wrap">
+    <div class="pm-scroll">
+      <table class="pm-table">
+        <thead><tr>
+          <th>SL</th><th>BD No.</th><th>HO No.</th><th class="l">Official Name</th><th class="l">Local Name</th><th>Location</th><th>Action</th>
+        </tr></thead>
+        <tbody id="pmBody"><tr><td colspan="7" style="padding:40px">Loading projects...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="siteFooterContainer"></div>
+</div>
+
+<!-- Right menu overlay (same as index.html) -->
+<div id="menuOverlay" onclick="if(event.target===this)closeMenuWithEffect()">
+  <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+    <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div class="mt-20 flex-1 flex flex-col"><iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none;width:100%;height:260px"></iframe></div>
+    <div class="pb-10"></div>
+  </div>
+</div>
+
+<!-- Edit modal: identical to index.html's Project Add / Edit box -->
+<div id="projectAddOverlay">
+  <div id="projectAddBox">
+    <button id="projectAddMinimizeBtn" onclick="minimizeProjectAddModal()" title="Minimize" class="absolute top-2 right-11 z-10 cursor-pointer"><i class="fa-solid fa-window-minimize text-[10px]"></i></button>
+    <button id="projectAddCloseBtn" onclick="closeProjectAddModal()" class="absolute top-2 right-3 z-10 cursor-pointer"><i class="fa-solid fa-xmark text-xs"></i></button>
+    <iframe id="projectAddFrame" src="about:blank" title="Edit Project"></iframe>
+  </div>
+</div>
+<div id="projectAddMinimizedTab" onclick="restoreProjectAddModal()">
+  <i class="fa-solid fa-file-circle-plus"></i><span class="text-xs font-semibold uppercase tracking-wide">Edit Project</span>
+</div>
+
+<!-- Delete modal -->
+<div id="pmDel" onclick="if(event.target===this)closeDel()">
+  <div id="pmDelBox" role="dialog" aria-modal="true">
+    <div class="pm-ico"><i class="fa-solid fa-trash-can"></i></div>
+    <h3>Delete Project?</h3>
+    <p class="pm-msg pm-hide">This project will be permanently deleted.</p>
+    <div class="pm-hide">
+      <p id="pmDelName" class="pm-nm"></p>
+      <p class="pm-cd"><span id="pmDelBd"></span> / <span id="pmDelHo"></span></p>
+      <p id="pmDelLoc" class="pm-lc"></p>
+    </div>
+    <p id="pmDelErr"></p>
+    <p id="pmDelOk">Project deleted successfully.</p>
+    <div class="pm-btns pm-hide">
+      <button class="pm-btn" onclick="closeDel()">Cancel</button>
+      <button class="pm-btn" id="pmDelYes" onclick="confirmDel()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient('https://zjbvnwawdgdncthktqtx.supabase.co','sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT');
+const $ = id => document.getElementById(id);
+const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+
+/* ---------- Shared header + styles from index.html ---------- */
+window.__hdr = (async function(){
+  try{
+    const r = await fetch('index.html',{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const doc = new DOMParser().parseFromString(await r.text(),'text/html');
+    doc.querySelectorAll('style').forEach(s=>{const n=document.createElement('style');n.textContent=s.textContent;document.head.prepend(n)});
+    const nav = doc.querySelector('#mainNav');
+    $('indexHeaderContainer').replaceChildren(nav.cloneNode(true));
+    const h = document.querySelector('#homeContactLoginGroup a[title="Home"]');
+    const c = document.querySelector('#homeContactLoginGroup a[title="Contact"]');
+    if(h) h.href='index.html';
+    if(c){ c.href='index.html#siteFooterContainer'; c.addEventListener('click',e=>{const f=$('siteFooterContainer');if(f){e.preventDefault();f.scrollIntoView({behavior:'smooth'})}}); }
+  }catch(e){console.error('Header failed',e)}
+})();
+
+fetch('footer.html',{cache:'no-store'}).then(r=>r.text()).then(html=>{
+  const t=document.createElement('template');t.innerHTML=html;
+  const sc=[...t.content.querySelectorAll('script')];sc.forEach(s=>s.remove());
+  $('siteFooterContainer').replaceChildren(t.content.cloneNode(true));
+  sc.forEach(o=>{const n=document.createElement('script');[...o.attributes].forEach(a=>n.setAttribute(a.name,a.value));n.textContent=o.textContent;document.body.appendChild(n);n.remove()});
+}).catch(()=>{});
+
+/* ---------- Header scroll behaviour ---------- */
+window.__hdr.then(()=>{
+  const nav=$('mainNav'); if(!nav) return;
+  let last=scrollY,tick=false;
+  const f=()=>{const y=scrollY;nav.classList.toggle('nav-solid',y>4);
+    if(y<=4||y<last) nav.classList.remove('nav-hidden'); else if(y>last) nav.classList.add('nav-hidden');
+    last=y;tick=false};
+  addEventListener('scroll',()=>{if(!tick){requestAnimationFrame(f);tick=true}},{passive:true});f();
+  initAuth();
+  setThemeMode(localStorage.getItem('ynad-theme-mode')||'dynamic');
+});
+
+/* ---------- Header controls ---------- */
+function closeDrops(except){
+  [['settingsDropdownMenu'],['userDropdownMenu']].forEach(([id])=>{if(id!==except&&$(id))$(id).classList.remove('open')});
+  if(except!=='search'){const s=$('searchDropdownMenu');if(s)s.classList.remove('open');$('searchBoxWrap')?.classList.remove('search-open');$('homeContactLoginGroup')?.classList.remove('icons-pushed')}
+}
+function toggleSettingsDropdown(e){e.stopPropagation();closeDrops('settingsDropdownMenu');$('settingsDropdownMenu').classList.toggle('open')}
+function toggleUserDropdown(e){e.stopPropagation();closeDrops('userDropdownMenu');$('userDropdownMenu').classList.toggle('open')}
+function toggleSearchDropdown(e){
+  e.stopPropagation();closeDrops('search');
+  const d=$('searchDropdownMenu'),w=$('searchBoxWrap'),g=$('homeContactLoginGroup');
+  if(!d.classList.contains('open')){d.classList.add('open');w.classList.add('search-open');g?.classList.add('icons-pushed');$('projectSearchInput').focus()}
+  else if($('projectSearchInput').value.trim()) executeSearch();
+  else {d.classList.remove('open');w.classList.remove('search-open');g?.classList.remove('icons-pushed')}
+}
+addEventListener('click',e=>{
+  const u=$('userDropdownMenu'),s=$('settingsDropdownMenu'),w=$('searchBoxWrap');
+  if(u&&!u.contains(e.target)&&!$('userProfileBtn').contains(e.target))u.classList.remove('open');
+  if(s&&!s.contains(e.target)&&!$('settingsIconBtn').contains(e.target))s.classList.remove('open');
+  if(w&&!w.contains(e.target))closeDrops();
+});
+
+/* Search filters the table live */
+function handleProjectSearch(e){q=e.target.value.trim().toLowerCase();render();if(e.key==='Enter')executeSearch()}
+function executeSearch(){
+  q=$('projectSearchInput').value.trim().toLowerCase();render();
+  const fb=$('searchResultFeedback'),n=filtered().length;
+  fb.className='absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border z-50 '+(n?'text-emerald-600':'text-red-500')+' font-semibold';
+  fb.textContent=n?`Found ${n} matching project(s)!`:'No match found.';
+  setTimeout(()=>{fb.classList.add('hidden');if(n)closeDrops()},3000);
+}
+
+/* Theme */
+function setThemeMode(mode){
+  if(!['light','dynamic','dark'].includes(mode))mode='dynamic';
+  const idx={light:0,dynamic:1,dark:2};
+  document.querySelectorAll('.theme-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  $('themeModeSwitch')?.style.setProperty('--theme-index',idx[mode]);
+  const b=document.body,dark=mode==='dark'||(mode==='dynamic'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  b.classList.add('theme-transition');
+  b.classList.remove('theme-light','theme-dynamic','theme-dark','theme-effective-dark');
+  b.classList.add('theme-'+mode);if(dark)b.classList.add('theme-effective-dark');
+  document.documentElement.classList.toggle('dark',dark);
+  clearTimeout(window.__tt);window.__tt=setTimeout(()=>b.classList.remove('theme-transition'),500);
+  try{localStorage.setItem('ynad-theme-mode',mode)}catch(e){}
+}
+
+/* Menu */
+function openMenuWithEffect(){
+  const i=$('hamburgerBtnIcon');i.classList.add('clicked');
+  setTimeout(()=>{i.classList.remove('clicked');$('pageContentWrapper').classList.add('blurred');
+    setTimeout(()=>{const f=$('menuLinksFrame');f.src='menu.html';$('menuOverlay').classList.add('open');document.body.style.overflow='hidden';
+      f.onload=()=>{try{f.contentWindow.postMessage({type:'ynad-menu-open'},'*')}catch(e){}}},200)},200);
+}
+function closeMenuWithEffect(){
+  const f=$('menuLinksFrame');try{f.contentWindow.postMessage({type:'ynad-menu-closing'},'*')}catch(e){}
+  setTimeout(()=>{$('menuOverlay').classList.remove('open');
+    setTimeout(()=>{$('pageContentWrapper').classList.remove('blurred');document.body.style.overflow='auto';f.src='about:blank'},400)},380);
+}
+addEventListener('message',e=>{
+  if(e.data&&e.data.type==='ynad-request-theme'){try{$('menuLinksFrame').contentWindow.postMessage({type:'ynad-theme',dark:document.body.classList.contains('theme-effective-dark')},'*')}catch(x){}}
+});
+
+/* Auth / profile */
+function initAuth(){
+  const upd=u=>{
+    const m=(u&&u.user_metadata)||{},av=m.avatar_url||m.picture||'';
+    [['userProfileImage','userProfileFallback'],['userDropdownImage','userDropdownFallback']].forEach(([i,f])=>{
+      const im=$(i),fb=$(f);if(!im||!fb)return;
+      if(!av){im.hidden=true;fb.hidden=false;return}
+      im.onload=()=>{im.hidden=false;fb.hidden=true};im.onerror=()=>{im.hidden=true;fb.hidden=false};im.src=av});
+    $('userProfileBtn')?.classList.toggle('is-authenticated',!!u);
+    $('profileUserName').textContent=u?(m.full_name||m.name||(u.email||'User').split('@')[0]):'Guest User';
+    $('profileUserEmail').textContent=u?(u.email||'Signed in'):'Not logged in';
+    const a=$('profileAuthAction');
+    $('profileAuthActionText').textContent=u?'LOG OUT':'LOG IN';
+    $('profileAuthActionIcon').className=u?'fa-solid fa-right-from-bracket':'fa-solid fa-right-to-bracket';
+    a.href=u?'#':'login.html';
+    a.onclick=u?async ev=>{ev.preventDefault();await sb.auth.signOut();upd(null);$('userDropdownMenu').classList.remove('open')}:null;
+  };
+  sb.auth.getSession().then(({data})=>upd(data.session?data.session.user:null));
+  sb.auth.onAuthStateChange((_e,s)=>upd(s?s.user:null));
+}
+
+/* ---------- Data, filters, table ---------- */
+const STATUS=['all','Ongoing','Completed','Upcoming'];
+const CATS=['all','Masjid','Madrasa','Markaz','Orphanage','Ablution','Water Well','Clinic'];
+let all=[],st='all',cat='all',q='';
+
+function buildTabs(boxId,list,get,set){
+  const box=$(boxId);
+  box.innerHTML='<div class="pm-ind"></div>'+list.map(k=>`<button class="pm-tab" data-k="${esc(k)}"><span>${k==='all'?'All':esc(k)}</span> <span class="n">(0)</span></button>`).join('');
+  box.querySelectorAll('.pm-tab').forEach(b=>b.onclick=()=>{set(b.dataset.k);render()});
+}
+function moveInd(boxId,cur){
+  const box=$(boxId),ind=box.querySelector('.pm-ind'),b=[...box.querySelectorAll('.pm-tab')].find(x=>x.dataset.k===cur);
+  if(!b)return;
+  box.querySelectorAll('.pm-tab').forEach(x=>{if(x!==b)x.classList.remove('on')});
+  ind.style.width=b.offsetWidth+'px';ind.style.height=b.offsetHeight+'px';
+  ind.style.transform=`translate(${b.offsetLeft}px,${b.offsetTop}px)`;
+  setTimeout(()=>b.classList.add('on'),300);
+}
+const matchQ=p=>!q||[p.bd_number,p.ho_number,p.project_name,p.local_name,p.district,p.category].some(v=>String(v||'').toLowerCase().includes(q));
+const base=(skipStatus,skipCat)=>all.filter(p=>(skipStatus||st==='all'||p.status===st)&&(skipCat||cat==='all'||(p.category||'')===cat)&&matchQ(p));
+const filtered=()=>base(false,false);
+
+function render(){
+  document.querySelectorAll('#statusTabs .pm-tab').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=`(${base(true,false).filter(p=>k==='all'||p.status===k).length})`});
+  document.querySelectorAll('#catTabs .pm-tab').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=`(${base(false,true).filter(p=>k==='all'||p.category===k).length})`});
+  moveInd('statusTabs',st);moveInd('catTabs',cat);
+  const rows=filtered(),body=$('pmBody');
+  if(!rows.length){body.innerHTML='<tr><td colspan="7" style="padding:40px">No projects found.</td></tr>';return}
+  const d=v=>esc(v||'-');
+  body.innerHTML=rows.map((p,i)=>`<tr>
+    <td>${i+1}</td><td>${d(p.bd_number)}</td><td>${p.ho_number?'HO-'+esc(String(p.ho_number).replace(/^HO-/i,'')):'-'}</td>
+    <td class="l">${d(p.project_name)}</td><td class="l">${d(p.local_name)}</td><td>${d(p.district)}</td>
+    <td><div class="pm-act">
+      <button title="Edit Project" onclick="editProject('${esc(p.id)}')"><i class="fa-solid fa-pen"></i></button>
+      <button title="Delete Project" onclick="askDel('${esc(p.id)}')"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td></tr>`).join('');
+}
+
+async function loadAll(){
+  const {data,error}=await sb.from('projects').select('*').order('opening_date',{ascending:false,nullsFirst:false});
+  if(error){$('pmBody').innerHTML=`<tr><td colspan="7" style="padding:40px;color:#dc2626">Failed to load projects: ${esc(error.message)}</td></tr>`;return}
+  all=data||[];render();
+}
+buildTabs('statusTabs',STATUS,()=>st,k=>st=k);
+buildTabs('catTabs',CATS,()=>cat,k=>cat=k);
+addEventListener('resize',render);
+loadAll();
+
+/* ---------- Edit (same behaviour as index.html) ---------- */
+let editId=null,editSnap=null;
+const snapOf=r=>{if(!r)return null;const c={};Object.keys(r).sort().forEach(k=>{if(k!=='created_at'&&k!=='updated_at')c[k]=r[k]});return JSON.stringify(c)};
+async function fetchSnap(id){try{const {data}=await sb.from('projects').select('*').eq('id',id).maybeSingle();return snapOf(data)}catch(e){return null}}
+
+async function editProject(id){
+  editId=id;editSnap=await fetchSnap(id);
+  $('projectAddFrame').src='project_add.html?edit='+encodeURIComponent(id);
+  $('projectAddOverlay').classList.add('open');
+  $('projectAddMinimizedTab').classList.remove('show');
+  document.body.style.overflow='hidden';
+}
+async function closeProjectAddModal(){
+  const f=$('projectAddFrame'),id=editId,before=editSnap;
+  $('projectAddOverlay').classList.remove('open');
+  $('projectAddMinimizedTab').classList.remove('show');
+  document.body.style.overflow='auto';
+  setTimeout(()=>{f.src='about:blank'},500);
+  editId=null;editSnap=null;
+  if(id){const now=await fetchSnap(id);if(before&&now&&before!==now)await loadAll()}
+}
+function minimizeProjectAddModal(){$('projectAddOverlay').classList.remove('open');document.body.style.overflow='auto';$('projectAddMinimizedTab').classList.add('show')}
+function restoreProjectAddModal(){$('projectAddOverlay').classList.add('open');document.body.style.overflow='hidden';$('projectAddMinimizedTab').classList.remove('show')}
+
+/* ---------- Delete with confirmation ---------- */
+let delId=null,delBusy=false;
+function askDel(id){
+  const p=all.find(x=>String(x.id)===String(id));if(!p)return;
+  delId=id;delBusy=false;
+  $('pmDelName').textContent=p.project_name||'Untitled Project';
+  $('pmDelBd').textContent=p.bd_number||'—';
+  $('pmDelHo').textContent=p.ho_number?'HO-'+String(p.ho_number).replace(/^HO-/i,''):'—';
+  $('pmDelLoc').textContent=p.district||'—';
+  $('pmDelBox').classList.remove('busy','ok');
+  $('pmDelErr').style.display='none';
+  $('pmDelYes').disabled=false;$('pmDelYes').textContent='Yes, Delete';
+  $('pmDel').classList.add('open');
+}
+function closeDel(){if(delBusy)return;delId=null;$('pmDel').classList.remove('open')}
+async function confirmDel(){
+  if(!delId||delBusy)return;
+  const btn=$('pmDelYes'),box=$('pmDelBox'),err=$('pmDelErr');
+  delBusy=true;err.style.display='none';box.classList.add('busy');btn.disabled=true;btn.textContent='Deleting...';
+  const {data,error}=await sb.from('projects').delete().eq('id',delId).select();
+  if(error||!data||!data.length){
+    delBusy=false;box.classList.remove('busy');btn.disabled=false;btn.textContent='Yes, Delete';
+    err.textContent=error?error.message:'The project could not be deleted. Please check the database delete permission.';
+    err.style.display='block';return;
+  }
+  box.classList.remove('busy');box.classList.add('ok');
+  setTimeout(()=>{$('pmDel').classList.remove('open');delBusy=false;delId=null;loadAll()},900);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDel()});
+</script>
+</body>
+</html>
