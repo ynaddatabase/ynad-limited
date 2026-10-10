@@ -96,6 +96,8 @@ tailwind.config = {
   html.light #existingBanner { color:#000000 !important; background:rgba(245,158,11,0.15); border-color:rgba(180,83,9,0.5); }
   html.light #existingBanner i,
   html.light #existingBanner #existingText { color:#000000 !important; }
+  /* Save stays greyed out in edit mode until something changes */
+  button[type="submit"]:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
 </style>
 </head>
 
@@ -594,6 +596,7 @@ async function reverseGeocode(lat, lng) {
   Object.entries(vals).forEach(([id, v]) => { $(id).value = v || ''; if (!v) missing.push(id.slice(1).toUpperCase()); });
   geoStatus.textContent = missing.length ? `NOT FOUND: ${missing.join(', ')} — PLEASE ENTER MANUALLY.` : 'ADDRESS FILLED — PLEASE CHECK & EDIT IF NEEDED.';
   updateFormProgress();
+  if (typeof updateSaveState === 'function') updateSaveState();
 }
 $('pCoords').addEventListener('input', onCoordInput);
 
@@ -682,6 +685,7 @@ function resetUI() {
   updateBdPrefix();
   editRecord = null; existing = null; showExisting();
   $('pageTitle').textContent = 'Project Add';
+  baseSnap = null; saveBtn.disabled = false;
   delayReasonContainer.classList.add('hidden');
   geoStatus.textContent = 'PASTE LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
   updateTimelineFieldsVisibility();
@@ -832,6 +836,7 @@ function setContactRole(r) {
   $('fieldBeneficiary').classList.toggle('hidden', !ben);
   if (ben) $('pContactDesignation').value = ''; else $('pBeneficiaryPerson').value = '';
   updateFormProgress();
+  if (typeof updateSaveState === 'function') updateSaveState();
 }
 $('contactRoleToggle').addEventListener('click', () => setContactRole(contactRole === 'Responsible' ? 'Beneficiary' : 'Responsible'));
 
@@ -862,6 +867,26 @@ $('contactRoleToggle').addEventListener('click', () => setContactRole(contactRol
   window.addEventListener('resize', update);
   update();
 })();
+
+/* ---- Edit mode: Save is enabled only after something changes ---- */
+const saveBtn = projectFormEl.querySelector('button[type="submit"]');
+let baseSnap = null;
+function formSnap() {
+  return JSON.stringify([
+    [...projectFormEl.querySelectorAll('input, select, textarea')]
+      .filter(el => el.type !== 'hidden')
+      .map(el => el.type === 'file' ? el.files.length : el.value),
+    contactRole, mediaMode
+  ]);
+}
+function updateSaveState() {
+  if (baseSnap === null) return;
+  saveBtn.disabled = formSnap() === baseSnap;
+}
+projectForm.addEventListener('input', updateSaveState);
+projectForm.addEventListener('change', updateSaveState);
+modeToggle.addEventListener('click', updateSaveState);
+if (new URLSearchParams(location.search).get('edit')) saveBtn.disabled = true;
 
 /* ---- Edit mode: ?edit=<project id> prefills the whole form ---- */
 (async function loadForEdit() {
@@ -900,6 +925,7 @@ $('contactRoleToggle').addEventListener('click', () => setContactRole(contactRol
   set('pOverview', (d.info_overview || []).map(r => `${r.key}\t${r.value}`).join('\n'));
   renderInfoPreview();
   existing = d; showExisting(); updateFormProgress();
+  baseSnap = formSnap(); updateSaveState();
 })();
 
 updateMediaUI();
