@@ -2543,8 +2543,8 @@ body.theme-effective-dark .files-menu-link:hover > i{
 
                         <!-- Settings Dropdown Box -->
                         <div id="settingsDropdownMenu" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2 z-50">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
-                                <i class="fa-solid fa-sliders w-4 text-center"></i> Preferences
+                            <a href="project-management.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                                <i class="fa-solid fa-diagram-project w-4 text-center"></i> Project Management
                             </a>
                             <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
                                 <i class="fa-solid fa-shield-halved w-4 text-center"></i> Account &amp; Security
@@ -2838,39 +2838,6 @@ body.theme-effective-dark .files-menu-link:hover > i{
         })();
         </script>
 
-    </div>
-    <div id="deleteOverlay" aria-hidden="true" onclick="if(event.target===this) closeDeleteModal()">
-        <div id="deleteModalBox" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
-            <div class="delete-trash-scene" aria-hidden="true">
-                <div class="delete-trash">
-                    <div class="delete-trash-lid" aria-hidden="true"></div>
-                    <div class="delete-trash-body">
-                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                    </div>
-                </div>
-            </div>
-
-            <h3 id="deleteModalTitle">Delete Project?</h3>
-            <p id="deleteModalMessage">This project will be permanently deleted.</p>
-
-            <div class="delete-project-summary">
-                <p id="deleteProjectName" class="delete-project-name"></p>
-                <p class="delete-project-codes">
-                    <span id="deleteProjectBd"></span>
-                    <span class="slash">/</span>
-                    <span id="deleteProjectHo"></span>
-                </p>
-                <p id="deleteProjectLocation" class="delete-project-location"></p>
-            </div>
-
-            <p id="deleteErr"></p>
-            <p id="deleteSuccessText">Project deleted successfully.</p>
-
-            <div class="delete-modal-actions">
-                <button type="button" class="delete-modal-btn delete-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button type="button" id="deleteYesBtn" class="delete-modal-btn delete-modal-confirm" onclick="confirmDeleteProject()">Yes, Delete</button>
-            </div>
-        </div>
     </div>
     <!-- Right Overlay Menu -->
     <div id="menuOverlay" onclick="handleOverlayClick(event)">
@@ -4318,15 +4285,6 @@ function closeMenuWithEffect() {
                             <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
                         </div>
 
-                        <div class="card-admin" aria-label="Project actions">
-                            <button type="button" class="edit" title="Edit Project" onclick="editProject(event, '${escapeHtml(project.id)}')">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button type="button" class="del" title="Delete Project" onclick="askDeleteProject(event, '${escapeHtml(project.id)}')">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-
                         ${(project.bd_number || project.ho_number) ? `
                         <div class="recent-project-code">
                             ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
@@ -4772,21 +4730,9 @@ function closeMenuWithEffect() {
             animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
-        /* ---- Admin mode + Escape handling ---- */
+        /* ---- Escape handling ---- */
         document.addEventListener('keydown', e => {
-            if (e.altKey && e.shiftKey && e.code === 'KeyD') {
-                e.preventDefault();
-                document.body.classList.toggle('admin-mode');
-                return;
-            }
-
             if (e.key === 'Escape') {
-                const overlay = document.getElementById('deleteOverlay');
-                if (overlay && overlay.classList.contains('open') && !deleteBusy) {
-                    closeDeleteModal();
-                    return;
-                }
-
                 document.body.classList.remove('admin-mode');
 
                 document.querySelectorAll('.files-menu.open').forEach(menu => {
@@ -4813,21 +4759,6 @@ function closeMenuWithEffect() {
 
             window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
         });
-
-        /* ---- Edit: project_add.html with data prefilled ---- */
-        async function editProject(e, id) {
-            e.stopPropagation();
-
-            // Capture the exact opening state before the editor is shown.
-            activeEditProjectId = id;
-            activeEditProjectSnapshot = await fetchProjectEditSnapshot(id);
-
-            const frame = document.getElementById('projectAddFrame');
-            frame.src = 'project_add.html?edit=' + encodeURIComponent(id);
-            document.getElementById('projectAddOverlay').classList.add('open');
-            document.getElementById('projectAddMinimizedTab').classList.remove('show');
-            document.body.style.overflow = 'hidden';
-        }
 
         /* ---- Files dropdown ---- */
         function toggleFilesMenu(event, index) {
@@ -4877,133 +4808,6 @@ function closeMenuWithEffect() {
         }
 
 
-        /* ---- Delete with confirmation ---- */
-        let deleteTargetId = null;
-        let deleteBusy = false;
-
-        function askDeleteProject(e, id) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const card = e.target.closest('.recent-project-card');
-            if (!card) return;
-
-            deleteTargetId = id;
-            deleteBusy = false;
-
-            const modal = document.getElementById('deleteModalBox');
-            const overlay = document.getElementById('deleteOverlay');
-            const deleteName = document.getElementById('deleteProjectName');
-            const deleteBd = document.getElementById('deleteProjectBd');
-            const deleteHo = document.getElementById('deleteProjectHo');
-            const deleteLocation = document.getElementById('deleteProjectLocation');
-            const err = document.getElementById('deleteErr');
-            const yesBtn = document.getElementById('deleteYesBtn');
-
-            deleteName.textContent = card.dataset.projectName || 'Untitled Project';
-            deleteBd.textContent = card.dataset.projectCode || '—';
-            deleteHo.textContent = card.dataset.hoNumber
-                ? 'HO-' + String(card.dataset.hoNumber).replace(/^HO-/i, '')
-                : '—';
-            deleteLocation.textContent = card.dataset.location || '—';
-
-            modal.classList.remove('is-deleting', 'delete-success');
-            err.textContent = '';
-            err.style.display = 'none';
-            yesBtn.disabled = false;
-            yesBtn.textContent = 'Yes, Delete';
-
-            overlay.classList.add('open');
-            overlay.setAttribute('aria-hidden', 'false');
-        }
-
-        function closeDeleteModal() {
-            if (deleteBusy) return;
-
-            deleteTargetId = null;
-            const overlay = document.getElementById('deleteOverlay');
-            const modal = document.getElementById('deleteModalBox');
-
-            overlay.classList.remove('open');
-            overlay.setAttribute('aria-hidden', 'true');
-            modal.classList.remove('is-deleting', 'delete-success');
-            document.getElementById('deleteErr').textContent = '';
-            document.getElementById('deleteErr').style.display = 'none';
-            document.querySelectorAll('.files-menu.open').forEach(menu => {
-                menu.classList.remove('open');
-                menu.querySelectorAll('.files-menu-item.open').forEach(item => item.classList.remove('open'));
-            });
-        }
-
-        async function confirmDeleteProject() {
-            if (!deleteTargetId || deleteBusy) return;
-
-            const btn = document.getElementById('deleteYesBtn');
-            const modal = document.getElementById('deleteModalBox');
-            const err = document.getElementById('deleteErr');
-
-            deleteBusy = true;
-            err.textContent = '';
-            err.style.display = 'none';
-
-            modal.classList.add('is-deleting');
-            btn.disabled = true;
-            btn.textContent = 'Deleting...';
-
-            const { data, error } = await supabaseClient
-                .from('projects')
-                .delete()
-                .eq('id', deleteTargetId)
-                .select();
-
-            if (error || !data || data.length === 0) {
-                deleteBusy = false;
-                modal.classList.remove('is-deleting');
-                btn.disabled = false;
-                btn.textContent = 'Yes, Delete';
-                err.textContent = error
-                    ? error.message
-                    : 'The project could not be deleted. Please check the database delete permission.';
-                err.style.display = 'block';
-                return;
-            }
-
-            modal.classList.remove('is-deleting');
-            modal.classList.add('delete-success');
-            btn.textContent = 'Deleted';
-
-            setTimeout(() => {
-                const card = document.querySelector(
-                    '#mainProjectSlider .recent-project-card[data-id="' +
-                    CSS.escape(String(deleteTargetId)) +
-                    '"]'
-                );
-
-                if (card) {
-                    card.style.transition = 'opacity .45s ease, transform .45s ease, filter .45s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(.96) translateY(8px)';
-                    card.style.filter = 'blur(2px)';
-                }
-            }, 160);
-
-            setTimeout(() => {
-                const overlay = document.getElementById('deleteOverlay');
-                const modalBox = document.getElementById('deleteModalBox');
-
-                overlay.classList.remove('open');
-                overlay.setAttribute('aria-hidden', 'true');
-                modalBox.classList.remove('delete-success');
-
-                deleteBusy = false;
-                deleteTargetId = null;
-
-                loadProjects();
-                loadHeroSlides();
-                loadHeroStats();
-                refreshProjectLocationMap();
-            }, 900);
-        }
         // Load projects, hero slideshow & stats on first page load
         window.addEventListener('DOMContentLoaded', () => {
             loadProjects();
