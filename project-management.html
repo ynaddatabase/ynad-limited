@@ -24,7 +24,7 @@ body{font-family:'Poppins',sans-serif}
 .pm-table{width:100%;border-collapse:collapse;font-size:12px}
 .pm-table th{background:#d97706;color:#fff;padding:11px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;text-align:center}
 .pm-table td{padding:10px;border-top:1px solid #e2e8f0;color:#3a3c3c;text-align:center;vertical-align:middle}
-.pm-table td.l,.pm-table th.l{text-align:center}
+.pm-table th,.pm-table td{text-align:center!important}
 .pm-table tbody tr:nth-child(even){background:#f8fafc}
 .pm-table tbody tr:hover{background:#fffbeb}
 .pm-act{display:inline-flex;gap:14px}
@@ -85,7 +85,7 @@ body.theme-effective-dark .pm-btn:hover{color:#131414}
     <div class="pm-scroll">
       <table class="pm-table">
         <thead><tr>
-          <th>SL</th><th>BD No.</th><th>HO No.</th><th class="l">Official Name</th><th class="l">Local Name</th><th>Location</th><th>Action</th>
+          <th>SL</th><th>BD No.</th><th>HO No.</th><th>Official Name</th><th>Local Name</th><th>Location</th><th>Action</th>
         </tr></thead>
         <tbody id="pmBody"><tr><td colspan="7" style="padding:40px">Loading projects...</td></tr></tbody>
       </table>
@@ -291,7 +291,7 @@ function render(){
   const d=v=>esc(v||'-');
   body.innerHTML=rows.map((p,i)=>`<tr>
     <td>${i+1}</td><td>${d(p.bd_number)}</td><td>${p.ho_number?'HO-'+esc(String(p.ho_number).replace(/^HO-/i,'')):'-'}</td>
-    <td class="l">${d(p.project_name)}</td><td class="l">${d(p.local_name)}</td><td>${d(p.district)}</td>
+    <td>${d(p.project_name)}</td><td>${d(p.local_name)}</td><td>${d(p.district)}</td>
     <td><div class="pm-act">
       <button title="Edit Project" onclick="editProject('${esc(p.id)}')"><i class="fa-solid fa-pen"></i></button>
       <button title="Delete Project" onclick="askDel('${esc(p.id)}')"><i class="fa-solid fa-trash-can"></i></button>
