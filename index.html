@@ -3786,6 +3786,9 @@ document.addEventListener('mouseout', function (e) {
             activeEditProjectId = null;
             activeEditProjectSnapshot = null;
 
+            // Nothing saved -> close only, no reload/refresh
+            if (!wasSaved) return;
+
             if (wasEditing) {
                 const currentSnapshot = await fetchProjectEditSnapshot(editId);
                 const changed = !!openingSnapshot && !!currentSnapshot && openingSnapshot !== currentSnapshot;
