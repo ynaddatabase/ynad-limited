@@ -3716,6 +3716,14 @@ document.addEventListener('mouseout', function (e) {
         // Edit-session state. The homepage refreshes ONLY when an edited project
         // actually changed in Supabase. Closing an unchanged edit keeps the current
         // card/slider/scroll state exactly as it is.
+                // true only when project_add.html reports a successful save
+        let projectAddSaved = false;
+        window.addEventListener('message', function (e) {
+            if (e.data && e.data.source === 'ynad-project-add' && e.data.type === 'saved') {
+                projectAddSaved = true;
+            }
+        });
+
         let activeEditProjectId = null;
         let activeEditProjectSnapshot = null;
 
