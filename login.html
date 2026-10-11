@@ -1154,6 +1154,23 @@
             }
         })();
 
+        // Re-apply saved mode when this page is restored from bfcache
+        // (e.g. user went to index, changed theme, then came back to login)
+        function syncThemeFromStorage() {
+            var saved = 'dynamic';
+            try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+
+            var current = ['light', 'dynamic', 'dark'].find(function (m) {
+                return document.body.classList.contains('theme-' + m);
+            });
+            if (saved !== current) setThemeMode(saved);
+        }
+
+        window.addEventListener('pageshow', syncThemeFromStorage);
+        window.addEventListener('storage', function (e) {
+            if (e.key === 'ynad-theme-mode') syncThemeFromStorage();
+        });
+
         /* ================================================================
            BACK TO WEBSITE
            Goes back to the exact page the visitor came from (scroll position
