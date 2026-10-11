@@ -2414,7 +2414,7 @@
               labels: ['Approved: ', 'Started: ', 'Opening: ', 'Opened: '],
               get: p => [p.approval_date, p.start_date, p.opening_date, p.opened_date] },
 
-            { heads: ['Site Engineer'],
+            { heads: ['Site Engineer'], upper: true,
               get: p => [p.engineer_name] },
 
             { heads: ['Update Notes'],
