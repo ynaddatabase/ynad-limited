@@ -2337,28 +2337,6 @@ document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
 
         const getCost = p => (p.project_cost !== undefined && p.project_cost !== null) ? p.project_cost : p.cost;
 
-        /* Status Overview value for the table (same logic as project-status page).
-           Used ONLY inside the table's "Status / Overview" column. */
-        function computeProjectStatus(project) {
-            if (!project.location_link) return 'Location Not Finalized';
-            if (!project.status) return 'Not Started';
-            if (project.status === 'Completed') return 'On Time';
-            if (project.status === 'Upcoming') {
-                // A project whose planned opening date has already passed is delayed.
-                if (project.opening_date) {
-                    const openingDate = new Date(project.opening_date + 'T00:00:00');
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    if (!Number.isNaN(openingDate.getTime()) && openingDate < today) {
-                        return 'Opening Delay';
-                    }
-                }
-                return 'Opening In';
-            }
-            if (project.status === 'Ongoing') return 'Elapsed Delay';
-            return 'Not Started';
-        }
-
         /* ================================================================
            TABLE COLUMNS — 13 columns.
            Each column has:
@@ -2380,8 +2358,8 @@ document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
             { heads: ['Category'],
               get: p => [p.category] },
 
-            { heads: ['Status', 'Overview'],
-              get: p => [p.status, computeProjectStatus(p)] },
+            { heads: ['Status'],
+              get: p => [p.status] },
 
             { heads: ['Organization', 'Donor Name'], upper: true,
               get: p => [p.organization, p.donor_name] },
