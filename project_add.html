@@ -390,6 +390,17 @@ tailwind.config = {
 <script>
 const $ = id => document.getElementById(id);
 
+/* ---- Tell the parent page (index popup) what happened ----
+   The parent must refresh ONLY when it receives type "saved".
+   Closing the popup with the cross sends nothing, so nothing reloads. */
+function notifyParent(type, extra) {
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(Object.assign({ source: 'ynad-project-add', type }, extra || {}), '*');
+    }
+  } catch (e) {}
+}
+
 /* ---- Supabase ---- */
 const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
@@ -903,7 +914,16 @@ projectFormEl.addEventListener('submit', async function (e) {
   }
   btn.disabled = false; btn.innerHTML = originalHtml;
   if (error) { console.error(error); alert('SAVE FAILED: ' + error.message); return; }
-  if (editRecord) { alert('PROJECT UPDATED SUCCESSFULLY'); location.reload(); return; }
+
+  /* Data really changed -> only now tell the parent page to refresh */
+  notifyParent('saved', { mode: editRecord ? 'edit' : (existing ? 'update' : 'add') });
+
+  if (editRecord) {
+    alert('PROJECT UPDATED SUCCESSFULLY');
+    /* Inside the popup the parent handles the refresh; standalone page reloads itself */
+    if (!(window.parent && window.parent !== window)) location.reload();
+    return;
+  }
   resetUI();
 });
 
