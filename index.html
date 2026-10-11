@@ -3767,7 +3767,9 @@ document.addEventListener('mouseout', function (e) {
 
         // Close Project Add Modal — if this was an edit session, refresh only
         // when the saved project data is actually different from the opening state.
-        async function closeProjectAddModal() {
+            async function closeProjectAddModal() {
+            const wasSaved = projectAddSaved;
+            projectAddSaved = false;
             const overlay = document.getElementById('projectAddOverlay');
             const frame = document.getElementById('projectAddFrame');
             const minimizedTab = document.getElementById('projectAddMinimizedTab');
