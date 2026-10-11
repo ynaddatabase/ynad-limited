@@ -3972,11 +3972,27 @@ function closeMenuWithEffect() {
             if (ig) ig.classList.remove('icons-pushed');
         }
 
-        // Fires on normal load AND whenever the page is restored from
-        // bfcache (e.g. "Back to Website" from the login page).
+        // Keep theme in sync with login page (shared localStorage key)
+        function syncThemeFromStorage() {
+            let saved = 'dynamic';
+            try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+
+            const current = ['light', 'dynamic', 'dark'].find(function (m) {
+                return document.body.classList.contains('theme-' + m);
+            });
+            if (saved !== current) setThemeMode(saved);
+        }
+
+        // Another tab/page changed the theme
+        window.addEventListener('storage', function (e) {
+            if (e.key === 'ynad-theme-mode') syncThemeFromStorage();
+        });
+
+        // Fires on normal load AND whenever the page is restored from bfcache
         window.addEventListener('pageshow', function (e) {
             resetPageTransitionState();
             closeAllNavDropdowns();
+            syncThemeFromStorage();
         });
 
         // Also close them just before leaving, so the frozen/cached copy
