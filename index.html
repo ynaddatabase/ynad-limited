@@ -3938,17 +3938,38 @@ function closeMenuWithEffect() {
             }
         }
 
+        // Close every header dropdown (profile, settings, search) instantly.
+        function closeAllNavDropdowns() {
+            const els = [
+                document.getElementById('userDropdownMenu'),
+                document.getElementById('settingsDropdownMenu'),
+                document.getElementById('searchDropdownMenu')
+            ];
+            els.forEach(function (el) {
+                if (!el) return;
+                el.style.transition = 'none';      // no visible closing animation on restore
+                el.classList.remove('open');
+                void el.offsetWidth;
+                el.style.transition = '';
+            });
+            const sw = document.getElementById('searchBoxWrap');
+            if (sw) sw.classList.remove('search-open');
+            const ig = document.getElementById('homeContactLoginGroup');
+            if (ig) ig.classList.remove('icons-pushed');
+        }
+
         // Fires on normal load AND whenever the page is restored from
-        // bfcache (e.g. clicking the browser's back arrow to return here).
+        // bfcache (e.g. "Back to Website" from the login page).
         window.addEventListener('pageshow', function (e) {
             resetPageTransitionState();
+            closeAllNavDropdowns();
         });
 
-        // Belt-and-suspenders: also clear it right before this page itself
-        // is unloaded/navigated away from, so if THIS page is ever the one
-        // restored from bfcache later, it wasn't left mid-animation.
+        // Also close them just before leaving, so the frozen/cached copy
+        // of this page never contains an open dropdown.
         window.addEventListener('pagehide', function () {
             resetPageTransitionState();
+            closeAllNavDropdowns();
         });
 
         /* ================================================================
