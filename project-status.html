@@ -2376,6 +2376,7 @@
            Each column has:
              heads : heading lines (stacked one under another)
              title : (optional) a main heading shown above the heads (used by Timeline)
+             upper : (optional) true -> every value line in this column is shown in CAPS
              get   : returns an ARRAY of lines, one per head (stacked in the cell)
            "Contact Role" column is removed (it is still used to decide the
            Designation / Beneficiary line).
@@ -2387,7 +2388,7 @@
             { heads: ['BD No.', 'HO No.'],
               get: p => [p.bd_number, p.ho_number] },
 
-            { heads: ['Official Name', 'Local Name'],
+            { heads: ['Official Name', 'Local Name'], upper: true,
               get: p => [p.project_name, p.local_name] },
 
             { heads: ['Category'],
@@ -2396,7 +2397,7 @@
             { heads: ['Status', 'Overview'],
               get: p => [p.status, computeProjectStatus(p)] },
 
-            { heads: ['Organization', 'Donor Name'],
+            { heads: ['Organization', 'Donor Name'], upper: true,
               get: p => [p.organization, p.donor_name] },
 
             { heads: ['Cost (BDT)'],
@@ -2451,14 +2452,20 @@
             return c.heads.map(h => `<div class="cell-line">${escapeHtml(h)}</div>`).join('');
         }
 
-        /* Every row = array of 13 cells, each cell = array of lines */
+        /* Every row = array of 13 cells, each cell = array of lines.
+           Columns with upper:true are converted to CAPS here, so the
+           on-screen table, Print and PDF all get the same result. */
         function tableRowsData(projects) {
             return projects.map((p, i) => TABLE_COLUMNS.map(c => {
                 const raw = c.get(p, i);
                 // keep only the lines that really have a value (with optional label, e.g. "Approved: ")
                 const lines = [];
                 raw.forEach((v, k) => {
-                    if (!isEmptyVal(v)) lines.push((c.labels ? c.labels[k] : '') + String(v));
+                    if (!isEmptyVal(v)) {
+                        let text = String(v);
+                        if (c.upper) text = text.toUpperCase();   // CAPS LOCK
+                        lines.push((c.labels ? c.labels[k] : '') + text);
+                    }
                 });
                 // nothing at all in this cell -> exactly ONE dash
                 return lines.length ? lines : ['-'];
