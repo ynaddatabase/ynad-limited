@@ -460,19 +460,23 @@ function updateBdPrefix() {
   syncBdHiddenValue(); syncHoHiddenValue();
 }
 bdDigitsInput.addEventListener('input', () => { syncBdHiddenValue(); scheduleExistingCheck(); });
-hoDigitsInput.addEventListener('input', syncHoHiddenValue);
+/* HO-Number now also triggers the existing-project check */
+hoDigitsInput.addEventListener('input', () => { syncHoHiddenValue(); scheduleExistingCheck(); });
 categorySelect.addEventListener('change', () => { updateBdPrefix(); scheduleExistingCheck(); });
 updateBdPrefix();
 
-/* ---- Existing project check (same BD-Number = update mode) ---- */
+/* ---- Existing project check (same BD-Number OR same HO-Number = update mode) ---- */
 /* editRecord = project opened via ?edit=<id> (Edit button on index page) */
-let existing = null, existTimer = null, editRecord = null;
+let existing = null, existTimer = null, editRecord = null, existingMatchedBy = '';
 function showExisting() {
   const b = $('existingBanner');
   b.classList.toggle('hidden', !existing);
-  if (existing) $('existingText').textContent = editRecord
-    ? `EDIT MODE: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). EMPTY TEXT FIELDS WILL BE CLEARED. NEW PHOTOS, REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`
-    : `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
+  if (existing) {
+    const by = existingMatchedBy ? ` [MATCHED BY ${existingMatchedBy}]` : '';
+    $('existingText').textContent = editRecord
+      ? `EDIT MODE: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). EMPTY TEXT FIELDS WILL BE CLEARED. NEW PHOTOS, REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`
+      : `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()})${by}. SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
+  }
 }
 function scheduleExistingCheck() {
   clearTimeout(existTimer);
@@ -480,13 +484,24 @@ function scheduleExistingCheck() {
 }
 async function checkExisting() {
   if (editRecord) { existing = editRecord; showExisting(); return; }
-  const bd = bdHiddenInput.value;
-  if (!bd) { existing = null; showExisting(); return; }
+  const bd = bdHiddenInput.value, ho = hoHiddenInput.value;
+  if (!bd && !ho) { existing = null; existingMatchedBy = ''; showExisting(); return; }
+  let found = null, by = '';
   try {
-    const { data, error } = await supabaseClient.from('projects').select('*').eq('bd_number', bd).limit(1);
-    if (bdHiddenInput.value !== bd) return;
-    existing = (!error && data && data[0]) || null;
-  } catch (e) { existing = null; }
+    /* 1) BD-Number match */
+    if (bd) {
+      const { data, error } = await supabaseClient.from('projects').select('*').eq('bd_number', bd).limit(1);
+      if (!error && data && data[0]) { found = data[0]; by = 'BD-NUMBER'; }
+    }
+    /* 2) HO-Number match (only if BD did not match) */
+    if (!found && ho) {
+      const { data, error } = await supabaseClient.from('projects').select('*').eq('ho_number', ho).limit(1);
+      if (!error && data && data[0]) { found = data[0]; by = 'HO-NUMBER'; }
+    }
+    /* Ignore stale result if the user kept typing */
+    if (bdHiddenInput.value !== bd || hoHiddenInput.value !== ho) return;
+  } catch (e) { found = null; by = ''; }
+  existing = found; existingMatchedBy = by;
   showExisting();
 }
 
@@ -683,7 +698,7 @@ async function uploadFileAndGetUrl(folder, file) {
 function resetUI() {
   projectFormEl.reset();
   updateBdPrefix();
-  editRecord = null; existing = null; showExisting();
+  editRecord = null; existing = null; existingMatchedBy = ''; showExisting();
   $('pageTitle').textContent = 'Project Add';
   baseSnap = null; saveBtn.disabled = false;
   delayReasonContainer.classList.add('hidden');
@@ -708,7 +723,10 @@ projectFormEl.addEventListener('submit', async function (e) {
   if (mediaMode === 'upload' && $('pPhotos').files.length > 15) { alert('MAXIMUM 15 PHOTOS IN UPLOAD MODE!'); return; }
 
   await checkExisting();
-  if (existing && !editRecord && !confirm(`"${existing.bd_number}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
+  if (existing && !editRecord) {
+    const label = existingMatchedBy === 'HO-NUMBER' ? existing.ho_number : existing.bd_number;
+    if (!confirm(`"${label}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
+  }
 
   const btn = document.querySelector('#projectForm button[type="submit"]');
   const originalHtml = btn.innerHTML;
@@ -797,7 +815,7 @@ projectFormEl.addEventListener('submit', async function (e) {
   let error;
   if (existing) {
     /* Update mode.
-       - Normal (BD-number match): only non-empty values overwrite.
+       - Normal (BD/HO-number match): only non-empty values overwrite.
        - Edit mode (?edit=id): empty text fields are cleared too.
        - Photos / reports / raw media / documents / C-photo are always kept unless new ones are given. */
     const u = {};
