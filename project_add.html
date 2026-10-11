@@ -920,8 +920,8 @@ projectFormEl.addEventListener('submit', async function (e) {
 
   if (editRecord) {
     alert('PROJECT UPDATED SUCCESSFULLY');
-    /* Inside the popup the parent handles the refresh; standalone page reloads itself */
-    if (!(window.parent && window.parent !== window)) location.reload();
+    /* Reloads only this form (inside the popup it does NOT reload the index page) */
+    location.reload();
     return;
   }
   resetUI();
