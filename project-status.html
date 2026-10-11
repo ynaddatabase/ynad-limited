@@ -1032,25 +1032,39 @@
 
         /* ================================================================
            VIEW SWITCH (Card / Table)
+           Same sliding-pill style as the filter tabs: one orange pill
+           slides left / right behind the active button.
            ================================================================ */
         .view-switch-wrap { position: absolute; top: 120px; right: 24px; z-index: 30; }
         @media (max-width: 767px) {
             .view-switch-wrap { position: static; display: flex; justify-content: center; margin-bottom: 16px; }
         }
         .view-switch {
+            position: relative;
             display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
             background: #f1f5f9; border: 1px solid #e2e8f0;
         }
+        #viewSwitchIndicator {
+            position: absolute; top: 0; left: 0; z-index: 1;
+            border-radius: 999px; background-color: #d97706;
+            width: 0; height: 0; pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .view-switch-btn {
+            position: relative; z-index: 2;
             display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px;
             font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
             color: #55575a; background: transparent; border: none; cursor: pointer;
-            transition: background-color .25s ease, color .25s ease;
+            transition: color .25s ease;
         }
         .view-switch-btn:hover { color: #d97706; }
-        .view-switch-btn.active { background: #d97706; color: #fff !important; }
+        .view-switch-btn.active-text,
+        .view-switch-btn.active-text:hover { color: #fff !important; }
         body.theme-effective-dark .view-switch { background: #2a2c2c; border-color: #3a3c3c; }
         body.theme-effective-dark .view-switch-btn { color: #c7c5c2; }
+        body.theme-effective-dark .view-switch-btn.active-text { color: #fff !important; }
 
         /* ================================================================
            TABLE VIEW  (13 columns, some columns hold 2 stacked lines)
@@ -1162,9 +1176,10 @@
         <!-- Page Header + Status Filter Tabs -->
         <section id="pageHeaderSection" class="relative py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
 
-            <!-- VIEW SWITCH: Card / Table -->
+            <!-- VIEW SWITCH: Card / Table (sliding pill) -->
             <div class="view-switch-wrap">
                 <div class="view-switch" id="viewSwitch">
+                    <div id="viewSwitchIndicator"></div>
                     <button type="button" class="view-switch-btn active" data-view="card" onclick="setViewMode('card')">
                         <i class="fa-solid fa-table-cells-large"></i> Card
                     </button>
@@ -2476,10 +2491,47 @@
             return lines.map(l => `<div class="cell-line">${escapeHtml(l)}</div>`).join('');
         }
 
+        /* ================================================================
+           VIEW SWITCH PILL — one orange pill slides behind the active
+           button (Card <-> Table), exactly like the filter tabs.
+           The button text turns white after the pill has arrived.
+        ================================================================ */
+        const VIEW_SWITCH_TRANSITION_MS = 300;
+        let viewTextTimer = null, viewIndicatorReady = false;
+
+        function moveViewSwitchIndicator() {
+            const sw = document.getElementById('viewSwitch');
+            const ind = document.getElementById('viewSwitchIndicator');
+            if (!sw || !ind) return;
+            const btns = Array.from(sw.querySelectorAll('.view-switch-btn'));
+            const active = btns.find(b => b.getAttribute('data-view') === currentView);
+            if (!active || !active.offsetWidth) return;
+
+            btns.forEach(b => { if (b !== active) b.classList.remove('active-text'); });
+
+            /* first placement: put the pill in position without sliding */
+            const firstTime = !viewIndicatorReady;
+            if (firstTime) ind.style.transition = 'none';
+            ind.style.width = active.offsetWidth + 'px';
+            ind.style.height = active.offsetHeight + 'px';
+            ind.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
+            if (firstTime) {
+                void ind.offsetWidth;
+                ind.style.transition = '';
+                viewIndicatorReady = true;
+            }
+
+            clearTimeout(viewTextTimer);
+            viewTextTimer = setTimeout(() => active.classList.add('active-text'),
+                firstTime ? 0 : VIEW_SWITCH_TRANSITION_MS);
+        }
+        window.addEventListener('resize', moveViewSwitchIndicator);
+
         function setViewMode(mode) {
             currentView = mode === 'table' ? 'table' : 'card';
             document.querySelectorAll('.view-switch-btn').forEach(b =>
                 b.classList.toggle('active', b.getAttribute('data-view') === currentView));
+            moveViewSwitchIndicator();
             renderCurrentView(lastFilteredProjects);
             if (currentView === 'table') playTableAnimation();
         }
@@ -2732,6 +2784,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             currentFilter = 'all';
+            moveViewSwitchIndicator();
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveViewSwitchIndicator);
             loadAllProjects();
             observeRevealTargets(document);
             Promise.resolve(window.__indexHeaderReady).then(() => initAuthState());
@@ -2743,6 +2797,7 @@
             }
             window.addEventListener('load', () => {
                 scheduleIndicatorSync(350);
+                moveViewSwitchIndicator();
             });
 
             const loadingProgress = document.getElementById('pageLoadingProgress');
