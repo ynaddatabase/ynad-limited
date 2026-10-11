@@ -68,6 +68,35 @@ body.theme-effective-dark .pm-cd{color:#e2e8f0}
 body.theme-effective-dark .pm-btn{background:#232525;border-color:#f59e0b;color:#f59e0b}
 body.theme-effective-dark .pm-btn::before{background:#f59e0b}
 body.theme-effective-dark .pm-btn:hover{color:#131414}
+
+/* ---------- ALL TEXT CAPS ---------- */
+#pageContentWrapper *, #pmDel *, #pmMgr *, #menuOverlay *{text-transform:uppercase}
+
+/* heading row + action buttons */
+.pm-headrow{position:relative}
+.pm-top-actions{position:absolute;right:0;top:0;display:flex;gap:10px}
+.pm-top-actions .pm-btn{height:36px;padding:0 16px;font-size:10px;letter-spacing:.05em;white-space:nowrap}
+@media(max-width:900px){.pm-top-actions{position:static;justify-content:center;margin-bottom:18px}}
+
+/* manager modal */
+#pmMgr{position:fixed;inset:0;z-index:310;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.62);backdrop-filter:blur(6px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s,visibility .28s}
+#pmMgr.open{opacity:1;visibility:visible;pointer-events:auto}
+#pmMgrBox{width:100%;max-width:460px;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:26px;transform:translateY(14px) scale(.965);transition:transform .32s cubic-bezier(.16,1,.3,1)}
+#pmMgr.open #pmMgrBox{transform:none}
+#pmMgrBox h3{font-size:17px;font-weight:700;color:#0f172a;margin:0 0 14px;text-align:center}
+.pm-addrow{display:flex;gap:10px;margin-bottom:8px}
+.pm-addrow input{flex:1;height:42px;border:1px solid #d97706;border-radius:9px;padding:0 12px;font-size:12px;outline:none;background:#fff;color:#0f172a}
+.pm-addrow .pm-btn{width:90px}
+#pmMgrErr{display:none;margin:0 0 10px;padding:8px 10px;border:1px solid #fecaca;border-radius:8px;background:#fff1f2;color:#b91c1c;font-size:10px}
+#pmMgrList{max-height:260px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:9px;margin-bottom:14px}
+#pmMgrList .it{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;font-size:12px;color:#3a3c3c;border-top:1px solid #e2e8f0}
+#pmMgrList .it:first-child{border-top:0}
+#pmMgrList .it button{color:#d97706;cursor:pointer}
+#pmMgrList .em{padding:16px;text-align:center;font-size:11px;color:#64748b}
+body.theme-effective-dark #pmMgrBox{background:#232525;border-color:#3a3c3c}
+body.theme-effective-dark #pmMgrBox h3{color:#fff}
+body.theme-effective-dark .pm-addrow input{background:#1b1d1d;color:#fff;border-color:#f59e0b}
+body.theme-effective-dark #pmMgrList,body.theme-effective-dark #pmMgrList .it{border-color:#3a3c3c;color:#e2e8f0}
 </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -76,7 +105,13 @@ body.theme-effective-dark .pm-btn:hover{color:#131414}
   <div id="indexHeaderContainer"></div>
 
   <section id="pmTop">
-    <h1 class="text-xl md:text-2xl font-light tracking-widest uppercase" style="color:rgba(0,0,0,.7);margin-bottom:calc(.75rem + .3in)">Project Management</h1>
+    <div class="pm-headrow">
+      <div class="pm-top-actions">
+        <button class="pm-btn" onclick="openMgr('category')"><i class="fa-solid fa-plus"></i> Add Project Category</button>
+        <button class="pm-btn" onclick="openMgr('organization')"><i class="fa-solid fa-plus"></i> Add Organization</button>
+      </div>
+      <h1 class="text-xl md:text-2xl font-light tracking-widest uppercase" style="color:rgba(0,0,0,.7);margin-bottom:calc(.75rem + .3in)">Project Management</h1>
+    </div>
     <div id="statusTabs" class="pm-tabs"></div>
     <div id="catTabs" class="pm-tabs" style="margin-bottom:0"></div>
   </section>
@@ -114,6 +149,20 @@ body.theme-effective-dark .pm-btn:hover{color:#131414}
 </div>
 <div id="projectAddMinimizedTab" onclick="restoreProjectAddModal()">
   <i class="fa-solid fa-file-circle-plus"></i><span class="text-xs font-semibold uppercase tracking-wide">Edit Project</span>
+</div>
+
+<!-- Add Category / Organization modal -->
+<div id="pmMgr" onclick="if(event.target===this)closeMgr()">
+  <div id="pmMgrBox" role="dialog" aria-modal="true">
+    <h3 id="pmMgrTitle"></h3>
+    <div class="pm-addrow">
+      <input id="pmMgrInput" type="text" maxlength="80" autocomplete="off" onkeydown="if(event.key==='Enter')addMgr()">
+      <button class="pm-btn" id="pmMgrAdd" onclick="addMgr()">Add</button>
+    </div>
+    <p id="pmMgrErr"></p>
+    <div id="pmMgrList"></div>
+    <button class="pm-btn" style="width:100%" onclick="closeMgr()">Close</button>
+  </div>
 </div>
 
 <!-- Delete modal -->
@@ -262,8 +311,9 @@ function initAuth(){
 
 /* ---------- Data, filters, table ---------- */
 const STATUS=['all','Ongoing','Completed','Upcoming'];
-const CATS=['all','Masjid','Madrasa','Markaz','Orphanage','Ablution','Water Well','Clinic'];
+let CATS=['all'];
 let all=[],st='all',cat='all',q='';
+const U=v=>String(v||'').toUpperCase();
 
 function buildTabs(boxId,list,get,set){
   const box=$(boxId);
@@ -279,12 +329,14 @@ function moveInd(boxId,cur){
   setTimeout(()=>b.classList.add('on'),300);
 }
 const matchQ=p=>!q||[p.bd_number,p.ho_number,p.project_name,p.local_name,p.district,p.category].some(v=>String(v||'').toLowerCase().includes(q));
-const base=(skipStatus,skipCat)=>all.filter(p=>(skipStatus||st==='all'||p.status===st)&&(skipCat||cat==='all'||(p.category||'')===cat)&&matchQ(p));
+/* category compare is case-insensitive, so old "Masjid" and new "MASJID" both match */
+const catOk=(p,k)=>k==='all'||U(p.category)===U(k);
+const base=(skipStatus,skipCat)=>all.filter(p=>(skipStatus||st==='all'||p.status===st)&&(skipCat||catOk(p,cat))&&matchQ(p));
 const filtered=()=>base(false,false);
 
 function render(){
   document.querySelectorAll('#statusTabs .pm-tab').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=`(${base(true,false).filter(p=>k==='all'||p.status===k).length})`});
-  document.querySelectorAll('#catTabs .pm-tab').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=`(${base(false,true).filter(p=>k==='all'||p.category===k).length})`});
+  document.querySelectorAll('#catTabs .pm-tab').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=`(${base(false,true).filter(p=>catOk(p,k)).length})`});
   moveInd('statusTabs',st);moveInd('catTabs',cat);
   const rows=filtered(),body=$('pmBody');
   if(!rows.length){body.innerHTML='<tr><td colspan="7" style="padding:40px">No projects found.</td></tr>';return}
@@ -303,10 +355,15 @@ async function loadAll(){
   if(error){$('pmBody').innerHTML=`<tr><td colspan="7" style="padding:40px;color:#dc2626">Failed to load projects: ${esc(error.message)}</td></tr>`;return}
   all=data||[];render();
 }
+async function loadCats(){
+  const {data}=await sb.from('project_categories').select('name').order('name');
+  CATS=['all',...(data||[]).map(r=>r.name)];
+  if(!CATS.includes(cat))cat='all';
+  buildTabs('catTabs',CATS,()=>cat,k=>cat=k);
+}
 buildTabs('statusTabs',STATUS,()=>st,k=>st=k);
-buildTabs('catTabs',CATS,()=>cat,k=>cat=k);
 addEventListener('resize',render);
-loadAll();
+(async()=>{await loadCats();await loadAll()})();
 
 /* ---------- Edit (same behaviour as index.html) ---------- */
 let editId=null,editSnap=null;
@@ -361,6 +418,54 @@ async function confirmDel(){
   setTimeout(()=>{$('pmDel').classList.remove('open');delBusy=false;delId=null;loadAll()},900);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDel()});
+
+/* ---------- Add Category / Organization ---------- */
+const MGR={
+  category:{table:'project_categories',title:'Add Project Category',ph:'CATEGORY NAME'},
+  organization:{table:'organizations',title:'Add Organization',ph:'ORGANIZATION NAME'}
+};
+let mgr=null;
+async function openMgr(mode){
+  mgr=MGR[mode];
+  $('pmMgrTitle').textContent=mgr.title;
+  $('pmMgrInput').placeholder=mgr.ph;$('pmMgrInput').value='';
+  $('pmMgrErr').style.display='none';
+  $('pmMgr').classList.add('open');
+  $('pmMgrInput').focus();
+  await loadMgrList();
+}
+function closeMgr(){$('pmMgr').classList.remove('open');mgr=null}
+function mgrErr(m){const e=$('pmMgrErr');e.textContent=m;e.style.display='block'}
+async function loadMgrList(){
+  if(!mgr)return;
+  const {data,error}=await sb.from(mgr.table).select('id,name').order('name');
+  const box=$('pmMgrList');
+  if(error){box.innerHTML='<div class="em">Failed to load</div>';return}
+  box.innerHTML=(data&&data.length)?data.map(r=>`<div class="it"><span>${esc(r.name)}</span>
+    <button title="Delete" onclick="delMgr('${esc(r.id)}')"><i class="fa-solid fa-trash-can"></i></button></div>`).join('')
+    :'<div class="em">Nothing added yet</div>';
+}
+async function addMgr(){
+  if(!mgr)return;
+  const name=$('pmMgrInput').value.trim().replace(/\s+/g,' ').toUpperCase();
+  if(!name){mgrErr('Please enter a name.');return}
+  $('pmMgrErr').style.display='none';
+  const btn=$('pmMgrAdd');btn.disabled=true;
+  const {error}=await sb.from(mgr.table).insert({name});
+  btn.disabled=false;
+  if(error){mgrErr(error.code==='23505'?'This name already exists.':error.message);return}
+  $('pmMgrInput').value='';
+  await loadMgrList();
+  if(mgr&&mgr.table==='project_categories'){await loadCats();render()}
+}
+async function delMgr(id){
+  if(!mgr)return;
+  const {error}=await sb.from(mgr.table).delete().eq('id',id);
+  if(error){mgrErr(error.message);return}
+  await loadMgrList();
+  if(mgr&&mgr.table==='project_categories'){await loadCats();render()}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMgr()});
 </script>
 </body>
 </html>
