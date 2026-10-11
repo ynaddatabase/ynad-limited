@@ -459,15 +459,27 @@ function updateBdPrefix() {
   }
   syncBdHiddenValue(); syncHoHiddenValue();
 }
-bdDigitsInput.addEventListener('input', () => { syncBdHiddenValue(); scheduleExistingCheck(); });
-/* HO-Number now also triggers the existing-project check */
-hoDigitsInput.addEventListener('input', () => { syncHoHiddenValue(); scheduleExistingCheck(); });
+/* BD / HO typing: remember which one the user edited last, handle auto-filled values */
+bdDigitsInput.addEventListener('input', () => {
+  lastEdited = 'bd';
+  if (autoFill === 'bd') autoFill = null;
+  if (!bdDigitsInput.value.trim() && autoFill === 'ho') clearAutoFill();
+  syncBdHiddenValue(); scheduleExistingCheck();
+});
+hoDigitsInput.addEventListener('input', () => {
+  lastEdited = 'ho';
+  if (autoFill === 'ho') autoFill = null;
+  if (!hoDigitsInput.value.trim() && autoFill === 'bd') clearAutoFill();
+  syncHoHiddenValue(); scheduleExistingCheck();
+});
 categorySelect.addEventListener('change', () => { updateBdPrefix(); scheduleExistingCheck(); });
 updateBdPrefix();
 
 /* ---- Existing project check (same BD-Number OR same HO-Number = update mode) ---- */
 /* editRecord = project opened via ?edit=<id> (Edit button on index page) */
 let existing = null, existTimer = null, editRecord = null, existingMatchedBy = '';
+let lastEdited = 'bd', autoFill = null;   /* autoFill: 'bd' | 'ho' | null = which field was filled automatically */
+
 function showExisting() {
   const b = $('existingBanner');
   b.classList.toggle('hidden', !existing);
@@ -482,26 +494,78 @@ function scheduleExistingCheck() {
   clearTimeout(existTimer);
   existTimer = setTimeout(checkExisting, 600);
 }
+
+/* Bangla / Arabic / Persian digits -> English digits */
+const toEn = s => String(s == null ? '' : s)
+  .replace(/[\u09E6-\u09EF]/g, c => c.charCodeAt(0) - 0x09E6)
+  .replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x0660)
+  .replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x06F0);
+/* Normalized keys so "HO-0123", "ho 123", "HO123 " all match "HO-123" */
+const hoKey = s => toEn(s).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+const bdKey = s => {
+  const t = toEn(s).toUpperCase().replace(/[\s_\-]/g, '');
+  const m = t.match(/^([^\d]*)0*(\d+)$/);
+  return m ? m[1] + m[2] : t;
+};
+
+async function findByHo(ho) {
+  const k = hoKey(ho); if (!k) return null;
+  const { data, error } = await supabaseClient.from('projects').select('*').ilike('ho_number', `%${k}%`).limit(1000);
+  if (error || !data) return null;
+  return data.find(r => hoKey(r.ho_number) === k) || null;
+}
+async function findByBd(bd) {
+  const k = bdKey(bd), dg = k.replace(/\D/g, ''); if (!dg) return null;
+  const { data, error } = await supabaseClient.from('projects').select('*').ilike('bd_number', `%${dg}%`).limit(1000);
+  if (error || !data) return null;
+  return data.find(r => bdKey(r.bd_number) === k) || null;
+}
+
+/* Remove a value that was auto-filled (when the match no longer holds) */
+function clearAutoFill() {
+  if (autoFill === 'bd') bdDigitsInput.value = '';
+  if (autoFill === 'ho') hoDigitsInput.value = '';
+  if (autoFill) { autoFill = null; syncBdHiddenValue(); syncHoHiddenValue(); updateFormProgress(); }
+}
+/* HO typed -> fill BD (and category); BD typed -> fill HO. Never overwrites what the user typed himself. */
+function applyAutoFill(f, by) {
+  if (by === 'BD-NUMBER') {
+    const d = toEn(f.ho_number).replace(/\D/g, '');
+    if (d && (!hoDigitsInput.value.trim() || autoFill === 'ho')) {
+      hoDigitsInput.value = d; autoFill = 'ho'; syncHoHiddenValue();
+    }
+  } else {
+    const d = toEn(f.bd_number).replace(/\D/g, '');
+    if (d && (!bdDigitsInput.value.trim() || autoFill === 'bd')) {
+      if (f.category && categorySelect.value !== f.category &&
+          [...categorySelect.options].some(o => o.value === f.category)) {
+        categorySelect.value = f.category; updateBdPrefix();
+      }
+      bdDigitsInput.value = d; autoFill = 'bd'; syncBdHiddenValue();
+    }
+  }
+  updateFormProgress();
+  if (typeof updateSaveState === 'function') updateSaveState();
+}
+
 async function checkExisting() {
   if (editRecord) { existing = editRecord; showExisting(); return; }
   const bd = bdHiddenInput.value, ho = hoHiddenInput.value;
-  if (!bd && !ho) { existing = null; existingMatchedBy = ''; showExisting(); return; }
+  if (!bd && !ho) { clearAutoFill(); existing = null; existingMatchedBy = ''; showExisting(); return; }
   let found = null, by = '';
   try {
-    /* 1) BD-Number match */
-    if (bd) {
-      const { data, error } = await supabaseClient.from('projects').select('*').eq('bd_number', bd).limit(1);
-      if (!error && data && data[0]) { found = data[0]; by = 'BD-NUMBER'; }
-    }
-    /* 2) HO-Number match (only if BD did not match) */
-    if (!found && ho) {
-      const { data, error } = await supabaseClient.from('projects').select('*').eq('ho_number', ho).limit(1);
-      if (!error && data && data[0]) { found = data[0]; by = 'HO-NUMBER'; }
+    /* Search the field the user edited last first, then the other one */
+    const order = lastEdited === 'ho' ? ['HO', 'BD'] : ['BD', 'HO'];
+    for (const t of order) {
+      if (found) break;
+      if (t === 'BD' && bd) { const r = await findByBd(bd); if (r) { found = r; by = 'BD-NUMBER'; } }
+      if (t === 'HO' && ho) { const r = await findByHo(ho); if (r) { found = r; by = 'HO-NUMBER'; } }
     }
     /* Ignore stale result if the user kept typing */
     if (bdHiddenInput.value !== bd || hoHiddenInput.value !== ho) return;
   } catch (e) { found = null; by = ''; }
   existing = found; existingMatchedBy = by;
+  if (found) applyAutoFill(found, by); else clearAutoFill();
   showExisting();
 }
 
@@ -699,6 +763,7 @@ function resetUI() {
   projectFormEl.reset();
   updateBdPrefix();
   editRecord = null; existing = null; existingMatchedBy = ''; showExisting();
+  autoFill = null; lastEdited = 'bd';
   $('pageTitle').textContent = 'Project Add';
   baseSnap = null; saveBtn.disabled = false;
   delayReasonContainer.classList.add('hidden');
