@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account & Security — YNAD Construction</title>
+<script>
+(function(){var m='dynamic';try{m=localStorage.getItem('ynad-theme-mode')||'dynamic'}catch(e){}
+var d=m==='dark'||(m==='dynamic'&&matchMedia('(prefers-color-scheme: dark)').matches);
+document.documentElement.setAttribute('data-theme',d?'dark':'light')})();
+</script>
+<script>
+/* Hides only the Tailwind CDN "not for production" console notice. Remove this when tailwind.css is compiled. */
+(function(){var w=console.warn;console.warn=function(){if(String(arguments[0]).indexOf('cdn.tailwindcss.com should not be used in production')>-1)return;return w.apply(console,arguments)}})();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--panel:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--soft:#f8fafc;--amber:#d97706;--amber-d:#b45309;
+--admin:#d97706;--manager:#0284c7;--viewer:#16a34a;--all:#7c3aed;--bad:#dc2626}
+[data-theme=dark]{--bg:#131414;--panel:#232525;--text:#f8fafc;--muted:#a8a6a3;--line:#3a3c3c;--soft:#1b1d1d;--amber:#f59e0b;
+--manager:#38bdf8;--viewer:#4ade80;--admin:#f59e0b;--all:#a78bfa}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s}
+button,select,input{font-family:inherit}
+.ibtn{height:38px;padding:0 16px;border-radius:999px;border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:.25s;white-space:nowrap}
+.ibtn:hover{background:var(--amber);color:#fff}
+.ibtn.spin i{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1100px;margin:0 auto;padding:124px 24px 80px}
+main h1{font-size:26px;font-weight:600}
+.sub{color:var(--muted);font-size:13px;margin:4px 0 26px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c,var(--amber));border-radius:8px;padding:14px 16px;text-align:left;cursor:pointer;color:inherit;width:100%;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.stat:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.12);border-color:var(--c,var(--amber))}
+.stat:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.stat.active{border-color:var(--c,var(--amber));box-shadow:0 0 0 1px var(--c,var(--amber));background:var(--soft)}
+.stat b{font-size:26px;font-weight:600;display:block}.stat small{color:var(--muted);font-size:12px}
+
+/* Tabs with sliding indicator */
+.tabs-row{display:flex;align-items:stretch;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tabs{position:relative;display:flex;gap:4px}
+#tabIndicator{position:absolute;bottom:-1px;left:0;height:2px;width:0;background:var(--amber);border-radius:2px;pointer-events:none;transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1)}
+.tab{background:none;border:none;padding:11px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:color .3s ease;white-space:nowrap}
+.tab:hover{color:var(--amber)}
+.tab.on{color:var(--amber)}
+.tabs-row .ibtn{align-self:center;margin-bottom:6px}
+.panel-in{animation:panelIn .35s ease both}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.req{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:12px}
+.who{display:flex;gap:14px;align-items:center;min-width:0}
+.av{width:42px;height:42px;border-radius:50%;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--amber);flex:none}
+.who b{font-size:14px;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis}
+.who small{color:var(--muted);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+main select{height:36px;border:1.5px solid var(--line);background:var(--soft);color:var(--text);border-radius:7px;padding:0 10px;font-size:12px}
+main select:focus{outline:2px solid var(--amber);outline-offset:1px}
+.b{height:36px;padding:0 16px;border-radius:7px;border:1.5px solid var(--amber);background:var(--amber);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.b:hover{background:var(--amber-d);border-color:var(--amber-d)}
+.b.o{background:transparent;color:var(--bad);border-color:var(--bad)}.b.o:hover{background:var(--bad);color:#fff}
+.b:disabled{opacity:.5;cursor:default}
+.pill{font-size:11px;font-weight:600;border-radius:99px;padding:3px 11px;border:1px solid currentColor;display:inline-block}
+.pill.admin{color:var(--admin)}.pill.manager{color:var(--manager)}.pill.viewer{color:var(--viewer)}.pill.rejected,.pill.revoked{color:var(--bad)}.pill.pending{color:var(--muted)}
+main table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+main th,main td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+main th{color:var(--muted);font-weight:500;font-size:12px;background:var(--soft)}
+main tr:last-child td{border:none}
+.wrap{overflow-x:auto}
+.empty{text-align:center;color:var(--muted);padding:50px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:10px;font-size:13px}
+.empty i{font-size:26px;color:var(--amber);display:block;margin-bottom:10px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.role{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:10px;padding:18px}
+.role h3{font-size:15px;margin-bottom:6px;color:var(--c)}.role p{font-size:12.5px;color:var(--muted);line-height:1.6}
+.role .tbd{margin-top:12px;font-size:11.5px;border-top:1px dashed var(--line);padding-top:10px;color:var(--muted)}
+.search-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:12.5px;margin-bottom:16px}
+.search-banner button{background:none;border:none;color:var(--amber);font-weight:600;font-size:12px;cursor:pointer}
+
+.toast{position:fixed;right:24px;bottom:24px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);padding:13px 18px;border-radius:9px;font-size:13px;box-shadow:0 14px 40px rgba(0,0,0,.2);transform:translateY(20px);opacity:0;transition:.3s;z-index:120}
+.toast.show{transform:none;opacity:1}
+.toast.err{border-left-color:var(--bad)}
+.hide{display:none!important}
+@media(max-width:760px){
+  .stats{grid-template-columns:1fr 1fr}.roles{grid-template-columns:1fr}.req{grid-template-columns:1fr}
+  main{padding:110px 16px 60px}
+  .tab{padding:11px 10px;font-size:12px}
+  .tabs-row .ibtn span{display:none}.tabs-row .ibtn{padding:0 12px}
+}
+
+/* ================================================================
+   SHARED HEADER STYLES — same as index.html / project status page
+   ================================================================ */
+#mainNav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(0,0,0,.48);border-bottom:1px solid rgba(255,255,255,.1);
+  transition:transform .35s cubic-bezier(.4,0,.2,1),background-color .35s ease,border-color .35s ease,box-shadow .35s ease;transform:translateY(0)}
+#mainNav.nav-hidden{transform:translateY(-100%)}
+#mainNav.nav-solid{background-color:#fff;border-bottom-color:#e5e7eb;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+#mainNav .nav-adaptive{color:#fff;transition:color .35s ease}
+#mainNav.nav-solid .nav-adaptive{color:#1b1d1d}
+#mainNav .nav-adaptive-muted{color:rgba(255,255,255,.85);transition:color .35s ease}
+#mainNav.nav-solid .nav-adaptive-muted{color:#3a3c3c}
+#mainNav .nav-icon-btn{background:rgba(255,255,255,.1);border:1px solid transparent;
+  transition:background-color .25s ease,color .25s ease,border-color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease}
+#mainNav.nav-solid .nav-icon-btn{background:#f1f5f9;border-color:#e2e8f0}
+#mainNav .nav-icon-btn:hover{background-color:#d97706;border-color:#d97706;color:#fff!important;transform:translateY(-3px) scale(1.08);box-shadow:0 8px 20px rgba(217,119,6,.35)}
+#mainNav #searchIconBtn:hover{transform:scale(1.05)}
+#searchBoxWrap.search-open #searchIconBtn:hover{transform:translateX(2px) scale(1.05)}
+
+body.theme-light #settingsDropdownMenu,body.theme-light #userDropdownMenu,body.theme-light #searchDropdownMenu,body.theme-light #menuBox{background-color:#fff!important;border-color:#e2e8f0!important}
+body.theme-effective-dark #settingsDropdownMenu,body.theme-effective-dark #userDropdownMenu,body.theme-effective-dark #searchDropdownMenu,body.theme-effective-dark #menuBox{background-color:#232525!important;border-color:#3a3c3c!important}
+body.theme-effective-dark #searchDropdownMenu input{color:#fff!important}
+body.theme-effective-dark #searchDropdownMenu input::placeholder{color:#a8a6a3}
+body.theme-effective-dark .border-slate-100,body.theme-effective-dark .border-slate-200,body.theme-effective-dark .border-slate-300{border-color:#3a3c3c!important}
+body.theme-effective-dark .bg-slate-50,body.theme-effective-dark .bg-white{background-color:#232525!important}
+body.theme-effective-dark .hover\:bg-slate-100:hover{background-color:#2a2c2c!important}
+body.theme-effective-dark .text-slate-600,body.theme-effective-dark .text-slate-500,body.theme-effective-dark .text-slate-400{color:#c7c5c2!important}
+body.theme-effective-dark .text-black,body.theme-effective-dark .text-slate-700,body.theme-effective-dark .text-slate-800,body.theme-effective-dark .text-slate-900,
+body.theme-effective-dark .text-gray-900,body.theme-effective-dark .text-gray-800,body.theme-effective-dark .text-gray-700{color:#fff!important}
+#settingsDropdownMenu a{transition:background-color .22s ease,color .22s ease}
+body.theme-effective-dark #settingsDropdownMenu a{color:#e2e8f0!important}
+body.theme-effective-dark #settingsDropdownMenu a:hover,body.theme-light #settingsDropdownMenu a:hover{background-color:#d97706!important;color:#fff!important}
+body.theme-effective-dark #mainNav.nav-solid{background-color:#131414;border-bottom-color:#3a3c3c}
+body.theme-effective-dark #mainNav.nav-solid .nav-icon-btn,body.theme-effective-dark #mainNav.nav-solid .theme-mode-switch{background-color:#2a2c2c;border-color:#3a3c3c}
+body.theme-effective-dark #mainNav.nav-solid .nav-adaptive{color:#fff}
+body.theme-effective-dark #mainNav.nav-solid .nav-adaptive-muted{color:#c7c5c2}
+body.theme-effective-dark .theme-mode-btn.active{color:#fff!important}
+
+#userProfileBtn{background:#fff;color:#64748b;border-color:#d97706}
+#userProfileBtn .profile-fallback-icon{font-size:15px;line-height:1;transition:color .35s ease,transform .25s ease}
+#userProfileBtn:hover .profile-fallback-icon{transform:scale(1.05)}
+#userProfileBtn.is-authenticated{background:transparent}
+#userProfileBtn img{display:block;width:100%;height:100%;object-fit:cover}
+#userProfileBtn .profile-fallback-icon[hidden],#userProfileBtn img[hidden]{display:none!important}
+#userDropdownMenu .profile-avatar-large{background:#fff;color:#64748b}
+#userDropdownMenu .profile-user-name{color:#1b1d1d}
+#userDropdownMenu .profile-user-email{color:#64748b}
+#userDropdownMenu .auth-action{background:#fff;color:#55575a;border:1px solid #e2e8f0}
+#userDropdownMenu .auth-action:hover{background:#d97706;color:#fff;border-color:#d97706}
+body.theme-effective-dark #userProfileBtn{background:#2a2c2c;border-color:#f59e0b;color:#c7c5c2}
+body.theme-effective-dark #userDropdownMenu .profile-avatar-large{background:#2a2c2c;color:#c7c5c2;border-color:#55575a!important}
+body.theme-effective-dark #userDropdownMenu .profile-user-name{color:#fff!important}
+body.theme-effective-dark #userDropdownMenu .profile-user-email{color:#a8a6a3!important}
+body.theme-effective-dark #userDropdownMenu .auth-action{background:#2a2c2c;color:#c7c5c2;border-color:#3a3c3c}
+body.theme-effective-dark #userDropdownMenu .auth-action:hover{background:#d97706;color:#fff;border-color:#d97706}
+
+body.theme-transition,body.theme-transition *{transition-property:color,background-color,border-color,fill,stroke!important;transition-duration:.45s!important;transition-timing-function:ease!important}
+
+.hamburger-icon{transition:transform .2s cubic-bezier(.4,0,.2,1);display:inline-block}
+.hamburger-icon.clicked{transform:scale(1.25)}
+#pageContentWrapper{transition:filter .6s ease-in-out}
+#pageContentWrapper.blurred{filter:blur(6px);pointer-events:none}
+#menuOverlay{position:fixed;inset:0;z-index:100;display:flex;justify-content:flex-end;background-color:rgba(0,0,0,.4);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .7s ease,visibility .7s ease;pointer-events:none}
+#menuOverlay.open{opacity:1;visibility:visible;pointer-events:auto}
+#menuBox{transform:translateX(100%);transition:transform .7s cubic-bezier(.16,1,.3,1)}
+#menuOverlay.open #menuBox{transform:translateX(0)}
+#settingsDropdownMenu,#userDropdownMenu{opacity:0;visibility:hidden;transform:translateY(12px) scale(.96);transition:all .25s cubic-bezier(.16,1,.3,1);pointer-events:none}
+#settingsDropdownMenu.open,#userDropdownMenu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}
+#searchBoxWrap{height:40px;padding-right:2px}
+#homeContactLoginGroup{position:relative;z-index:5;will-change:transform;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+#homeContactLoginGroup.icons-pushed{transform:translateX(-270px)}
+#searchDropdownMenu{position:absolute;right:0;top:50%;transform:translateY(-50%) translateX(12px);width:40px;height:40px;border-radius:999px;opacity:0;visibility:hidden;overflow:hidden;
+  transition:width .4s cubic-bezier(.16,1,.3,1),opacity .3s ease,visibility .4s ease,transform .4s cubic-bezier(.16,1,.3,1);pointer-events:none;white-space:nowrap}
+#searchDropdownMenu.open{width:250px;opacity:1;visibility:visible;transform:translateY(-50%) translateX(0);pointer-events:auto;right:0}
+@media(min-width:640px){#searchDropdownMenu.open{width:270px}}
+#searchDropdownMenu input{padding-right:38px}
+#searchIconBtn{transition:width .3s cubic-bezier(.34,1.56,.64,1),height .3s cubic-bezier(.34,1.56,.64,1),background-color .25s ease,color .25s ease,border-color .25s ease,transform .3s ease,box-shadow .3s ease}
+#searchBoxWrap.search-open #searchIconBtn{width:30px;height:30px;background-color:#d97706!important;color:#fff!important;border-color:#d97706!important;transform:translateX(-5px)}
+#searchBoxWrap.search-open #searchIconBtn:hover{background-color:#b45309!important;border-color:#b45309!important;transform:translateX(-5px) scale(1.05)}
+
+.theme-mode-switch{--theme-index:1;position:relative;display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid transparent;transition:background-color .45s ease,border-color .45s ease}
+.theme-mode-switch::before{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:999px;background:#d97706;transform:translateX(calc(var(--theme-index)*30px));transition:transform .45s cubic-bezier(.4,0,.2,1),background-color .35s ease;z-index:0;pointer-events:none}
+#mainNav.nav-solid .theme-mode-switch{background:#f1f5f9;border-color:#e2e8f0}
+.theme-mode-btn{position:relative;z-index:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;border:none;background:transparent;color:inherit;opacity:.7;cursor:pointer;font-size:.72rem;transition:color .35s ease,opacity .25s ease,transform .25s ease}
+.theme-mode-btn:hover{opacity:1;transform:scale(1.08)}
+.theme-mode-btn.active{color:#fff!important;opacity:1}
+</style>
+</head>
+<body>
+
+<div id="pageContentWrapper">
+
+  <!-- Header is sourced directly from index.html so one header stays shared. -->
+  <div id="indexHeaderContainer" aria-label="Site header"></div>
+
+  <script>
+  window.__indexHeaderReady = (async function loadIndexHeader() {
+      const container = document.getElementById('indexHeaderContainer');
+      if (!container) return;
+      try {
+          const response = await fetch('index.html', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Unable to load index.html');
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const nav = doc.querySelector('#mainNav');
+          if (!nav) throw new Error('Header #mainNav was not found in index.html');
+          container.replaceChildren(nav.cloneNode(true));
+
+          const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
+          const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
+          if (homeLink) homeLink.href = 'index.html';
+          if (contactLink) {
+              contactLink.href = 'index.html#siteFooterContainer';
+              contactLink.addEventListener('click', function (event) {
+                  const footer = document.getElementById('siteFooterContainer');
+                  if (footer) { event.preventDefault(); footer.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+              });
+          }
+          document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
+      } catch (error) {
+          console.error('Shared index header failed to load:', error);
+          container.innerHTML = '';
+      }
+  })();
+  </script>
+
+  <main id="app">
+    <h1>Account & Security</h1>
+    <p class="sub">Review access requests and manage who can sign in to the YNAD workspace.</p>
+
+    <section class="stats">
+      <button type="button" class="stat" data-k="pending" style="--c:var(--muted)" onclick="openGroup('pending')"><b id="sPending">0</b><small>Pending requests</small></button>
+      <button type="button" class="stat" data-k="all" style="--c:var(--all)" onclick="openGroup('all')"><b id="sAll">0</b><small>All</small></button>
+      <button type="button" class="stat" data-k="admin" style="--c:var(--admin)" onclick="openGroup('admin')"><b id="sAdmin">0</b><small>Admins</small></button>
+      <button type="button" class="stat" data-k="manager" style="--c:var(--manager)" onclick="openGroup('manager')"><b id="sManager">0</b><small>Managers</small></button>
+      <button type="button" class="stat" data-k="viewer" style="--c:var(--viewer)" onclick="openGroup('viewer')"><b id="sViewer">0</b><small>Viewers</small></button>
+    </section>
+
+    <div class="tabs-row" id="tabsRow">
+      <nav class="tabs" id="tabs">
+        <div id="tabIndicator"></div>
+        <button class="tab on" data-t="pending">Access requests</button>
+        <button class="tab" data-t="users"><span id="usersTabLabel">All Users</span></button>
+        <button class="tab" data-t="roles">Roles</button>
+      </nav>
+      <button class="ibtn" id="refreshBtn" onclick="load(true)"><i class="fa-solid fa-rotate"></i> <span>Refresh</span></button>
+    </div>
+
+    <div id="searchBanner" class="search-banner hide">
+      <span id="searchBannerText"></span>
+      <button type="button" onclick="clearSearch()">Clear</button>
+    </div>
+
+    <div id="t-pending" class="panel-in"></div>
+    <div id="t-users" class="hide"></div>
+    <div id="t-roles" class="hide">
+      <div class="roles">
+        <div class="role" style="--c:var(--admin)"><h3>Admin</h3><p>Full access. Complete control of the entire system, including approving users.</p><div class="tbd">Detailed permissions: to be finalised.</div></div>
+        <div class="role" style="--c:var(--manager)"><h3>Manager</h3><p>Manages everything: add, edit and delete projects.</p><div class="tbd">Detailed permissions: to be finalised.</div></div>
+        <div class="role" style="--c:var(--viewer)"><h3>Viewer</h3><p>View-only access. Can see everything, change nothing.</p><div class="tbd">Detailed permissions: to be finalised.</div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer — loaded dynamically, identical to the other pages -->
+  <div id="siteFooterContainer"></div>
+
+  <script>
+  (function(){
+      const container = document.getElementById('siteFooterContainer');
+      if (!container) return;
+      fetch('footer.html', { cache: 'no-store' })
+          .then(response => {
+              if (!response.ok) throw new Error('Unable to load footer.html');
+              return response.text();
+          })
+          .then(html => {
+              const template = document.createElement('template');
+              template.innerHTML = html;
+              const scripts = Array.from(template.content.querySelectorAll('script'));
+              scripts.forEach(script => script.remove());
+              container.replaceChildren(template.content.cloneNode(true));
+              scripts.forEach(oldScript => {
+                  const newScript = document.createElement('script');
+                  for (const attr of oldScript.attributes) newScript.setAttribute(attr.name, attr.value);
+                  newScript.textContent = oldScript.textContent;
+                  document.body.appendChild(newScript);
+                  newScript.remove();
+              });
+          })
+          .catch(error => {
+              console.error(error);
+              container.innerHTML = '<div style="padding:32px;text-align:center;color:#a8a6a3;background:#1b1d1d;">Footer failed to load.</div>';
+          });
+  })();
+  </script>
+
+</div>
+
+<!-- Right Overlay Menu — identical to index.html -->
+<div id="menuOverlay" onclick="handleOverlayClick(event)">
+    <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+        <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div class="mt-20 flex-1 flex flex-col">
+            <iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none; width:100%; height:260px;"></iframe>
+        </div>
+        <div class="pb-10"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
+const supabaseClient = supabase.createClient('https://zjbvnwawdgdncthktqtx.supabase.co','sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT');
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROLES = ['admin','manager','viewer'];
+let rows = [], me = null, searchQuery = '', userFilter = null;
+
+function toast(msg, err){const t=$('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3200)}
+const when = d => new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
+
+/* ================= HEADER SCROLL ANIMATION ================= */
+(function () {
+    function bindIndexHeaderScroll() {
+        const nav = document.getElementById('mainNav');
+        if (!nav || nav.dataset.scrollBound === 'true') return;
+        nav.dataset.scrollBound = 'true';
+        let lastScrollY = window.scrollY, ticking = false;
+
+        function handleNavScroll() {
+            const y = window.scrollY;
+            nav.classList.toggle('nav-solid', y > 4);
+            if (nav.dataset.scrollLock === 'true') { nav.classList.add('nav-hidden'); lastScrollY = y; ticking = false; return; }
+            if (y <= 4) nav.classList.remove('nav-hidden');
+            else if (y > lastScrollY) nav.classList.add('nav-hidden');
+            else if (y < lastScrollY) nav.classList.remove('nav-hidden');
+            lastScrollY = y; ticking = false;
+        }
+        window.addEventListener('scroll', function () {
+            if (!ticking) { window.requestAnimationFrame(handleNavScroll); ticking = true; }
+        }, { passive: true });
+        handleNavScroll();
+    }
+    if (window.__indexHeaderReady && typeof window.__indexHeaderReady.then === 'function') window.__indexHeaderReady.then(bindIndexHeaderScroll);
+    else document.addEventListener('ynad-index-header-ready', bindIndexHeaderScroll, { once: true });
+})();
+
+/* ================= PROFILE / AUTH UI ================= */
+function getUserAvatarUrl(user) {
+    if (!user) return '';
+    const m = user.user_metadata || {};
+    const ids = Array.isArray(user.identities) ? user.identities : [];
+    const idd = ids[0] && ids[0].identity_data ? ids[0].identity_data : {};
+    return m.avatar_url || m.picture || m.profile_image || m.photo_url || idd.avatar_url || idd.picture || '';
+}
+function getUserDisplayName(user) {
+    if (!user) return 'Guest User';
+    const m = user.user_metadata || {};
+    return m.full_name || m.name || m.user_name || m.username || (user.email ? user.email.split('@')[0] : 'User');
+}
+function setProfileImage(img, fallback, url) {
+    if (!img || !fallback) return;
+    if (!url) { img.hidden = true; img.removeAttribute('src'); fallback.hidden = false; return; }
+    img.onload = function () { img.hidden = false; fallback.hidden = true; };
+    img.onerror = function () { img.hidden = true; img.removeAttribute('src'); fallback.hidden = false; };
+    img.src = url;
+}
+function updateProfileUI(user) {
+    const profileBtn = document.getElementById('userProfileBtn');
+    const loggedIn = !!user;
+    if (profileBtn) { profileBtn.classList.toggle('is-authenticated', loggedIn); profileBtn.title = loggedIn ? 'Profile' : 'Log in'; }
+    const avatarUrl = getUserAvatarUrl(user);
+    setProfileImage(document.getElementById('userProfileImage'), document.getElementById('userProfileFallback'), avatarUrl);
+    setProfileImage(document.getElementById('userDropdownImage'), document.getElementById('userDropdownFallback'), avatarUrl);
+    const nameEl = document.getElementById('profileUserName');
+    const emailEl = document.getElementById('profileUserEmail');
+    if (nameEl) nameEl.textContent = loggedIn ? getUserDisplayName(user) : 'Guest User';
+    if (emailEl) emailEl.textContent = loggedIn ? (user.email || 'Signed in') : 'Not logged in';
+    const authAction = document.getElementById('profileAuthAction');
+    const authIcon = document.getElementById('profileAuthActionIcon');
+    const authText = document.getElementById('profileAuthActionText');
+    if (authAction && authIcon && authText) {
+        if (loggedIn) {
+            authAction.href = '#'; authAction.title = 'Log out';
+            authIcon.className = 'fa-solid fa-right-from-bracket'; authText.textContent = 'LOG OUT';
+            authAction.onclick = handleLogout;
+        } else {
+            authAction.href = 'login.html'; authAction.title = 'Log in';
+            authIcon.className = 'fa-solid fa-right-to-bracket'; authText.textContent = 'LOG IN';
+            authAction.onclick = null;
+        }
+    }
+}
+async function handleLogout(event) {
+    if (event) event.preventDefault();
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        updateProfileUI(null);
+        const dd = document.getElementById('userDropdownMenu');
+        if (dd) dd.classList.remove('open');
+    } catch (error) { console.error('Logout failed:', error); }
+}
+
+/* ================= HEADER DROPDOWNS / SEARCH ================= */
+function toggleSettingsDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('settingsDropdownMenu');
+    const userDropdown = document.getElementById('userDropdownMenu');
+    const searchDropdown = document.getElementById('searchDropdownMenu');
+    const searchBoxWrap = document.getElementById('searchBoxWrap');
+    const iconGroup = document.getElementById('homeContactLoginGroup');
+    if(userDropdown) userDropdown.classList.remove('open');
+    if(searchDropdown) searchDropdown.classList.remove('open');
+    if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+    if(iconGroup) iconGroup.classList.remove('icons-pushed');
+    dropdown.classList.toggle('open');
+}
+function toggleUserDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('userDropdownMenu');
+    const searchDropdown = document.getElementById('searchDropdownMenu');
+    const searchBoxWrap = document.getElementById('searchBoxWrap');
+    const settingsDropdown = document.getElementById('settingsDropdownMenu');
+    const iconGroup = document.getElementById('homeContactLoginGroup');
+    if(searchDropdown) searchDropdown.classList.remove('open');
+    if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+    if(settingsDropdown) settingsDropdown.classList.remove('open');
+    if(iconGroup) iconGroup.classList.remove('icons-pushed');
+    dropdown.classList.toggle('open');
+}
+function toggleSearchDropdown(event) {
+    event.stopPropagation();
+    const wrap = document.getElementById('searchBoxWrap');
+    const searchDropdown = document.getElementById('searchDropdownMenu');
+    const userDropdown = document.getElementById('userDropdownMenu');
+    const settingsDropdown = document.getElementById('settingsDropdownMenu');
+    const iconGroup = document.getElementById('homeContactLoginGroup');
+    if(userDropdown) userDropdown.classList.remove('open');
+    if(settingsDropdown) settingsDropdown.classList.remove('open');
+
+    if (!searchDropdown.classList.contains('open')) {
+        searchDropdown.classList.add('open');
+        wrap.classList.add('search-open');
+        if(iconGroup) iconGroup.classList.add('icons-pushed');
+        const inp = document.getElementById('projectSearchInput'); if (inp) inp.focus();
+    } else {
+        const inp = document.getElementById('projectSearchInput');
+        const query = inp ? inp.value.trim() : '';
+        if (query) executeSearch();
+        else {
+            searchDropdown.classList.remove('open');
+            wrap.classList.remove('search-open');
+            if(iconGroup) iconGroup.classList.remove('icons-pushed');
+        }
+    }
+}
+window.addEventListener('click', function(e) {
+    const userDropdown = document.getElementById('userDropdownMenu');
+    const profileBtn = document.getElementById('userProfileBtn');
+    if (userDropdown && userDropdown.classList.contains('open') && profileBtn) {
+        if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) userDropdown.classList.remove('open');
+    }
+    const settingsDropdown = document.getElementById('settingsDropdownMenu');
+    const settingsBtn = document.getElementById('settingsIconBtn');
+    if (settingsDropdown && settingsDropdown.classList.contains('open') && settingsBtn) {
+        if (!settingsDropdown.contains(e.target) && !settingsBtn.contains(e.target)) settingsDropdown.classList.remove('open');
+    }
+    const searchBoxWrap = document.getElementById('searchBoxWrap');
+    const searchDropdown = document.getElementById('searchDropdownMenu');
+    if (searchDropdown && searchDropdown.classList.contains('open')) {
+        if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
+            searchDropdown.classList.remove('open');
+            searchBoxWrap.classList.remove('search-open');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
+            if(iconGroup) iconGroup.classList.remove('icons-pushed');
+        }
+    }
+});
+
+/* Search on this page filters users / requests by name or email */
+function matchRow(r){
+    if (!searchQuery) return true;
+    return ((r.full_name||'')+' '+(r.email||'')).toLowerCase().includes(searchQuery);
+}
+function executeSearch() {
+    const inp = document.getElementById('projectSearchInput');
+    const feedback = document.getElementById('searchResultFeedback');
+    const raw = inp ? inp.value.trim() : '';
+    if (!raw) {
+        if (feedback) {
+            feedback.textContent = 'Please enter a name or email.';
+            feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50';
+        }
+        return;
+    }
+    searchQuery = raw.toLowerCase();
+    render();
+    const n = rows.filter(matchRow).length;
+    if (feedback) {
+        feedback.classList.remove('hidden');
+        feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border font-semibold z-50 ' + (n ? 'text-emerald-600' : 'text-red-500');
+        feedback.textContent = n ? `Found ${n} matching user(s)!` : `No match found for "${raw}".`;
+    }
+    if (n) {
+        setTimeout(() => {
+            const sd = document.getElementById('searchDropdownMenu'); if (sd) sd.classList.remove('open');
+            const sw = document.getElementById('searchBoxWrap'); if (sw) sw.classList.remove('search-open');
+            const ig = document.getElementById('homeContactLoginGroup'); if (ig) ig.classList.remove('icons-pushed');
+            if (feedback) feedback.classList.add('hidden');
+        }, 1500);
+    }
+}
+function handleProjectSearch(event) { if (event.key === 'Enter') executeSearch(); }
+function clearSearch(){
+    searchQuery = '';
+    const inp = document.getElementById('projectSearchInput'); if (inp) inp.value = '';
+    render();
+}
+
+/* ================= THEME (Light / Dynamic / Dark) ================= */
+function setThemeMode(mode) {
+    const validModes = ['light', 'dynamic', 'dark'];
+    if (!validModes.includes(mode)) mode = 'dynamic';
+    const switcher = document.getElementById('themeModeSwitch');
+    const indexMap = { light: 0, dynamic: 1, dark: 2 };
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-mode') === mode));
+    if (switcher) switcher.style.setProperty('--theme-index', indexMap[mode]);
+
+    const body = document.body;
+    body.classList.add('theme-transition');
+    body.classList.remove('theme-light', 'theme-dynamic', 'theme-dark', 'theme-effective-dark');
+    body.classList.add('theme-' + mode);
+
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isEffectiveDark = mode === 'dark' || (mode === 'dynamic' && prefersDark);
+    if (isEffectiveDark) body.classList.add('theme-effective-dark');
+
+    document.documentElement.classList.toggle('dark', isEffectiveDark);
+    document.documentElement.setAttribute('data-theme', isEffectiveDark ? 'dark' : 'light');
+
+    try {
+        const f = document.getElementById('menuLinksFrame');
+        if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+    } catch (e) {}
+
+    clearTimeout(window.__ynadThemeTransitionTimer);
+    window.__ynadThemeTransitionTimer = setTimeout(() => body.classList.remove('theme-transition'), 500);
+    try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
+}
+window.addEventListener('message', function(e) {
+    if (!e.data || typeof e.data !== 'object') return;
+    if (e.data.type === 'ynad-request-theme') {
+        const dark = document.body.classList.contains('theme-effective-dark');
+        try {
+            const f = document.getElementById('menuLinksFrame');
+            if (f && f.contentWindow && e.source === f.contentWindow) f.contentWindow.postMessage({ type: 'ynad-theme', dark: dark }, '*');
+        } catch (err) {}
+    }
+});
+(function initThemeMode() {
+    let saved = 'dynamic';
+    try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+    document.addEventListener('DOMContentLoaded', function() {
+        Promise.resolve(window.__indexHeaderReady).then(function() { setThemeMode(saved); });
+        if (window.matchMedia) {
+            const media = window.matchMedia('(prefers-color-scheme: dark)');
+            const sync = function() { if (document.body.classList.contains('theme-dynamic')) setThemeMode('dynamic'); };
+            if (media.addEventListener) media.addEventListener('change', sync);
+            else if (media.addListener) media.addListener(sync);
+        }
+    });
+})();
+
+/* ================= SIDE MENU ================= */
+function openMenuWithEffect() {
+    const icon = document.getElementById('hamburgerBtnIcon');
+    const pageWrapper = document.getElementById('pageContentWrapper');
+    const overlay = document.getElementById('menuOverlay');
+    const menuFrame = document.getElementById('menuLinksFrame');
+    if (icon) icon.classList.add('clicked');
+    setTimeout(() => {
+        if (icon) icon.classList.remove('clicked');
+        pageWrapper.classList.add('blurred');
+        setTimeout(() => {
+            menuFrame.src = 'menu.html';
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            menuFrame.onload = function () {
+                try { menuFrame.contentWindow.postMessage({ type: 'ynad-menu-open' }, '*'); } catch (e) {}
+            };
+        }, 200);
+    }, 200);
+}
+function closeMenuWithEffect() {
+    const overlay = document.getElementById('menuOverlay');
+    const pageWrapper = document.getElementById('pageContentWrapper');
+    const menuFrame = document.getElementById('menuLinksFrame');
+    try { if (menuFrame && menuFrame.contentWindow) menuFrame.contentWindow.postMessage({ type: 'ynad-menu-closing' }, '*'); } catch (e) {}
+    setTimeout(() => {
+        overlay.classList.remove('open');
+        setTimeout(() => {
+            pageWrapper.classList.remove('blurred');
+            document.body.style.overflow = 'auto';
+            menuFrame.src = 'about:blank';
+        }, 400);
+    }, 380);
+}
+function handleOverlayClick(event) {
+    if (event.target === document.getElementById('menuOverlay')) closeMenuWithEffect();
+}
+
+/* ================= SLIDING TAB INDICATOR ================= */
+let tabIndReady = false;
+function moveTabIndicator(){
+    const nav = $('tabs'), ind = $('tabIndicator');
+    if (!nav || !ind) return;
+    const btn = nav.querySelector('.tab.on');
+    if (!btn || !btn.offsetWidth) return;
+    const first = !tabIndReady;
+    if (first) ind.style.transition = 'none';
+    ind.style.width = btn.offsetWidth + 'px';
+    ind.style.transform = `translateX(${btn.offsetLeft}px)`;
+    if (first) { void ind.offsetWidth; ind.style.transition = ''; tabIndReady = true; }
+}
+function switchTab(k){
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.t === k));
+    ['pending','users','roles'].forEach(id => {
+        const el = $('t-' + id);
+        const show = id === k;
+        el.classList.toggle('hide', !show);
+        if (show) { el.classList.remove('panel-in'); void el.offsetWidth; el.classList.add('panel-in'); }
+    });
+    moveTabIndicator();
+    syncStatActive(k==='pending' ? 'pending' : (k==='users' ? userFilter : null));
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.t));
+window.addEventListener('resize', moveTabIndicator);
+window.addEventListener('load', moveTabIndicator);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveTabIndicator);
+
+/* ================= STAT CARDS -> USERS TAB FILTER ================= */
+const FILTER_LABELS = { all:'All Users', admin:'Admins', manager:'Managers', viewer:'Viewers' };
+function syncStatActive(k){
+    document.querySelectorAll('.stat').forEach(el => el.classList.toggle('active', el.dataset.k === k));
+}
+function openGroup(k){
+    if (k === 'pending') {
+        switchTab('pending');
+    } else {
+        userFilter = k;
+        render();
+        switchTab('users');
+    }
+    $('tabsRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ================= DATA ================= */
+async function init(){
+  // The session from the website login is available on the same domain
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  if(session) me = {id:session.user.id};
+  load();
+  Promise.resolve(window.__indexHeaderReady).then(() => updateProfileUI(session ? session.user : null));
+  supabaseClient.auth.onAuthStateChange((_e, s) => {
+    me = s ? {id:s.user.id} : null;
+    updateProfileUI(s ? s.user : null);
+    if (rows.length) render();
+  });
+}
+
+async function load(manual){
+  const btn = $('refreshBtn');
+  if (btn) btn.classList.add('spin');
+  const {data,error} = await supabaseClient.from('profiles').select('*').order('created_at',{ascending:false});
+  if (btn) btn.classList.remove('spin');
+  if(error){
+    toast('Could not load data: '+error.message,true);
+    $('t-pending').innerHTML='<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load data. Please check the profiles table and its policies in Supabase.</div>';
+    return;
+  }
+  rows = data||[]; render();
+  if (manual === true) toast('Data refreshed.');
+}
+
+function render(){
+  const pendAll = rows.filter(r=>r.status==='pending');
+  const pend = pendAll.filter(matchRow);
+  const actAll = rows.filter(r=>r.status!=='pending');
+  const act = actAll.filter(r=>!userFilter||userFilter==='all'||(r.status==='approved'&&r.role===userFilter)).filter(matchRow);
+  const cnt = r=>rows.filter(x=>x.status==='approved'&&x.role===r).length;
+  $('sPending').textContent=pendAll.length;
+  $('sAll').textContent=actAll.length; $('sAdmin').textContent=cnt('admin'); $('sManager').textContent=cnt('manager'); $('sViewer').textContent=cnt('viewer');
+
+  const banner = $('searchBanner');
+  if (searchQuery) {
+    banner.classList.remove('hide');
+    $('searchBannerText').innerHTML = `Showing results for “${esc(searchQuery)}”`;
+  } else banner.classList.add('hide');
+
+  $('t-pending').innerHTML = pend.length ? pend.map(r=>`
+    <div class="req">
+      <div class="who"><div class="av">${esc((r.full_name||'?')[0])}</div>
+        <div style="min-width:0"><b>${esc(r.full_name)}</b><small>${esc(r.email)} · requested ${when(r.created_at)}</small></div></div>
+      <div class="acts">
+        <select id="role-${r.id}" aria-label="Role for ${esc(r.full_name)}">
+          <option value="" disabled selected>Choose role</option>
+          ${ROLES.map(x=>`<option value="${x}">${cap(x)}</option>`).join('')}
+        </select>
+        <button class="b" onclick="approve('${r.id}',this)">Accept</button>
+        <button class="b o" onclick="reject('${r.id}',this)">Reject</button>
+      </div>
+    </div>`).join('')
+    : `<div class="empty"><i class="fa-solid fa-inbox"></i>${searchQuery?'No matching requests.':'No pending requests. New requests from the sign-in page appear here.'}</div>`;
+
+  $('t-users').innerHTML = act.length ? `<div class="wrap"><table>
+    <tr><th>Name</th><th>Email</th><th>Status</th><th>Role</th><th>Joined</th><th></th></tr>
+    ${act.map(r=>{const self=!!me&&r.id===me.id;return `<tr>
+      <td>${esc(r.full_name)}</td><td>${esc(r.email)}</td>
+      <td><span class="pill ${r.status==='approved'?r.role:r.status}">${r.status==='approved'?'Active':esc(r.status)}</span></td>
+      <td>${r.status==='approved'?`<select ${self?'disabled':''} onchange="setRole('${r.id}',this.value)">${ROLES.map(x=>`<option value="${x}" ${x===r.role?'selected':''}>${cap(x)}</option>`).join('')}</select>`:'—'}</td>
+      <td>${when(r.created_at)}</td>
+      <td>${self?'You':r.status==='approved'?`<button class="b o" onclick="revoke('${r.id}')">Revoke</button>`:`<button class="b" onclick="restore('${r.id}')">Re-open</button>`}</td></tr>`}).join('')}
+  </table></div>` : `<div class="empty"><i class="fa-solid fa-users"></i>${searchQuery?'No matching users.':(userFilter&&userFilter!=='all'?'No '+FILTER_LABELS[userFilter].toLowerCase()+' yet.':'No users yet. Approved people show up here.')}</div>`;
+
+  $('usersTabLabel').textContent = userFilter ? FILTER_LABELS[userFilter] : 'All Users';
+  requestAnimationFrame(moveTabIndicator);
+}
+
+async function update(id, patch, ok, btn){
+  if(btn) btn.disabled=true;
+  const {error} = await supabaseClient.from('profiles').update(patch).eq('id',id);
+  if(error){toast('Failed: '+error.message,true); if(btn)btn.disabled=false; return}
+  toast(ok); load();
+}
+function approve(id,btn){const role=$('role-'+id).value; if(!role) return toast('Choose a role before accepting.',true);
+  update(id,{status:'approved',role,reviewed_by:me?me.id:null,reviewed_at:new Date().toISOString()},'Request accepted as '+role+'.',btn)}
+function reject(id,btn){if(confirm('Reject this request?')) update(id,{status:'rejected',role:null,reviewed_by:me?me.id:null,reviewed_at:new Date().toISOString()},'Request rejected.',btn)}
+function setRole(id,role){update(id,{role},'Role changed to '+role+'.')}
+function revoke(id){if(confirm('Revoke this user’s access?')) update(id,{status:'revoked',role:null},'Access revoked.')}
+function restore(id){update(id,{status:'pending',role:null},'Moved back to pending requests.')}
+
+init();
+</script>
+</body>
+</html>
