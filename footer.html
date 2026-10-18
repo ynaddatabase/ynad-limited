@@ -184,7 +184,7 @@
   }
   .social-icons a:hover .circle{background:var(--amber); color:#1b1d1d;}
 
-  /* --- developer credit block: fully binary by default, hacking reveal on hover --- */
+  /* --- developer credit block: fully binary by default, hacking reveal on hover OR on scroll-in --- */
   .footer-dev{
     display:flex;
     align-items:center;
@@ -228,8 +228,9 @@
     transform:translateY(0) scale(1);
     transition:opacity .3s cubic-bezier(.2,.8,.3,1), transform .3s cubic-bezier(.2,.8,.3,1);
   }
-  /* binary bits leave left-to-right on hover, mirroring the CONTACT letters */
-  .dev-terminal:hover .dev-binary-line .bit{
+  /* binary bits leave left-to-right on hover (or .reveal), mirroring the CONTACT letters */
+  .dev-terminal:hover .dev-binary-line .bit,
+  .dev-terminal.reveal .dev-binary-line .bit{
     opacity:0;
     transform:translateY(-8px) scale(.7);
   }
@@ -244,7 +245,8 @@
                color .3s ease, text-shadow .3s ease;
   }
   /* real letters arrive left-to-right, entering just after the bit above it leaves */
-  .dev-terminal:hover .dev-plain-line .letter{
+  .dev-terminal:hover .dev-plain-line .letter,
+  .dev-terminal.reveal .dev-plain-line .letter{
     opacity:1;
     transform:translateY(0) scale(1);
   }
@@ -259,7 +261,8 @@
     opacity:0;
     transition:background-color .3s ease, opacity .3s ease;
   }
-  .dev-terminal:hover .dev-cursor{
+  .dev-terminal:hover .dev-cursor,
+  .dev-terminal.reveal .dev-cursor{
     background:var(--hg-bright);
     box-shadow:0 0 6px var(--hg-glow);
     opacity:1;
@@ -578,7 +581,7 @@
 
   renderFooter();
 
-  // ---- dev credit: fully-binary by default, staggered hacking reveal on hover ----
+  // ---- dev credit: fully-binary by default, staggered hacking reveal on hover + on scroll-in ----
   (function initDevReveal(){
     const PHRASE = "Developed by MD ABU SAYEED";
     const binaryLine = document.getElementById('devBinaryLine');
@@ -617,6 +620,43 @@
     }
     terminalEl.addEventListener('mouseleave', rescrambleBits);
     terminalEl.addEventListener('focusout', rescrambleBits);
+
+    // ---- scroll-in animation: footer viewport e ashle reveal -> hold -> abar binary ----
+    const HOLD_MS = 1600;      // name koto khon dekha jabe
+    let playing = false;
+    let holdTimer = null;
+    let scrambleTimer = null;
+
+    function playIntro(){
+      if (playing) return;
+      playing = true;
+      clearTimeout(holdTimer);
+      clearTimeout(scrambleTimer);
+      terminalEl.classList.add('reveal');            // binary -> name
+      holdTimer = setTimeout(() => {
+        terminalEl.classList.remove('reveal');       // name -> binary
+        scrambleTimer = setTimeout(rescrambleBits, 600); // bit gulo invisible hole notun random bit
+      }, HOLD_MS);
+    }
+
+    function resetIntro(){
+      clearTimeout(holdTimer);
+      clearTimeout(scrambleTimer);
+      terminalEl.classList.remove('reveal');
+      rescrambleBits();
+      playing = false;                               // porer bar ashle abar cholbe
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) playIntro();
+          else resetIntro();
+        });
+      }, { threshold: 0.5 });
+
+      io.observe(footerEl);
+    }
   })();
 })();
 </script>
