@@ -622,24 +622,30 @@
     terminalEl.addEventListener('focusout', rescrambleBits);
 
     // ---- scroll-in animation: footer viewport e ashle reveal -> hold -> abar binary ----
-    const HOLD_MS = 1600;      // name koto khon dekha jabe
+    const START_DELAY_MS = 900;  // footer e ashar koto khon por animation shuru hobe
+    const HOLD_MS = 3500;        // name koto khon sthir thakbe
     let playing = false;
+    let startTimer = null;
     let holdTimer = null;
     let scrambleTimer = null;
 
     function playIntro(){
       if (playing) return;
       playing = true;
+      clearTimeout(startTimer);
       clearTimeout(holdTimer);
       clearTimeout(scrambleTimer);
-      terminalEl.classList.add('reveal');            // binary -> name
-      holdTimer = setTimeout(() => {
-        terminalEl.classList.remove('reveal');       // name -> binary
-        scrambleTimer = setTimeout(rescrambleBits, 600); // bit gulo invisible hole notun random bit
-      }, HOLD_MS);
+      startTimer = setTimeout(() => {
+        terminalEl.classList.add('reveal');            // binary -> name
+        holdTimer = setTimeout(() => {
+          terminalEl.classList.remove('reveal');       // name -> binary
+          scrambleTimer = setTimeout(rescrambleBits, 600); // bit gulo invisible hole notun random bit
+        }, HOLD_MS);
+      }, START_DELAY_MS);
     }
 
     function resetIntro(){
+      clearTimeout(startTimer);
       clearTimeout(holdTimer);
       clearTimeout(scrambleTimer);
       terminalEl.classList.remove('reveal');
