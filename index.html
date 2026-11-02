@@ -1783,51 +1783,6 @@ body.theme-effective-dark .recent-project-local{ color:#cbd5e1 !important; }
 .recent-project-info,
 .recent-project-bottom{ cursor:default; }
 
-/* Edit / delete controls: hidden until Alt+Shift+D, then shown beside the project codes.
-   No circular background; the icons use the site's amber accent. */
-.card-admin{
-  position:absolute;
-  right:19px;
-  bottom:29px;
-  z-index:20;
-  display:none;
-  align-items:center;
-  gap:12px;
-  padding:0;
-}
-body.admin-mode .card-admin{
-  display:flex;
-  animation:adminIn .28s cubic-bezier(.16,1,.3,1);
-}
-@keyframes adminIn{
-  from{opacity:0; transform:translateY(5px)}
-  to{opacity:1; transform:translateY(0)}
-}
-.card-admin button{
-  width:auto;
-  height:22px;
-  padding:0;
-  margin:0;
-  border:none;
-  border-radius:0;
-  background:transparent !important;
-  color:#d97706;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  box-shadow:none;
-  transition:color .22s ease, transform .22s ease;
-}
-.card-admin button i{ font-size:12px; }
-.card-admin .edit:hover,
-.card-admin .del:hover{
-  color:#d97706;
-  transform:translateY(-2px) scale(1.08);
-}
-body.theme-effective-dark .card-admin button,
-body.theme-effective-dark .card-admin button:hover{ color:#f59e0b !important; }
-
 /* Files dropdown -------------------------------------------------------
    The FILES button follows MEDIA's amber accent. Dropdown items are
    intentionally text-only: hover changes color without adding a fill. */
