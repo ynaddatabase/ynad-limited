@@ -91,7 +91,10 @@
     line-height:1.55;
   }
 
-  /* --- contact / social block --- */
+  /* --- contact / social block ---
+     State classes:
+       .active -> hover / focus / touch
+       .intro  -> automatic scroll-in reveal (same look as .active)  */
   .footer-contact{
     position:relative;
     width:300px;
@@ -119,7 +122,7 @@
     transform:translateY(0);
     transition:opacity .28s ease, transform .28s ease;
   }
-  .footer-contact.active .contact-label span{
+  .footer-contact:is(.active,.intro) .contact-label span{
     opacity:0;
     transform:translateY(-10px);
   }
@@ -142,7 +145,7 @@
     gap:14px;
     pointer-events:none;
   }
-  .footer-contact.active .social-icons{
+  .footer-contact:is(.active,.intro) .social-icons{
     pointer-events:auto;
   }
   .social-icons a{
@@ -164,13 +167,13 @@
   }
   .social-icons a svg{width:12px;height:12px;}
   /* icons fade in left-to-right, entering just after their letter has left */
-  .footer-contact.active .social-icons a:nth-child(1) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.16s;}
-  .footer-contact.active .social-icons a:nth-child(2) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.19s;}
-  .footer-contact.active .social-icons a:nth-child(3) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.22s;}
-  .footer-contact.active .social-icons a:nth-child(4) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.25s;}
-  .footer-contact.active .social-icons a:nth-child(5) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.28s;}
-  .footer-contact.active .social-icons a:nth-child(6) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.31s;}
-  .footer-contact.active .social-icons a:nth-child(7) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.34s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(1) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.16s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(2) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.19s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(3) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.22s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(4) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.25s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(5) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.28s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(6) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.31s;}
+  .footer-contact:is(.active,.intro) .social-icons a:nth-child(7) .circle{opacity:1; transform:translateY(0) scale(1); transition-delay:.34s;}
   /* icons leave right-to-left when closing, mirroring the entrance */
   .social-icons a:nth-child(1) .circle{transition-delay:.24s;}
   .social-icons a:nth-child(2) .circle{transition-delay:.20s;}
@@ -581,21 +584,21 @@
 
   renderFooter();
 
-  // ---- dev credit: fully-binary by default, staggered hacking reveal on hover + on scroll-in ----
-  (function initDevReveal(){
+  // ---- dev credit: fully-binary by default, staggered hacking reveal on hover ----
+  // returns { rescrambleBits, terminalEl } so the scroll-in controller below can drive it
+  function initDevReveal(){
     const PHRASE = "Developed by MD ABU SAYEED";
     const binaryLine = document.getElementById('devBinaryLine');
     const plainLine = document.getElementById('devPlainLine');
     const terminalEl = document.getElementById('devTerminal');
-    if (!binaryLine || !plainLine || !terminalEl) return;
+    if (!binaryLine || !plainLine || !terminalEl) return null;
 
     function randBit(){ return Math.random() > 0.5 ? '1' : '0'; }
 
     const letters = PHRASE.split('');
-    const n = letters.length;
-    const stepOut = 0.02;   // seconds between each bit leaving
-    const stepIn = 0.02;    // seconds between each letter arriving
-    const inStartOffset = 0.12; // letters start arriving shortly after bits begin leaving
+    const stepOut = 0.02;       // seconds between each bit leaving
+    const stepIn = 0.02;        // seconds between each letter arriving
+    const inStartOffset = 0.06; // letters start arriving right after bits begin leaving
 
     // binary layer: one random bit per character position (space -> blank)
     binaryLine.innerHTML = letters.map((ch, i) => {
@@ -611,7 +614,7 @@
       return '<span class="letter" style="transition-delay:' + delay + 's">' + display + '</span>';
     }).join('');
 
-    // re-roll the binary noise each time the mouse leaves, so it looks fresh on next hover
+    // re-roll the binary noise so it looks fresh on next reveal
     function rescrambleBits(){
       binaryLine.querySelectorAll('.bit').forEach((el) => {
         if (el.textContent.trim() === '') return;
@@ -621,9 +624,21 @@
     terminalEl.addEventListener('mouseleave', rescrambleBits);
     terminalEl.addEventListener('focusout', rescrambleBits);
 
-    // ---- scroll-in animation: footer viewport e ashle reveal -> hold -> abar binary ----
-    const START_DELAY_MS = 900;  // footer e ashar koto khon por animation shuru hobe
-    const HOLD_MS = 3500;        // name koto khon sthir thakbe
+    return { rescrambleBits, terminalEl };
+  }
+
+  // ---- scroll-in intro: ONE observer drives both blocks together ----
+  // footer enters viewport -> (almost) immediately:
+  //   dev credit:  binary -> name
+  //   contact:     CONTACT -> social icons
+  // hold, then both return to their default state. Leaving the footer resets everything.
+  (function initScrollIntro(){
+    const dev = initDevReveal();
+
+    const START_DELAY_MS = 120;  // was 900 -> starts almost instantly after scrolling in
+    const HOLD_MS = 3500;        // how long the revealed state stays
+    const THRESHOLD = 0.15;      // was 0.5 -> triggers as soon as a bit of the footer is visible
+
     let playing = false;
     let startTimer = null;
     let holdTimer = null;
@@ -636,10 +651,14 @@
       clearTimeout(holdTimer);
       clearTimeout(scrambleTimer);
       startTimer = setTimeout(() => {
-        terminalEl.classList.add('reveal');            // binary -> name
+        contactWrap.classList.add('intro');            // CONTACT -> icons
+        if (dev) dev.terminalEl.classList.add('reveal'); // binary -> name
         holdTimer = setTimeout(() => {
-          terminalEl.classList.remove('reveal');       // name -> binary
-          scrambleTimer = setTimeout(rescrambleBits, 600); // bit gulo invisible hole notun random bit
+          contactWrap.classList.remove('intro');       // icons -> CONTACT (stays open if hovered)
+          if (dev) {
+            dev.terminalEl.classList.remove('reveal'); // name -> binary
+            scrambleTimer = setTimeout(dev.rescrambleBits, 600);
+          }
         }, HOLD_MS);
       }, START_DELAY_MS);
     }
@@ -648,9 +667,12 @@
       clearTimeout(startTimer);
       clearTimeout(holdTimer);
       clearTimeout(scrambleTimer);
-      terminalEl.classList.remove('reveal');
-      rescrambleBits();
-      playing = false;                               // porer bar ashle abar cholbe
+      contactWrap.classList.remove('intro');
+      if (dev) {
+        dev.terminalEl.classList.remove('reveal');
+        dev.rescrambleBits();
+      }
+      playing = false;                                 // plays again next time it scrolls in
     }
 
     if ('IntersectionObserver' in window) {
@@ -659,7 +681,7 @@
           if (entry.isIntersecting) playIntro();
           else resetIntro();
         });
-      }, { threshold: 0.5 });
+      }, { threshold: THRESHOLD });
 
       io.observe(footerEl);
     }
