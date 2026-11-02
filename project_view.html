@@ -391,7 +391,8 @@
       grid-template-columns:repeat(4,minmax(0,1fr));
       gap:6px;
       padding:6px;
-      background:#202020;
+      /* Keep the complete gallery area the same shade as the title area. */
+      background:var(--gallery);
     }
     .gallery-item{
       position:relative;min-height:300px;overflow:hidden;background:#222;cursor:pointer;
@@ -433,7 +434,8 @@
       object-fit:contain;
       box-shadow:0 25px 70px rgba(0,0,0,.45);
       transform:translateX(0);opacity:1;
-      transition:transform .46s cubic-bezier(.22,.68,0,1),opacity .38s ease;
+      /* A slower, balanced ease makes the outgoing and incoming photos glide. */
+      transition:transform .86s cubic-bezier(.4,0,.2,1),opacity .72s ease;
       user-select:none;-webkit-user-drag:none;
       pointer-events:none;
     }
@@ -1302,7 +1304,7 @@
         };
         incoming.addEventListener('transitionend', onSlideEnd);
         // Fallback for reduced-motion settings or browsers without transition events.
-        lightboxTransitionTimer = window.setTimeout(finish, 520);
+        lightboxTransitionTimer = window.setTimeout(finish, 960);
       };
 
       incoming.onerror = () => {
