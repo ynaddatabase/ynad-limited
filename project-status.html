@@ -111,9 +111,6 @@
             border-left-color: transparent;
         }
 
-        /* ================================================================
-           PROJECT CARD — identical spec to all-projects.html / index.html
-           ================================================================ */
         .recent-project-card {
             width: 100%;
             height: 417.8708px;
@@ -284,13 +281,13 @@
             transition: background 0.2s ease, color 0.2s ease;
         }
 
-        .recent-project-action.docs {
-            color: rgba(37, 99, 235, 0.70);
+        .recent-project-action.files {
+            color: #d97706;
         }
 
-        .recent-project-action.docs:hover {
+        .recent-project-action.files:hover {
             color: #fff;
-            background: #2563eb;
+            background: #d97706;
         }
 
         .recent-project-action.media {
@@ -324,6 +321,7 @@
             transform: translateX(0);
         }
 
+        /* MEDIA dropdown (same as index.html) */
         .media-menu-wrap { position: relative; }
 
         .media-menu {
@@ -342,6 +340,15 @@
         }
         .media-menu.hidden { display: none; }
 
+        body.theme-effective-dark .media-menu,
+        body.theme-effective-dark .media-submenu {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        body.theme-effective-dark .media-submenu a {
+            color: #ffffff;
+        }
+
         .media-menu-item {
             position: relative;
             display: flex;
@@ -352,10 +359,10 @@
             font-size: 10px;
             font-weight: 700;
             letter-spacing: .04em;
-            color: #3a3c3c;
+            color: #334155;
             border-radius: 5px;
             cursor: default;
-            transition: background .15s ease, color .15s ease;
+            transition: background .15s ease, color .15s ease, transform .16s ease;
         }
         .media-menu-item:hover,
         .media-menu-item.open {
@@ -364,7 +371,7 @@
         }
         .media-menu-item i {
             font-size: 8px;
-            color: #a8a6a3;
+            color: #94a3b8;
         }
         .media-menu-item:hover i,
         .media-menu-item.open i {
@@ -387,8 +394,12 @@
             z-index: 61;
         }
         .media-menu-item:hover .media-submenu,
-        .media-menu-item.open .media-submenu {
+        .media-menu-item.hover-open > .media-submenu {
             display: flex;
+        }
+        .media-menu-item.open {
+            background: transparent;
+            color: #d97706;
         }
         .media-submenu.flip-left {
             left: auto;
@@ -400,20 +411,17 @@
             font-size: 9.5px;
             font-weight: 600;
             letter-spacing: .03em;
-            color: #55575a;
+            color: #475569;
             border-radius: 5px;
             text-decoration: none;
             white-space: nowrap;
-            transition: background .15s ease, color .15s ease;
+            transition: background .15s ease, color .15s ease, transform .16s ease;
         }
         .media-submenu a:hover {
             background: #d97706;
             color: #fff;
         }
 
-        /* ================================================================
-           HEADER — identical spec to all-projects.html / index.html
-           ================================================================ */
         #mainNav {
             position: fixed;
             top: 0;
@@ -474,9 +482,6 @@
             transform: translateX(2px) scale(1.05);
         }
 
-        /* ================================================================
-           DARK / LIGHT THEME — identical palette to all-projects.html / index.html
-           ================================================================ */
         body.theme-light {
             background-color: #ffffff;
             color: #2a2c2c;
@@ -538,7 +543,7 @@
         body.theme-effective-dark .recent-project-code .code-divider {
             background: #55575a !important;
         }
-        body.theme-effective-dark .recent-project-action.docs {
+        body.theme-effective-dark .recent-project-action.files {
             color: #60a5fa !important;
         }
         body.theme-effective-dark .recent-project-action.media {
@@ -548,9 +553,9 @@
             color: #a8a6a3 !important;
         }
 
-        body.theme-effective-dark .recent-project-action.docs:hover,
-        body.theme-effective-dark .recent-project-action.docs:hover span,
-        body.theme-effective-dark .recent-project-action.docs:hover i,
+        body.theme-effective-dark .recent-project-action.files:hover,
+        body.theme-effective-dark .recent-project-action.files:hover span,
+        body.theme-effective-dark .recent-project-action.files:hover i,
         body.theme-effective-dark .recent-project-action.media:hover,
         body.theme-effective-dark .recent-project-action.media:hover span,
         body.theme-effective-dark .recent-project-action.media:hover i,
@@ -560,9 +565,6 @@
             color: #ffffff !important;
         }
 
-        body.theme-effective-dark .recent-project-action.docs:hover {
-            background: #2563eb !important;
-        }
         body.theme-effective-dark .recent-project-action.media:hover {
             background: #d97706 !important;
         }
@@ -740,7 +742,6 @@
 
         #pageHeaderSection {
             padding-top: 112px;
-            transition: background-color 0.45s ease;
         }
 
         .hamburger-icon {
@@ -938,10 +939,6 @@
             opacity: 1;
         }
 
-        /* ================================================================
-           FILTER TABS — identical sliding-indicator + fill-on-click spec
-           to all-projects.html's Ongoing/Completed/Upcoming tabs
-           ================================================================ */
         .filter-tab {
             transition: all 0.25s ease;
         }
@@ -956,6 +953,10 @@
         body.theme-effective-dark .filter-tab.active {
             background-color: #d97706 !important;
             color: #fff !important;
+        }
+
+        #pageHeaderSection {
+            transition: background-color 0.45s ease;
         }
 
         @media (max-width: 1200px) {
@@ -1032,8 +1033,6 @@
 
         /* ================================================================
            VIEW SWITCH (Card / Table)
-           Same sliding-pill style as the filter tabs: one orange pill
-           slides left / right behind the active button.
            ================================================================ */
         .view-switch-wrap { position: absolute; top: 120px; right: 24px; z-index: 30; }
         @media (max-width: 767px) {
@@ -1090,7 +1089,6 @@
         .projects-table tbody tr:nth-child(even) { background: #f8fafc; }
         .projects-table tbody tr:hover { background: #fffbeb; }
 
-        /* Stacked lines inside one cell / heading (same line height so rows line up) */
         .projects-table .cell-line { line-height: 18px; min-height: 18px; white-space: nowrap; }
         .projects-table thead th .cell-line { line-height: 16px; min-height: 16px; }
         .projects-table thead th .head-title { font-weight: 700; margin-bottom: 2px; }
@@ -1101,7 +1099,6 @@
         body.theme-effective-dark .projects-table tbody tr:nth-child(even) { background: #1b1d1d; }
         body.theme-effective-dark .projects-table tbody tr:hover { background: #2a2c2c; }
 
-        /* ===== TABLE ANIMATION: heading wipes left->right, then body drops out of the heading ===== */
         .projects-table thead { position: relative; z-index: 2; }
         .projects-table tbody { position: relative; z-index: 1; }
         @keyframes headWipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
@@ -1111,6 +1108,307 @@
         }
         .projects-table.table-anim thead { animation: headWipe .7s cubic-bezier(.4,0,.2,1) both; }
         .projects-table.table-anim tbody { animation: bodyDrop .8s .7s cubic-bezier(.16,1,.3,1) both; }
+
+        /* ================================================================
+           PROJECT CARD EXTRAS — copied from index.html
+           (official + local name, image-only click, FILES dropdown)
+           ================================================================ */
+        .recent-project-info{
+          padding:6px 19px 6px !important;
+          position:relative;
+        }
+        .recent-project-title{ margin:0 !important; line-height:19px !important; }
+        .recent-project-local{
+          font-size:12px; line-height:17px; font-weight:400;
+          color:rgba(0,0,0,.65);
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        body.theme-effective-dark .recent-project-local{ color:#cbd5e1 !important; }
+
+        /* Only the photo area opens the project view. The white content area stays non-clickable. */
+        .recent-project-image{ cursor:pointer; }
+        .recent-project-info,
+        .recent-project-bottom{ cursor:default; }
+
+        .files-menu-wrap{ position:relative; }
+        .files-menu{
+          position:absolute;
+          bottom:calc(100% + 6px);
+          left:50%;
+          transform:translateX(-50%) translateY(4px);
+          min-width:140px;
+          padding:7px 6px;
+          background:#fff;
+          border:1px solid #e2e8f0;
+          border-radius:8px;
+          box-shadow:0 14px 34px rgba(15,23,42,.18);
+          opacity:0;
+          visibility:hidden;
+          pointer-events:none;
+          transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+          z-index:70;
+          text-align:left;
+        }
+        .files-menu.open{
+          opacity:1;
+          visibility:visible;
+          pointer-events:auto;
+          transform:translateX(-50%) translateY(0);
+        }
+        .files-menu-item,
+        .files-menu-link{
+          position:relative;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          width:100%;
+          min-height:30px;
+          padding:6px 8px;
+          border:none;
+          border-radius:0;
+          background:transparent;
+          color:#64748b;
+          font-size:10px;
+          line-height:1.2;
+          font-weight:700;
+          letter-spacing:.04em;
+          text-decoration:none;
+          text-align:left;
+          cursor:pointer;
+          transition:color .16s ease, transform .16s ease;
+          box-sizing:border-box;
+        }
+        .files-menu-item:hover,
+        .files-menu-item.open,
+        .files-menu-link:hover{
+          color:#d97706;
+          background:transparent;
+          transform:translateX(2px);
+        }
+        .files-menu-item > i,
+        .files-menu-link > i{
+          font-size:8px;
+          color:#94a3b8;
+          flex:0 0 auto;
+          transition:color .16s ease;
+        }
+        .files-menu-item:hover > i,
+        .files-menu-item.open > i,
+        .files-menu-link:hover > i{
+          color:#d97706;
+        }
+        .files-submenu{
+          position:absolute;
+          left:calc(100% + 7px);
+          top:-7px;
+          min-width:150px;
+          padding:7px 6px;
+          display:none;
+          flex-direction:column;
+          gap:1px;
+          background:#fff;
+          border:1px solid #e2e8f0;
+          border-radius:8px;
+          box-shadow:0 14px 34px rgba(15,23,42,.18);
+          z-index:71;
+        }
+        .files-menu-item:hover > .files-submenu,
+        .files-menu-item.hover-open > .files-submenu{
+          display:flex;
+        }
+        .files-menu-item.open > .files-submenu{
+          display:none;
+        }
+        .files-submenu a{
+          display:block;
+          width:100%;
+          box-sizing:border-box;
+          padding:6px 8px;
+          font-size:9.5px;
+          font-weight:600;
+          letter-spacing:.03em;
+          color:#475569;
+          border-radius:0;
+          text-decoration:none;
+          white-space:nowrap;
+          background:transparent;
+          transition:color .16s ease, transform .16s ease;
+        }
+        .files-submenu a:hover{
+          background:transparent;
+          color:#d97706;
+          transform:translateX(2px);
+        }
+        .files-submenu .files-menu-item{
+          min-height:28px;
+          padding:6px 8px;
+        }
+        .files-submenu .files-submenu{
+          top:-7px;
+        }
+        .files-submenu.flip-left{
+          left:auto;
+          right:calc(100% + 7px);
+        }
+
+        /* Raise the active project card above its siblings while a fly-out menu is open. */
+        .recent-project-card:has(.files-menu.open),
+        .recent-project-card:has(.media-menu:not(.hidden)){
+          z-index:200 !important;
+        }
+        .recent-project-card:has(.files-menu-item.open),
+        .recent-project-card:has(.media-menu-item.open){
+          z-index:201 !important;
+        }
+
+        .media-menu-item:hover,
+        .media-menu-item.open{
+          transform:translateX(2px);
+        }
+        .media-submenu a:hover{
+          transform:translateX(2px);
+        }
+        body.theme-effective-dark .files-menu,
+        body.theme-effective-dark .files-submenu{
+          background:#1e293b;
+          border-color:#334155;
+        }
+        body.theme-effective-dark .files-menu-item,
+        body.theme-effective-dark .files-menu-link,
+        body.theme-effective-dark .files-submenu a{
+          color:#ffffff;
+        }
+        body.theme-effective-dark .files-menu-item:hover,
+        body.theme-effective-dark .files-menu-item.open,
+        body.theme-effective-dark .files-menu-link:hover,
+        body.theme-effective-dark .files-submenu a:hover{
+          color:#f59e0b;
+          background:transparent;
+        }
+        body.theme-effective-dark .files-menu-item > i,
+        body.theme-effective-dark .files-menu-link > i{
+          color:#64748b;
+        }
+        body.theme-effective-dark .files-menu-item:hover > i,
+        body.theme-effective-dark .files-menu-item.open > i,
+        body.theme-effective-dark .files-menu-link:hover > i{
+          color:#f59e0b;
+        }
+
+        /* FINAL UI TUNING (same as index.html) */
+        .recent-project-action.files{
+            color:rgba(37, 99, 235, 0.70) !important;
+            background:transparent !important;
+            border:none !important;
+            border-radius:4px !important;
+            box-shadow:none !important;
+            opacity:1 !important;
+        }
+        .recent-project-action.files:hover,
+        .recent-project-action.files:focus-visible{
+            color:#ffffff !important;
+            background:#2563eb !important;
+            box-shadow:none !important;
+        }
+        .recent-project-action.files i,
+        .recent-project-action.files span{
+            color:inherit !important;
+        }
+        body.theme-effective-dark .recent-project-action.files{
+            color:#60a5fa !important;
+            background:transparent !important;
+        }
+        body.theme-effective-dark .recent-project-action.files:hover,
+        body.theme-effective-dark .recent-project-action.files:focus-visible{
+            color:#ffffff !important;
+            background:#2563eb !important;
+        }
+        body.theme-effective-dark .recent-project-action.files i,
+        body.theme-effective-dark .recent-project-action.files span{
+            color:inherit !important;
+        }
+
+        .files-menu-item,
+        .files-menu-item:hover,
+        .files-menu-item.open,
+        .files-menu-link,
+        .files-menu-link:hover,
+        .files-submenu a,
+        .files-submenu a:hover{
+            background:transparent !important;
+            box-shadow:none !important;
+        }
+        .files-menu-item:hover,
+        .files-menu-item.open,
+        .files-menu-link:hover,
+        .files-submenu a:hover{
+            color:#2563eb !important;
+            transform:translateX(2px);
+        }
+        .files-menu-item:hover > i,
+        .files-menu-item.open > i,
+        .files-menu-link:hover > i{
+            color:#2563eb !important;
+        }
+        .files-submenu a{
+            transition:color .16s ease, transform .16s ease;
+        }
+        body.theme-effective-dark .files-menu-item:hover,
+        body.theme-effective-dark .files-menu-item.open,
+        body.theme-effective-dark .files-menu-link:hover,
+        body.theme-effective-dark .files-submenu a:hover{
+            color:#60a5fa !important;
+        }
+        body.theme-effective-dark .files-menu-item:hover > i,
+        body.theme-effective-dark .files-menu-item.open > i,
+        body.theme-effective-dark .files-menu-link:hover > i{
+            color:#60a5fa !important;
+        }
+
+        /* MEDIA dropdown — text-only hover (no orange fill) */
+        .media-menu .media-menu-item:hover,
+        .media-menu .media-menu-item.open {
+            background: transparent !important;
+            color: #d97706 !important;
+            transform: none;
+        }
+        .media-menu .media-menu-item:hover i,
+        .media-menu .media-menu-item.open i {
+            color: #d97706 !important;
+        }
+        .media-menu .media-submenu a:hover {
+            background: transparent !important;
+            color: #d97706 !important;
+            transform: translateX(2px);
+        }
+        body.theme-effective-dark .media-menu .media-menu-item {
+            color: #ffffff;
+        }
+        body.theme-effective-dark .media-menu .media-menu-item:hover,
+        body.theme-effective-dark .media-menu .media-menu-item.open,
+        body.theme-effective-dark .media-menu .media-menu-item:hover i,
+        body.theme-effective-dark .media-menu .media-menu-item.open i,
+        body.theme-effective-dark .media-menu .media-submenu a:hover {
+            color: #f59e0b !important;
+        }
+
+        /* FINAL DROPDOWN NAV BEHAVIOR (same as index.html):
+           top-level popup opens on click, nested popups are hover-only. */
+        .media-menu .media-menu-item > .media-submenu,
+        .files-menu .files-menu-item > .files-submenu{
+            display:none !important;
+        }
+        .media-menu .media-menu-item:hover > .media-submenu,
+        .files-menu .files-menu-item:hover > .files-submenu,
+        .media-menu .media-menu-item.hover-open > .media-submenu,
+        .files-menu .files-menu-item.hover-open > .files-submenu{
+            display:flex !important;
+        }
+        .media-menu .media-menu-item.open,
+        .files-menu .files-menu-item.open{
+            background:transparent !important;
+        }
     </style>
 </head>
 
@@ -1128,8 +1426,7 @@
         <script>
         // ------------------------------------------------------------------
         // SHARED HEADER: source of truth is index.html
-        // The project-status page does not keep its own header markup. It
-        // fetches the current #mainNav from index.html on every page load.
+        // Fetch the current #mainNav from index.html on every page load.
         // ------------------------------------------------------------------
         window.__indexHeaderReady = (async function loadIndexHeader() {
             const container = document.getElementById('indexHeaderContainer');
@@ -1146,8 +1443,7 @@
 
                 container.replaceChildren(nav.cloneNode(true));
 
-                // Keep header actions meaningful on this page while the
-                // markup/style stays sourced from index.html.
+                // Keep header navigation meaningful on this page.
                 const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
                 const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
                 if (homeLink) homeLink.href = 'index.html';
@@ -1173,7 +1469,6 @@
         })();
         </script>
 
-        <!-- Page Header + Status Filter Tabs -->
         <section id="pageHeaderSection" class="relative py-12 md:py-16 text-center bg-slate-50 border-b border-slate-200 px-6">
 
             <!-- VIEW SWITCH: Card / Table (sliding pill) -->
@@ -1198,7 +1493,6 @@
             </button>
         </section>
 
-        <!-- Advanced Filter Panel — identical to all-projects.html -->
         <div id="advFilterPanel" class="bg-white border-b">
             <div>
                 <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -1296,7 +1590,6 @@
             </div>
         </div>
 
-        <!-- Project Grid + Table -->
         <section class="py-12 px-6">
             <div id="allProjectsGrid" class="projects-grid max-w-[1700px] mx-auto grid grid-cols-4 gap-6">
                 <div class="col-span-full flex items-center justify-center py-24 min-h-[420px] text-slate-400 text-sm tracking-wide uppercase">Loading projects...</div>
@@ -1321,7 +1614,6 @@
             </div>
         </section>
 
-        <!-- Footer Section — loaded dynamically, identical to index.html / all-projects.html -->
         <div id="siteFooterContainer"></div>
 
         <script>
@@ -1362,7 +1654,6 @@
 
     </div>
 
-    <!-- Right Overlay Menu — identical to index.html / all-projects.html -->
     <div id="menuOverlay" onclick="handleOverlayClick(event)">
         <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
             <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer">
@@ -1388,17 +1679,14 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-        /* ================================================================
-           HEADER SCROLL ANIMATION — follows index.html exactly
-           The header is loaded asynchronously from index.html, so the
-           scroll binding must start only after that shared header exists.
-        ================================================================ */
         (function () {
-            function bindIndexHeaderScroll() {
+            async function initSharedHeaderScroll() {
+                try {
+                    if (window.__indexHeaderReady) await window.__indexHeaderReady;
+                } catch (e) {}
+
                 const nav = document.getElementById('mainNav');
                 if (!nav) return;
-                if (nav.dataset.scrollBound === 'true') return;
-                nav.dataset.scrollBound = 'true';
 
                 let lastScrollY = window.scrollY;
                 let ticking = false;
@@ -1408,16 +1696,6 @@
                     const pastTop = currentScrollY > 4;
 
                     nav.classList.toggle('nav-solid', pastTop);
-
-                    /* Match index.html: header stays visible at the top,
-                       slides up on scroll-down, and returns immediately
-                       when the user scrolls back up. */
-                    if (nav.dataset.scrollLock === 'true') {
-                        nav.classList.add('nav-hidden');
-                        lastScrollY = currentScrollY;
-                        ticking = false;
-                        return;
-                    }
 
                     if (currentScrollY <= 4) {
                         nav.classList.remove('nav-hidden');
@@ -1441,12 +1719,7 @@
                 handleNavScroll();
             }
 
-            /* The shared header is fetched asynchronously from index.html. */
-            if (window.__indexHeaderReady && typeof window.__indexHeaderReady.then === 'function') {
-                window.__indexHeaderReady.then(bindIndexHeaderScroll);
-            } else {
-                document.addEventListener('ynad-index-header-ready', bindIndexHeaderScroll, { once: true });
-            }
+            initSharedHeaderScroll();
         })();
 
         function getUserAvatarUrl(user) {
@@ -1551,6 +1824,7 @@
 
         async function initAuthState() {
             try {
+                if (window.__indexHeaderReady) await window.__indexHeaderReady;
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 updateProfileUI(session ? session.user : null);
                 supabaseClient.auth.onAuthStateChange(function (_event, newSession) {
@@ -1647,6 +1921,7 @@
                 }
             }
 
+            // Close any open MEDIA dropdown menus when clicking outside them
             document.querySelectorAll('.media-menu:not(.hidden)').forEach(function(menu) {
                 const wrap = menu.closest('.media-menu-wrap');
                 if (wrap && !wrap.contains(e.target)) {
@@ -1656,23 +1931,42 @@
                     });
                 }
             });
+
+            // Close any open FILES dropdown menus when clicking outside them
+            document.querySelectorAll('.files-menu.open').forEach(function(menu) {
+                const wrap = menu.closest('.files-menu-wrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    menu.classList.remove('open');
+                    const btn = wrap.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
         });
 
+        // Toggle a project card's MEDIA dropdown (OPENING / ONGOING / PROPOSAL)
         function toggleMediaMenu(event, index) {
             event.stopPropagation();
             const menu = document.getElementById('mediaMenu-' + index);
             if (!menu) return;
             const isOpen = !menu.classList.contains('hidden');
 
+            // Close all other project-action dropdowns first so FILES / MEDIA
+            // can never stay open together.
             document.querySelectorAll('.media-menu').forEach(function(m) {
                 if (m !== menu) {
                     m.classList.add('hidden');
                     m.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
                 }
             });
+            document.querySelectorAll('.files-menu.open').forEach(function(m) {
+                m.classList.remove('open');
+                m.querySelectorAll('.files-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
+                const btn = m.closest('.files-menu-wrap')?.querySelector('button');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
 
             menu.classList.toggle('hidden', isOpen);
-
+            clearMenuHover(menu);
             if (isOpen) {
                 menu.querySelectorAll('.media-menu-item.open').forEach(function(item) { item.classList.remove('open'); });
             } else {
@@ -1688,41 +1982,172 @@
             }
         }
 
-        document.addEventListener('click', function(e) {
-            const item = e.target.closest('.media-menu-item');
-            if (!item) return;
-            if (e.target.closest('.media-submenu')) return;
-            e.stopPropagation();
-            const menu = item.closest('.media-menu');
-            menu.querySelectorAll('.media-menu-item').forEach(function(i) {
-                if (i !== item) i.classList.remove('open');
+        // Toggle a project card's FILES dropdown (REPORT / DOCUMENTS)
+        function toggleFilesMenu(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const menu = document.getElementById('filesMenu-' + index);
+            if (!menu) return;
+
+            // Close every MEDIA dropdown before opening FILES, and also close
+            // other FILES dropdowns.
+            document.querySelectorAll('.media-menu:not(.hidden)').forEach(other => {
+                other.classList.add('hidden');
+                other.querySelectorAll('.media-menu-item.open').forEach(item => item.classList.remove('open'));
             });
-            item.classList.toggle('open');
 
-            const sub = item.querySelector('.media-submenu');
-            if (sub && item.classList.contains('open')) {
-                requestAnimationFrame(function() {
-                    sub.classList.remove('flip-left');
-                    const rect = sub.getBoundingClientRect();
-                    if (rect.right > window.innerWidth - 8) {
-                        sub.classList.add('flip-left');
-                    }
-                });
+            document.querySelectorAll('.files-menu.open').forEach(other => {
+                if (other !== menu) {
+                    other.classList.remove('open');
+                    other.querySelectorAll('.files-menu-item.open').forEach(item => item.classList.remove('open'));
+                    const btn = other.closest('.files-menu-wrap')?.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            const willOpen = !menu.classList.contains('open');
+            clearMenuHover(menu);
+            menu.classList.toggle('open', willOpen);
+            const btn = menu.closest('.files-menu-wrap')?.querySelector('button');
+            if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+
+            if (willOpen) {
+                requestAnimationFrame(() => positionFilesSubmenus(menu));
             }
-        });
+        }
 
-        document.addEventListener('mouseover', function(e) {
-            const item = e.target.closest('.media-menu-item');
-            if (!item) return;
-            const sub = item.querySelector('.media-submenu');
-            if (!sub) return;
-            requestAnimationFrame(function() {
+        function positionFilesSubmenus(menu) {
+            if (!menu) return;
+            menu.querySelectorAll('.files-submenu').forEach(sub => {
                 sub.classList.remove('flip-left');
                 const rect = sub.getBoundingClientRect();
                 if (rect.right > window.innerWidth - 8) {
                     sub.classList.add('flip-left');
                 }
             });
+        }
+
+        // Nested FILES / MEDIA rows are hover-only. Clicking them does not
+        // select, lock, or restart the submenu.
+        document.addEventListener('click', function(e) {
+            const nestedItem = e.target.closest('.media-menu-item, .files-menu-item');
+            if (!nestedItem) return;
+            if (nestedItem.closest('.media-submenu, .files-submenu')) return;
+            e.stopPropagation();
+        });
+
+        // ===== FILES / MEDIA hover navigation (event delegation + proper reset) =====
+        const MENU_ITEM_SEL = '.files-menu-item, .media-menu-item';
+        const MENU_WRAP_SEL = '.files-menu-wrap, .media-menu-wrap';
+        const hoverTimers = new WeakMap();
+        const wrapTimers  = new WeakMap();
+
+        function clearMenuHover(menu) {
+            if (!menu) return;
+            menu.querySelectorAll(MENU_ITEM_SEL).forEach(function (item) {
+                item.classList.remove('open', 'hover-open');
+                const t = hoverTimers.get(item);
+                if (t) clearTimeout(t);
+            });
+            menu.querySelectorAll('.files-submenu, .media-submenu').forEach(function (s) {
+                s.classList.remove('flip-left');
+            });
+        }
+
+        function resetMenuWrap(wrap) {
+            const menu = wrap.querySelector('.files-menu, .media-menu');
+            if (!menu) return;
+            if (menu.classList.contains('files-menu')) {
+                menu.classList.remove('open');
+                const btn = wrap.querySelector('button');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.add('hidden');
+            }
+            clearMenuHover(menu);
+        }
+
+        document.addEventListener('mouseover', function (e) {
+            const wrap = e.target.closest(MENU_WRAP_SEL);
+            if (wrap) {
+                const wt = wrapTimers.get(wrap);
+                if (wt) clearTimeout(wt);
+            }
+
+            const item = e.target.closest(MENU_ITEM_SEL);
+            if (!item || !item.parentElement) return;
+
+            const oldTimer = hoverTimers.get(item);
+            if (oldTimer) clearTimeout(oldTimer);
+
+            Array.from(item.parentElement.children).forEach(function (sibling) {
+                if (sibling !== item && sibling.classList && sibling.classList.contains('hover-open')) {
+                    sibling.classList.remove('hover-open');
+                }
+            });
+
+            const sub = item.querySelector(':scope > .files-submenu, :scope > .media-submenu');
+            if (!sub) return;
+
+            item.classList.add('hover-open');
+            requestAnimationFrame(function () {
+                sub.classList.remove('flip-left');
+                if (sub.getBoundingClientRect().right > window.innerWidth - 8) sub.classList.add('flip-left');
+            });
+        });
+
+        document.addEventListener('mouseout', function (e) {
+            let el = e.target.closest(MENU_ITEM_SEL);
+            while (el) {
+                const item = el;
+                const stillInside = e.relatedTarget && item.contains(e.relatedTarget);
+                if (!stillInside) {
+                    const old = hoverTimers.get(item);
+                    if (old) clearTimeout(old);
+                    hoverTimers.set(item, setTimeout(function () {
+                        if (!item.matches(':hover')) item.classList.remove('hover-open');
+                    }, 180));
+                }
+                el = item.parentElement ? item.parentElement.closest(MENU_ITEM_SEL) : null;
+            }
+
+            const wrap = e.target.closest(MENU_WRAP_SEL);
+            if (wrap && !(e.relatedTarget && wrap.contains(e.relatedTarget))) {
+                const old = wrapTimers.get(wrap);
+                if (old) clearTimeout(old);
+                wrapTimers.set(wrap, setTimeout(function () {
+                    if (!wrap.matches(':hover')) resetMenuWrap(wrap);
+                }, 250));
+            }
+        });
+
+        /* ---- Escape closes FILES / MEDIA dropdowns ---- */
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.files-menu.open').forEach(menu => {
+                    menu.classList.remove('open');
+                    const btn = menu.closest('.files-menu-wrap')?.querySelector('button');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+
+                document.querySelectorAll('.media-menu:not(.hidden)').forEach(menu => {
+                    menu.classList.add('hidden');
+                    menu.querySelectorAll('.media-menu-item.open').forEach(item => item.classList.remove('open'));
+                });
+            }
+        });
+
+        /* ---- Card click -> project_view.html ----
+           Only the image area is a project link. White card content stays non-clickable. */
+        document.addEventListener('click', e => {
+            const imageArea = e.target.closest('#allProjectsGrid .recent-project-image');
+            if (!imageArea) return;
+
+            const card = imageArea.closest('.recent-project-card');
+            if (!card || !card.dataset.id) return;
+
+            window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
         });
 
         function executeSearch() {
@@ -1854,10 +2279,12 @@
             let saved = 'dynamic';
             try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
 
-            document.addEventListener('DOMContentLoaded', function() {
-                Promise.resolve(window.__indexHeaderReady).then(function() {
-                    setThemeMode(saved);
-                });
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    if (window.__indexHeaderReady) await window.__indexHeaderReady;
+                } catch (e) {}
+
+                setThemeMode(saved);
 
                 if (window.matchMedia) {
                     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -1968,6 +2395,7 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // 1 -> "1st", 2 -> "2nd", 3 -> "3rd", 4 -> "4th", 11/12/13 -> "11th/12th/13th"
         function ordinalSuffix(n) {
             const rem100 = n % 100;
             if (rem100 >= 11 && rem100 <= 13) return n + 'th';
@@ -1979,14 +2407,40 @@
             }
         }
 
-        function buildOngoingVideoLinksHtml(totalOngoingVideos) {
-            const count = Number(totalOngoingVideos) || 0;
-            if (count <= 0) return '';
+        function parseMediaItems(raw) {
+            if (!raw) return [];
+            let arr = raw;
+            if (typeof raw === 'string') {
+                try { arr = JSON.parse(raw); } catch (e) { arr = [raw]; }
+            }
+            if (!Array.isArray(arr)) return [];
+            return arr.map(x => typeof x === 'string' ? { url: x } : x).filter(x => x && x.url);
+        }
+
+        // Returns the uploaded items (oldest -> newest) of one type for a project.
+        function getMediaItems(project, field, type) {
+            let items = parseMediaItems(project[field]);
+            if (!items.length) {
+                const legacy = field === 'report_urls' ? project.report_url : (field === 'video_urls' ? project.video_link : null);
+                if (legacy) items = [{ url: legacy }];
+            }
+            const st = String(project.status || '').toLowerCase();
+            const defType = st === 'completed' ? 'opening' : (st === 'upcoming' ? 'proposal' : 'ongoing');
+            return items.filter(x => (x.type || defType) === type);
+        }
+
+        // Newest first: 3RD REPORT, 2ND REPORT, 1ST REPORT (each opens its real file).
+        function buildNumberedLinksHtml(items, label) {
             let html = '';
-            for (let n = count; n >= 1; n--) {
-                html += `<a href="#" onclick="return false;">${ordinalSuffix(n)} video</a>\n`;
+            for (let n = items.length; n >= 1; n--) {
+                html += `<a href="${escapeHtml(items[n - 1].url)}" target="_blank" rel="noopener">${ordinalSuffix(n)} ${label}</a>\n`;
             }
             return html;
+        }
+
+        function buildLatestVideoLinkHtml(items) {
+            if (!items.length) return '<a href="#" onclick="return false;">VIDEO</a>';
+            return `<a href="${escapeHtml(items[items.length - 1].url)}" target="_blank" rel="noopener">VIDEO</a>`;
         }
 
         function normalizePhotoUrls(raw) {
@@ -2003,9 +2457,16 @@
             return [];
         }
 
+        // Same card as index.html
         function buildProjectCardHTML(project, index) {
             const parsedPhotos = normalizePhotoUrls(project.photo_urls);
             const photos = parsedPhotos.length > 0 ? parsedPhotos : [FALLBACK_IMAGE];
+
+            const openingReport = getMediaItems(project, 'report_urls', 'opening').slice(-1)[0];
+            const ongoingReports = getMediaItems(project, 'report_urls', 'ongoing');
+            const openingVideos = getMediaItems(project, 'video_urls', 'opening');
+            const ongoingVideos = getMediaItems(project, 'video_urls', 'ongoing');
+            const proposalVideos = getMediaItems(project, 'video_urls', 'proposal');
 
             const imagesHtml = photos.map(url => `
                 <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
@@ -2015,6 +2476,7 @@
 
             return `
             <div id="project-card-${index}"
+                 data-id="${escapeHtml(project.id)}"
                  data-project-code="${escapeHtml(project.bd_number)}"
                  data-ho-number="${escapeHtml(project.ho_number)}"
                  data-project-name="${escapeHtml(project.project_name)}"
@@ -2034,25 +2496,53 @@
                 <div class="recent-project-bottom">
                     <div class="recent-project-info">
                         <div class="recent-project-info-left">
-                            <h4 class="recent-project-title">${escapeHtml(project.project_name || '')}</h4>
+                            ${project.project_name ? `<h4 class="recent-project-title">${escapeHtml(project.project_name)}</h4>` : ''}
+                            ${(project.local_name && project.local_name !== project.project_name) || !project.project_name ? `<div class="recent-project-local">${escapeHtml(project.local_name || '')}</div>` : ''}
                             <div class="recent-project-location">${escapeHtml(project.district || '')}</div>
                         </div>
+
                         ${(project.bd_number || project.ho_number) ? `
                         <div class="recent-project-code">
                             ${project.bd_number ? `<span>${escapeHtml(project.bd_number)}</span>` : ''}
                             ${(project.bd_number && project.ho_number) ? `<span class="code-divider"></span>` : ''}
-                            ${project.ho_number ? `<span>HO-${escapeHtml(project.ho_number)}</span>` : ''}
+                            ${project.ho_number ? `<span>HO-${escapeHtml(String(project.ho_number).replace(/^HO-/i,''))}</span>` : ''}
                         </div>` : ''}
                     </div>
 
                     <div class="recent-project-actions">
-                        <a href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}"
-                           target="${project.documents_url ? '_blank' : '_self'}"
-                           class="recent-project-action docs"
-                           ${project.documents_url ? '' : 'onclick="return false;"'}>
-                            <i class="fa-solid fa-file-lines"></i>
-                            <span>DOCUMENTS</span>
-                        </a>
+                        <div class="files-menu-wrap relative">
+                            <button type="button" onclick="toggleFilesMenu(event, ${index})" class="recent-project-action files w-full cursor-pointer" aria-expanded="false">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <span>FILES</span>
+                            </button>
+
+                            <div id="filesMenu-${index}" class="files-menu" role="menu">
+                                <div class="files-menu-item" data-sub="report-${index}">
+                                    <span>REPORT</span><i class="fa-solid fa-chevron-right"></i>
+                                    <div class="files-submenu">
+                                        <a href="${openingReport ? escapeHtml(openingReport.url) : '#'}"
+                                           target="${openingReport ? '_blank' : '_self'}"
+                                           ${openingReport ? '' : 'onclick="return false;"'}>
+                                            OPENING REPORT
+                                        </a>
+                                        <div class="files-menu-item" data-sub="ongoing-report-${index}">
+                                            <span>ONGOING</span>
+                                            ${ongoingReports.length > 0 ? `
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                            <div class="files-submenu">
+                                                ${buildNumberedLinksHtml(ongoingReports, 'report')}
+                                            </div>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a class="files-menu-link" href="${project.documents_url ? escapeHtml(project.documents_url) : '#'}"
+                                   target="${project.documents_url ? '_blank' : '_self'}"
+                                   ${project.documents_url ? '' : 'onclick="return false;"'}>
+                                    DOCUMENTS
+                                </a>
+                            </div>
+                        </div>
 
                         <div class="media-menu-wrap relative">
                             <button type="button" onclick="toggleMediaMenu(event, ${index})" class="recent-project-action media w-full cursor-pointer">
@@ -2064,7 +2554,7 @@
                                 <div class="media-menu-item" data-sub="opening-${index}">
                                     <span>OPENING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        <a href="#" onclick="return false;">VIDEO</a>
+                                        ${buildLatestVideoLinkHtml(openingVideos)}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
@@ -2072,7 +2562,7 @@
                                 <div class="media-menu-item" data-sub="ongoing-${index}">
                                     <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        ${buildOngoingVideoLinksHtml(project.ongoing_video_count ?? 3)}
+                                        ${buildNumberedLinksHtml(ongoingVideos, 'video')}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
@@ -2080,7 +2570,7 @@
                                 <div class="media-menu-item" data-sub="proposal-${index}">
                                     <span>PROPOSAL</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        <a href="#" onclick="return false;">VIDEO</a>
+                                        ${buildLatestVideoLinkHtml(proposalVideos)}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
@@ -2101,18 +2591,17 @@
         }
 
         /* ================================================================
-           STATUS COMPUTATION — same logic as the original project-status.html:
-           derives On Time / Opening Delay / Elapsed Delay / Opening In /
-           Not Started / Location Not Finalized from each project's fields.
+           STATUS COMPUTATION — derives On Time / Opening Delay / Elapsed Delay /
+           Opening In / Not Started / Location Not Finalized from each project.
            ================================================================ */
-        const STATUS_TAB_DEFS = [
+        const FILTER_TAB_DEFS = [
             { key: 'all',                      label: 'All' },
             { key: 'On Time',                  label: 'On Time' },
             { key: 'Opening Delay',            label: 'Opening Delay' },
             { key: 'Elapsed Delay',            label: 'Elapsed Delay' },
             { key: 'Opening In',               label: 'Opening In' },
             { key: 'Not Started',              label: 'Not Started' },
-            { key: 'Location Not Finalized',   label: 'Location Not Finalized' },
+            { key: 'Location Not Finalized',   label: 'Location Not Finalized' }
         ];
 
         /* Fixed page heading: filter changes do not alter this text. */
@@ -2147,7 +2636,7 @@
             const container = document.getElementById('filterTabsContainer');
 
             const indicatorHtml = `<div id="filterTabIndicator"></div>`;
-            const buttonsHtml = STATUS_TAB_DEFS.map(t => `
+            const buttonsHtml = FILTER_TAB_DEFS.map(t => `
                 <button data-filter="${escapeHtml(t.key)}" class="filter-tab px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">
                     <span class="tab-label">${escapeHtml(t.label)}</span> <span class="tab-count">(0)</span>
                 </button>`).join('');
@@ -2196,10 +2685,10 @@
 
         function updateFilterTabCounts(nonStatusFiltered) {
             const counts = { all: nonStatusFiltered.length };
-            STATUS_TAB_DEFS.forEach(t => { if (t.key !== 'all') counts[t.key] = 0; });
+            FILTER_TAB_DEFS.forEach(t => { if (t.key !== 'all') counts[t.key] = 0; });
             nonStatusFiltered.forEach(p => {
-                const s = computeProjectStatus(p);
-                if (counts[s] !== undefined) counts[s]++;
+                const st = computeProjectStatus(p);
+                if (counts[st] !== undefined) counts[st]++;
             });
 
             const container = document.getElementById('filterTabsContainer');
@@ -2388,13 +2877,6 @@
 
         /* ================================================================
            TABLE COLUMNS — 13 columns.
-           Each column has:
-             heads : heading lines (stacked one under another)
-             title : (optional) a main heading shown above the heads (used by Timeline)
-             upper : (optional) true -> every value line in this column is shown in CAPS
-             get   : returns an ARRAY of lines, one per head (stacked in the cell)
-           "Contact Role" column is removed (it is still used to decide the
-           Designation / Beneficiary line).
            ================================================================ */
         const TABLE_COLUMNS = [
             { heads: ['SL'],
@@ -2453,12 +2935,10 @@
             return isEmptyVal(v) ? '-' : String(v);
         }
 
-        /* Plain-text heading lines of a column (used for PDF) */
         function headLines(c) {
             return c.title ? [c.title, ...c.heads] : c.heads;
         }
 
-        /* Heading HTML of a column (used on screen and in print) */
         function headHtml(c) {
             if (c.title) {
                 return `<div class="cell-line head-title">${escapeHtml(c.title)}</div>` +
@@ -2467,22 +2947,17 @@
             return c.heads.map(h => `<div class="cell-line">${escapeHtml(h)}</div>`).join('');
         }
 
-        /* Every row = array of 13 cells, each cell = array of lines.
-           Columns with upper:true are converted to CAPS here, so the
-           on-screen table, Print and PDF all get the same result. */
         function tableRowsData(projects) {
             return projects.map((p, i) => TABLE_COLUMNS.map(c => {
                 const raw = c.get(p, i);
-                // keep only the lines that really have a value (with optional label, e.g. "Approved: ")
                 const lines = [];
                 raw.forEach((v, k) => {
                     if (!isEmptyVal(v)) {
                         let text = String(v);
-                        if (c.upper) text = text.toUpperCase();   // CAPS LOCK
+                        if (c.upper) text = text.toUpperCase();
                         lines.push((c.labels ? c.labels[k] : '') + text);
                     }
                 });
-                // nothing at all in this cell -> exactly ONE dash
                 return lines.length ? lines : ['-'];
             }));
         }
@@ -2492,9 +2967,7 @@
         }
 
         /* ================================================================
-           VIEW SWITCH PILL — one orange pill slides behind the active
-           button (Card <-> Table), exactly like the filter tabs.
-           The button text turns white after the pill has arrived.
+           VIEW SWITCH PILL
         ================================================================ */
         const VIEW_SWITCH_TRANSITION_MS = 300;
         let viewTextTimer = null, viewIndicatorReady = false;
@@ -2509,7 +2982,6 @@
 
             btns.forEach(b => { if (b !== active) b.classList.remove('active-text'); });
 
-            /* first placement: put the pill in position without sliding */
             const firstTime = !viewIndicatorReady;
             if (firstTime) ind.style.transition = 'none';
             ind.style.width = active.offsetWidth + 'px';
@@ -2574,21 +3046,17 @@
         }
 
         function currentFilterLabel() {
-            const t = STATUS_TAB_DEFS.find(x => x.key === currentFilter);
+            const t = FILTER_TAB_DEFS.find(x => x.key === currentFilter);
             return t ? t.label : 'All';
+        }
+
+        function currentPageTitle() {
+            return FIXED_STATUS_HEADING;
         }
 
         /* ================================================================
            DOWNLOAD PDF
-           jsPDF cannot shape Bangla / Arabic text, so the table is first
-           drawn by the browser (html2canvas) and then placed into the PDF
-           page by page, with the heading repeated on every page.
-
-           SHIFT: html2canvas draws Bangla/Arabic fonts a little lower than
-           the browser does. Top padding is reduced and bottom padding is
-           increased by SHIFT px (total height unchanged) so the text sits
-           in the exact middle of the orange heading and every row.
-           Still too low -> increase SHIFT (5, 6). Too high -> decrease (3, 2).
+           (SHIFT: raise / lower if Bangla / Arabic text looks off-centre)
         ================================================================ */
         async function downloadProjectTablePDF() {
             if (!window.jspdf || !window.html2canvas) { alert('PDF library failed to load.'); return; }
@@ -2629,7 +3097,6 @@
                 </table>`;
                 document.body.appendChild(holder);
 
-                // let the browser lay the text out, then wait until Bangla / Arabic fonts are loaded
                 await new Promise(r => requestAnimationFrame(() => r()));
                 if (document.fonts && document.fonts.ready) await document.fonts.ready;
                 await new Promise(r => setTimeout(r, 500));
@@ -2638,7 +3105,6 @@
                 const SCALE = 2;
                 const canvas = await html2canvas(table, { scale: SCALE, backgroundColor: '#ffffff', useCORS: true });
 
-                // measure heading + every row (in canvas pixels)
                 const tableTop = table.getBoundingClientRect().top;
                 const headH = Math.round(table.tHead.getBoundingClientRect().height * SCALE);
                 const bodyRows = Array.from(table.tBodies[0].rows).map(tr => {
@@ -2646,7 +3112,6 @@
                     return { top: Math.round((rc.top - tableTop) * SCALE), h: Math.round(rc.height * SCALE) };
                 });
 
-                // A4 landscape page
                 const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
                 const pageW = doc.internal.pageSize.getWidth();
                 const pageH = doc.internal.pageSize.getHeight();
@@ -2654,7 +3119,6 @@
                 const ptPerPx = (pageW - marginX * 2) / canvas.width;
                 const availPx = Math.floor((pageH - titleArea - marginBottom) / ptPerPx);
 
-                // split rows into pages
                 const pages = [];
                 let cur = [], curH = headH;
                 bodyRows.forEach(r => {
@@ -2680,9 +3144,8 @@
                     ctx.drawImage(canvas, 0, 0, canvas.width, headH, 0, 0, canvas.width, headH);
                     ctx.drawImage(canvas, 0, first.top, canvas.width, blockH, 0, headH, canvas.width, blockH);
 
-                    // Title + sub-title centered on the page
                     doc.setFontSize(13);
-                    doc.text('YNAD Construction - Project Status Overview', pageW / 2, 24, { align: 'center' });
+                    doc.text('YNAD Construction - ' + currentPageTitle(), pageW / 2, 24, { align: 'center' });
                     doc.setFontSize(8);
                     doc.text(`Status: ${currentFilterLabel()}  |  Total: ${lastFilteredProjects.length}  |  Date: ${dateStr}  |  Page ${pi + 1} / ${pages.length}`, pageW / 2, 38, { align: 'center' });
 
@@ -2707,7 +3170,7 @@
 
             const w = window.open('', '_blank');
             if (!w) { alert('Please allow pop-ups to print.'); return; }
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Project Status Overview</title>
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(currentPageTitle())}</title>
             <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
             <style>
                 @page { size: A4 landscape; margin: 8mm; }
@@ -2716,7 +3179,6 @@
                 body { font-family: Arial, 'Noto Sans Bengali', 'Noto Naskh Arabic', 'Nirmala UI', 'Segoe UI', Tahoma, sans-serif; color: #222; }
                 h2 { margin: 0 0 4px; font-size: 18px; font-weight: 400; text-align: center; }
                 p { margin: 0 0 12px; font-size: 12px; color: #000; text-align: center; }
-                /* Same look as the PDF: table drawn at 1400px, then scaled down to fit A4 landscape */
                 .print-zoom { zoom: 0.75; }
                 table { width: 1400px; border-collapse: collapse; background: #fff; font-size: 12px; }
                 th { background: #d97706 !important; color: #fff; text-align: center; vertical-align: middle;
@@ -2729,7 +3191,7 @@
                 thead { display: table-header-group; }
                 tr { page-break-inside: avoid; }
             </style></head><body>
-            <h2>YNAD Construction — Project Status Overview</h2>
+            <h2>YNAD Construction — ${escapeHtml(currentPageTitle())}</h2>
             <p>Status: ${escapeHtml(currentFilterLabel())} | Total: ${lastFilteredProjects.length} | Date: ${new Date().toLocaleDateString('en-GB')}</p>
             <div class="print-zoom"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
             </body></html>`);
@@ -2788,7 +3250,7 @@
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveViewSwitchIndicator);
             loadAllProjects();
             observeRevealTargets(document);
-            Promise.resolve(window.__indexHeaderReady).then(() => initAuthState());
+            initAuthState();
 
             if (document.fonts && document.fonts.ready) {
                 document.fonts.ready.then(() => {
