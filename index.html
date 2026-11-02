@@ -4367,12 +4367,13 @@ function closeMenuWithEffect() {
                                            ${project.report_url ? '' : 'onclick="return false;"'}>
                                             OPENING REPORT
                                         </a>
+                                        ${getOngoingCount(project, 'report') > 0 ? `
                                         <div class="files-menu-item" data-sub="ongoing-report-${index}">
                                             <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
                                             <div class="files-submenu">
-                                                ${buildOngoingReportLinksHtml(project.ongoing_report_count ?? project.ongoing_video_count ?? 3)}
+                                                ${buildOngoingReportLinksHtml(getOngoingCount(project, 'report'))}
                                             </div>
-                                        </div>
+                                        </div>` : ''}
                                     </div>
                                 </div>
 
