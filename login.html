@@ -1057,6 +1057,30 @@
         </div>
     </div>
 
+    <!-- Photo crop popup -->
+    <div class="crop-overlay" id="crop-overlay">
+        <div class="crop-card">
+            <h3>Adjust Your Photo</h3>
+            <p>Drag to reposition. Use the slider, +/&minus; buttons or mouse wheel to zoom.</p>
+
+            <div class="crop-stage" id="crop-stage">
+                <img id="crop-img" alt="" draggable="false" />
+                <div class="crop-circle"></div>
+            </div>
+
+            <div class="crop-zoom">
+                <button type="button" id="zoom-out" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+                <input type="range" id="crop-zoom" min="1" max="4" step="0.01" value="1" />
+                <button type="button" id="zoom-in" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <div class="crop-actions">
+                <button type="button" class="photo-btn" id="crop-cancel">Cancel</button>
+                <button type="button" class="photo-btn primary" id="crop-save">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div class="portal-card">
 
         <div class="brand-panel">
@@ -1178,60 +1202,77 @@
                 </div>
 
                 <div class="view" id="view-request">
-                    <div class="view-heading">
-                        <h2>Request Sign-In Access</h2>
-                        <p>Submit your details for administrator review.</p>
-                    </div>
+    <div class="view-heading">
+        <h2>Request Sign-In Access</h2>
+        <p>Submit your details for administrator review.</p>
+    </div>
 
-                    <div class="request-note">
-                        New accounts are provisioned by an authorized administrator. You'll be notified by email once your access is approved.
-                    </div>
+    <div class="request-note">
+        New accounts are provisioned by an authorized administrator. You'll be notified by email once your access is approved.
+    </div>
 
-                    <div class="field">
-                        <label for="request-name">Full Name</label>
-                        <div class="field-input-wrap">
-                            <input type="text" id="request-name" placeholder="YOUR FULL NAME" required />
-                        </div>
-                    </div>
+    <div class="field">
+        <label for="request-name">Full Name <span class="req-star">*</span></label>
+        <div class="field-input-wrap">
+            <input type="text" id="request-name" placeholder="YOUR FULL NAME" required />
+        </div>
+    </div>
 
-                    <div class="field">
-                        <label for="request-email">Email Address</label>
-                        <div class="field-input-wrap">
-                            <input type="email" id="request-email" placeholder="example@gmail.com" required />
-                        </div>
-                    </div>
+    <div class="field">
+        <label for="request-email">Email Address <span class="req-star">*</span></label>
+        <div class="field-input-wrap">
+            <input type="email" id="request-email" placeholder="example@gmail.com" required />
+        </div>
+    </div>
 
-                    <div class="field has-toggle">
-                        <label for="request-password">Create Password</label>
-                        <div class="field-input-wrap">
-                            <input type="password" id="request-password" placeholder="Create a password" required />
-                            <button type="button" class="password-toggle" id="toggle-req-pw" aria-label="Toggle password">
-                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            </button>
-                        </div>
-                        <div class="pw-hint" id="pw-hints">
-                            <span class="hint-item"><span class="dot" id="hint-upper"></span> Uppercase</span>
-                            <span class="hint-item"><span class="dot" id="hint-lower"></span> Lowercase</span>
-                            <span class="hint-item"><span class="dot" id="hint-number"></span> Number</span>
-                            <span class="hint-item"><span class="dot" id="hint-length"></span> 8+ characters</span>
-                        </div>
-                    </div>
+    <div class="field has-toggle">
+        <label for="request-password">Create Password <span class="req-star">*</span></label>
+        <div class="field-input-wrap">
+            <input type="password" id="request-password" placeholder="Create a password" required />
+            <button type="button" class="password-toggle" id="toggle-req-pw" aria-label="Toggle password">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </button>
+        </div>
+        <div class="pw-hint" id="pw-hints">
+            <span class="hint-item"><span class="dot" id="hint-upper"></span> Uppercase</span>
+            <span class="hint-item"><span class="dot" id="hint-lower"></span> Lowercase</span>
+            <span class="hint-item"><span class="dot" id="hint-number"></span> Number</span>
+            <span class="hint-item"><span class="dot" id="hint-length"></span> 8+ characters</span>
+        </div>
+    </div>
 
-                    <div class="field has-toggle">
-                        <label for="request-password-confirm">Confirm Password</label>
-                        <div class="field-input-wrap">
-                            <input type="password" id="request-password-confirm" placeholder="Re-enter your password" required />
-                            <button type="button" class="password-toggle" id="toggle-req-pw-confirm" aria-label="Toggle password">
-                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            </button>
-                        </div>
-                        <div class="pw-hint" id="pw-match-hint">
-                            <span class="hint-item"><span class="dot" id="hint-match"></span> <span id="hint-match-label">Passwords match</span></span>
-                        </div>
-                    </div>
+    <div class="field has-toggle">
+        <label for="request-password-confirm">Confirm Password <span class="req-star">*</span></label>
+        <div class="field-input-wrap">
+            <input type="password" id="request-password-confirm" placeholder="Re-enter your password" required />
+            <button type="button" class="password-toggle" id="toggle-req-pw-confirm" aria-label="Toggle password">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </button>
+        </div>
+        <div class="pw-hint" id="pw-match-hint">
+            <span class="hint-item"><span class="dot" id="hint-match"></span> <span id="hint-match-label">Passwords match</span></span>
+        </div>
+    </div>
 
-                    <button class="btn-primary" id="send-request-btn" style="margin-top: 6px;">Submit Request</button>
+    <!-- Profile photo (optional) -->
+    <div class="field photo-field">
+        <label>Profile Photo <span class="opt-tag">OPTIONAL</span></label>
+        <div class="photo-row">
+            <div class="photo-preview" id="photo-preview" title="Upload photo"><i class="fa-solid fa-user"></i></div>
+            <div class="photo-actions">
+                <div class="photo-btns">
+                    <button type="button" class="photo-btn" id="photo-choose-btn"><i class="fa-solid fa-camera"></i> <span id="photo-choose-label">Upload Photo</span></button>
+                    <button type="button" class="photo-btn" id="photo-edit-btn" hidden><i class="fa-solid fa-crop-simple"></i> Edit</button>
+                    <button type="button" class="photo-btn-remove" id="photo-remove-btn" hidden>Remove</button>
                 </div>
+                <div class="photo-note">JPG, PNG or WEBP &middot; Max 2 MB</div>
+            </div>
+        </div>
+        <input type="file" id="photo-input" accept="image/png,image/jpeg,image/webp" hidden />
+    </div>
+
+    <button class="btn-primary" id="send-request-btn" style="margin-top: 6px;">Submit Request</button>
+</div>
 
             </div>
 
@@ -1333,243 +1374,473 @@
     </script>
 
     <script>
-        (function() {
-            'use strict';
+    (function() {
+        'use strict';
 
-            document.getElementById('footerYear').textContent = new Date().getFullYear();
+        document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMessage = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-            let toastTimeout;
+        /* ---------------- TOAST ---------------- */
+        const toast = document.getElementById('toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+        let toastTimeout;
 
-            function showToast(type, title, message) {
-                toastTitle.textContent = title;
-                toastMessage.textContent = message;
-                const iconMap = {
-                    success: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
-                    error: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
-                    info: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'
-                };
-                toastIcon.innerHTML = iconMap[type] || iconMap.info;
-                toastIcon.className = 'toast-icon ' + type;
-                toast.classList.add('show');
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 4200);
-            }
-
-            const tabSignin = document.getElementById('tab-signin');
-            const tabRequest = document.getElementById('tab-request');
-            const stage = document.getElementById('view-stage');
-            const views = {
-                signin: document.getElementById('view-signin'),
-                forgot: document.getElementById('view-forgot'),
-                request: document.getElementById('view-request')
+        function showToast(type, title, message) {
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            const iconMap = {
+                success: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+                error: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
+                info: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'
             };
-            let currentView = 'signin';
+            toastIcon.innerHTML = iconMap[type] || iconMap.info;
+            toastIcon.className = 'toast-icon ' + type;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 4200);
+        }
 
-            function measure(el) {
-                const clone = el.cloneNode(true);
-                clone.style.position = 'absolute';
-                clone.style.visibility = 'hidden';
-                clone.style.opacity = '0';
-                clone.style.pointerEvents = 'none';
-                clone.style.top = '0';
-                clone.style.left = '0';
-                clone.style.right = '0';
-                clone.classList.add('active');
-                stage.appendChild(clone);
-                const h = clone.offsetHeight;
-                stage.removeChild(clone);
-                return h;
+        /* ---------------- VIEW SWITCHING ---------------- */
+        const tabSignin = document.getElementById('tab-signin');
+        const tabRequest = document.getElementById('tab-request');
+        const stage = document.getElementById('view-stage');
+        const views = {
+            signin: document.getElementById('view-signin'),
+            forgot: document.getElementById('view-forgot'),
+            request: document.getElementById('view-request')
+        };
+        let currentView = 'signin';
+
+        function measure(el) {
+            const clone = el.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.visibility = 'hidden';
+            clone.style.opacity = '0';
+            clone.style.pointerEvents = 'none';
+            clone.style.top = '0';
+            clone.style.left = '0';
+            clone.style.right = '0';
+            clone.classList.add('active');
+            stage.appendChild(clone);
+            const h = clone.offsetHeight;
+            stage.removeChild(clone);
+            return h;
+        }
+
+        function syncHeight() {
+            stage.style.height = views[currentView].offsetHeight + 'px';
+        }
+
+        function goTo(name) {
+            if (name === currentView) return;
+            const nextEl = views[name];
+            const targetH = measure(nextEl);
+
+            stage.style.height = stage.offsetHeight + 'px';
+            void stage.offsetHeight;
+            stage.style.height = targetH + 'px';
+
+            views[currentView].classList.remove('active');
+            nextEl.classList.add('active');
+
+            if (name === 'request') {
+                tabSignin.classList.remove('active');
+                tabRequest.classList.add('active');
+            } else {
+                tabSignin.classList.add('active');
+                tabRequest.classList.remove('active');
             }
+            currentView = name;
+        }
 
-            function goTo(name) {
-                if (name === currentView) return;
-                const nextEl = views[name];
-                const targetH = measure(nextEl);
+        window.setView = function(which) {
+            goTo(which === 'signin' ? 'signin' : 'request');
+        };
 
-                stage.style.height = stage.offsetHeight + 'px';
-                void stage.offsetHeight;
-                stage.style.height = targetH + 'px';
+        document.getElementById('forgot-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            goTo('forgot');
+        });
+        document.getElementById('back-to-signin').addEventListener('click', function(e) {
+            e.preventDefault();
+            goTo('signin');
+        });
 
-                views[currentView].classList.remove('active');
-                nextEl.classList.add('active');
+        window.addEventListener('load', function() {
+            stage.style.height = views.signin.offsetHeight + 'px';
+        });
+        requestAnimationFrame(function() {
+            stage.style.height = views.signin.offsetHeight + 'px';
+        });
 
-                if (name === 'request') {
-                    tabSignin.classList.remove('active');
-                    tabRequest.classList.add('active');
-                } else {
-                    tabSignin.classList.add('active');
-                    tabRequest.classList.remove('active');
-                }
-                currentView = name;
-            }
+        /* ---------------- PASSWORD EYE TOGGLES ---------------- */
+        const EYE_OPEN = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+        const EYE_OFF = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
 
-            window.setView = function(which) {
-                goTo(which === 'signin' ? 'signin' : 'request');
-            };
-
-            document.getElementById('forgot-link').addEventListener('click', function(e) {
-                e.preventDefault();
-                goTo('forgot');
+        function wireToggle(btn, input) {
+            let visible = false;
+            btn.addEventListener('click', function() {
+                visible = !visible;
+                input.type = visible ? 'text' : 'password';
+                btn.querySelector('svg').innerHTML = visible ? EYE_OFF : EYE_OPEN;
             });
-            document.getElementById('back-to-signin').addEventListener('click', function(e) {
-                e.preventDefault();
+        }
+
+        const passwordInput = document.getElementById('password');
+        const reqPwInput = document.getElementById('request-password');
+        const reqPwConfirmInput = document.getElementById('request-password-confirm');
+
+        wireToggle(document.getElementById('toggle-password'), passwordInput);
+        wireToggle(document.getElementById('toggle-req-pw'), reqPwInput);
+        wireToggle(document.getElementById('toggle-req-pw-confirm'), reqPwConfirmInput);
+
+        /* ---------------- REQUEST FORM: NAME / PASSWORD CHECKS ---------------- */
+        const requestName = document.getElementById('request-name');
+        requestName.addEventListener('input', function() {
+            const cleaned = this.value.replace(/[0-9]/g, '').toUpperCase();
+            if (cleaned !== this.value) this.value = cleaned;
+        });
+        requestName.addEventListener('keypress', function(e) {
+            if (/[0-9]/.test(e.key)) e.preventDefault();
+        });
+
+        const hintUpper = document.getElementById('hint-upper');
+        const hintLower = document.getElementById('hint-lower');
+        const hintNumber = document.getElementById('hint-number');
+        const hintLength = document.getElementById('hint-length');
+
+        function validatePassword(pw) {
+            const hasUpper = /[A-Z]/.test(pw);
+            const hasLower = /[a-z]/.test(pw);
+            const hasNumber = /\d/.test(pw);
+            const hasLength = pw.length >= 8;
+
+            hintUpper.className = 'dot' + (hasUpper ? ' valid' : '');
+            hintLower.className = 'dot' + (hasLower ? ' valid' : '');
+            hintNumber.className = 'dot' + (hasNumber ? ' valid' : '');
+            hintLength.className = 'dot' + (hasLength ? ' valid' : '');
+
+            return hasUpper && hasLower && hasNumber && hasLength;
+        }
+
+        reqPwInput.addEventListener('input', function() {
+            validatePassword(this.value);
+            checkPasswordsMatch();
+        });
+
+        const hintMatch = document.getElementById('hint-match');
+        const hintMatchLabel = document.getElementById('hint-match-label');
+
+        function checkPasswordsMatch() {
+            const pw = reqPwInput.value;
+            const confirm = reqPwConfirmInput.value;
+            if (confirm.length === 0) {
+                hintMatch.className = 'dot';
+                hintMatchLabel.textContent = 'Passwords match';
+                return null;
+            }
+            const matches = pw === confirm;
+            hintMatch.className = 'dot' + (matches ? ' valid' : ' invalid-dot');
+            hintMatchLabel.textContent = matches ? 'Passwords match' : 'Passwords do not match';
+            return matches;
+        }
+
+        reqPwConfirmInput.addEventListener('input', checkPasswordsMatch);
+
+        /* ================================================================
+           PROFILE PHOTO (optional) — pick, drag + zoom crop, max 2 MB
+           ================================================================ */
+        const MAX_PHOTO_BYTES = 2 * 1024 * 1024;          // 2 MB
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+        const STAGE = 280;      // crop stage size (px)  — must match CSS .crop-stage
+        const DIAM = 252;       // circle diameter (px)  — must match CSS .crop-circle
+        const OUT = 400;        // saved photo size (px)
+
+        const photoInput = document.getElementById('photo-input');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoChooseBtn = document.getElementById('photo-choose-btn');
+        const photoChooseLabel = document.getElementById('photo-choose-label');
+        const photoEditBtn = document.getElementById('photo-edit-btn');
+        const photoRemoveBtn = document.getElementById('photo-remove-btn');
+
+        const cropOverlay = document.getElementById('crop-overlay');
+        const cropStage = document.getElementById('crop-stage');
+        const cropImg = document.getElementById('crop-img');
+        const zoomRange = document.getElementById('crop-zoom');
+
+        let originalUrl = null;      // last saved source image
+        let workUrl = null;          // image currently inside the cropper
+        let croppedDataUrl = null;   // final cropped photo (data URL)
+        let nw = 0, nh = 0, baseScale = 1, zoom = 1, ox = 0, oy = 0;
+        let drag = null;
+
+        function updatePhotoUI() {
+            const has = !!croppedDataUrl;
+            photoEditBtn.hidden = !has;
+            photoRemoveBtn.hidden = !has;
+            photoChooseLabel.textContent = has ? 'Change Photo' : 'Upload Photo';
+            photoPreview.classList.toggle('has-photo', has);
+            photoPreview.innerHTML = '';
+            if (has) {
+                const im = document.createElement('img');
+                im.src = croppedDataUrl;
+                im.alt = 'Profile photo';
+                photoPreview.appendChild(im);
+            } else {
+                photoPreview.innerHTML = '<i class="fa-solid fa-user"></i>';
+            }
+            syncHeight();
+        }
+
+        function clampOffset() {
+            const sc = baseScale * zoom;
+            const mx = Math.max(0, (nw * sc - DIAM) / 2);
+            const my = Math.max(0, (nh * sc - DIAM) / 2);
+            ox = Math.min(mx, Math.max(-mx, ox));
+            oy = Math.min(my, Math.max(-my, oy));
+        }
+
+        function renderCrop() {
+            clampOffset();
+            const sc = baseScale * zoom;
+            const w = nw * sc, h = nh * sc;
+            cropImg.style.width = w + 'px';
+            cropImg.style.height = h + 'px';
+            cropImg.style.left = (STAGE / 2 - w / 2 + ox) + 'px';
+            cropImg.style.top = (STAGE / 2 - h / 2 + oy) + 'px';
+        }
+
+        function setZoom(z) {
+            z = Math.min(4, Math.max(1, z));
+            const r = z / zoom;
+            ox *= r; oy *= r;
+            zoom = z;
+            zoomRange.value = z;
+            renderCrop();
+        }
+
+        function openCropper(url, keepState) {
+            workUrl = url;
+            function init() {
+                nw = cropImg.naturalWidth;
+                nh = cropImg.naturalHeight;
+                if (!nw || !nh) return;
+                baseScale = Math.max(DIAM / nw, DIAM / nh);
+                if (!keepState) { zoom = 1; ox = 0; oy = 0; }
+                zoomRange.value = zoom;
+                renderCrop();
+                cropOverlay.classList.add('show');
+            }
+            cropImg.onload = init;
+            cropImg.onerror = function() {
+                showToast('error', 'Invalid Image', 'This file could not be read as an image.');
+                closeCropper(true);
+            };
+            cropImg.src = url;
+            if (cropImg.complete && cropImg.naturalWidth) init();
+        }
+
+        function closeCropper(discard) {
+            cropOverlay.classList.remove('show');
+            if (discard && workUrl && workUrl !== originalUrl) URL.revokeObjectURL(workUrl);
+            workUrl = null;
+        }
+
+        /* choose / edit / remove */
+        photoChooseBtn.addEventListener('click', function() { photoInput.click(); });
+        photoPreview.addEventListener('click', function() { photoInput.click(); });
+
+        photoInput.addEventListener('change', function() {
+            const file = photoInput.files && photoInput.files[0];
+            photoInput.value = '';   // allows choosing the same file again
+            if (!file) return;
+
+            if (ALLOWED_TYPES.indexOf(file.type) === -1) {
+                showToast('error', 'Invalid File', 'Please choose a JPG, PNG or WEBP image.');
+                return;
+            }
+            if (file.size > MAX_PHOTO_BYTES) {
+                const mb = (file.size / (1024 * 1024)).toFixed(2);
+                showToast('error', 'Photo Too Large', 'Your photo is ' + mb + ' MB. Maximum allowed size is 2 MB.');
+                return;
+            }
+            openCropper(URL.createObjectURL(file), false);
+        });
+
+        photoEditBtn.addEventListener('click', function() {
+            if (originalUrl) openCropper(originalUrl, true);
+        });
+
+        photoRemoveBtn.addEventListener('click', function() { resetPhoto(); });
+
+        function resetPhoto() {
+            if (originalUrl) URL.revokeObjectURL(originalUrl);
+            originalUrl = null;
+            croppedDataUrl = null;
+            updatePhotoUI();
+        }
+
+        /* drag to move */
+        cropStage.addEventListener('pointerdown', function(e) {
+            drag = { x: e.clientX, y: e.clientY, ox: ox, oy: oy };
+            cropStage.setPointerCapture(e.pointerId);
+            cropStage.classList.add('dragging');
+        });
+        cropStage.addEventListener('pointermove', function(e) {
+            if (!drag) return;
+            ox = drag.ox + (e.clientX - drag.x);
+            oy = drag.oy + (e.clientY - drag.y);
+            renderCrop();
+        });
+        function endDrag() { drag = null; cropStage.classList.remove('dragging'); }
+        cropStage.addEventListener('pointerup', endDrag);
+        cropStage.addEventListener('pointercancel', endDrag);
+
+        /* zoom: wheel, slider, +/- */
+        cropStage.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            setZoom(zoom - e.deltaY * 0.002);
+        }, { passive: false });
+        zoomRange.addEventListener('input', function() { setZoom(parseFloat(this.value)); });
+        document.getElementById('zoom-in').addEventListener('click', function() { setZoom(zoom + 0.2); });
+        document.getElementById('zoom-out').addEventListener('click', function() { setZoom(zoom - 0.2); });
+
+        /* cancel / save */
+        document.getElementById('crop-cancel').addEventListener('click', function() { closeCropper(true); });
+        cropOverlay.addEventListener('click', function(e) { if (e.target === cropOverlay) closeCropper(true); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && cropOverlay.classList.contains('show')) closeCropper(true);
+        });
+
+        document.getElementById('crop-save').addEventListener('click', function() {
+            const sc = baseScale * zoom;
+            const w = nw * sc, h = nh * sc;
+            const imgL = STAGE / 2 - w / 2 + ox;
+            const imgT = STAGE / 2 - h / 2 + oy;
+            const circleL = (STAGE - DIAM) / 2;
+
+            const sx = (circleL - imgL) / sc;
+            const sy = (circleL - imgT) / sc;
+            const sw = DIAM / sc;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = OUT; canvas.height = OUT;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, OUT, OUT);
+            ctx.drawImage(cropImg, sx, sy, sw, sw, 0, 0, OUT, OUT);
+
+            croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+            if (originalUrl && originalUrl !== workUrl) URL.revokeObjectURL(originalUrl);
+            originalUrl = workUrl;
+
+            cropOverlay.classList.remove('show');
+            workUrl = null;
+            updatePhotoUI();
+        });
+
+        /* ---------------- SIGN IN ---------------- */
+        const accounts = {
+            'admin@ynad.com': { password: 'ynad2026', role: 'Admin' },
+            'manager@ynad.com': { password: 'ynad2026', role: 'Manager' },
+            'viewer@ynad.com': { password: 'ynad2026', role: 'Viewer' }
+        };
+
+        document.getElementById('signin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!email || !password) {
+                showToast('error', 'Error', 'Please fill in all fields.');
+                return;
+            }
+            const account = accounts[email.toLowerCase()];
+            if (account && account.password === password) {
+                showToast('success', 'Sign in successful', 'Welcome back — you have ' + account.role + ' access. Redirecting…');
+                setTimeout(function() { window.location.href = 'index.html'; }, 1400);
+            } else {
+                showToast('error', 'Login Failed', 'The email address or password is incorrect. Please try again.');
+            }
+        });
+
+        /* ---------------- FORGOT PASSWORD ---------------- */
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            const email = document.getElementById('reset-email').value.trim();
+            if (!email) {
+                showToast('error', 'Error', 'Please enter your email address.');
+                return;
+            }
+            showToast('info', 'Reset Email Sent', 'Instructions sent to ' + email + '. Check your inbox.');
+        });
+
+        /* ---------------- REQUEST ACCESS SUBMIT ---------------- */
+        const submitOverlay = document.getElementById('submit-overlay');
+
+        document.getElementById('send-request-btn').addEventListener('click', function() {
+            const name = document.getElementById('request-name').value.trim();
+            const email = document.getElementById('request-email').value.trim();
+            const password = document.getElementById('request-password').value;
+            const passwordConfirm = document.getElementById('request-password-confirm').value;
+
+            // mandatory: name, email, password (+ confirm). Photo is optional.
+            if (!name) {
+                showToast('error', 'Name Required', 'Please enter your full name.');
+                return;
+            }
+            if (!email) {
+                showToast('error', 'Email Required', 'Please enter your email address.');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('error', 'Invalid Email', 'Please enter a valid email address.');
+                return;
+            }
+            if (!password) {
+                showToast('error', 'Password Required', 'Please create a password.');
+                return;
+            }
+            if (!validatePassword(password)) {
+                showToast('error', 'Weak Password', 'Password must contain uppercase, lowercase, a number, and be at least 8 characters.');
+                return;
+            }
+            if (!passwordConfirm) {
+                showToast('error', 'Confirm Password', 'Please re-enter your password.');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                showToast('error', 'Password Mismatch', 'Your password and confirmation do not match.');
+                return;
+            }
+
+            // Data ready to send to your backend (Supabase etc.)
+            // photo = cropped JPEG data URL, or null if no photo was added
+            const requestData = {
+                name: name,
+                email: email,
+                password: password,
+                photo: croppedDataUrl || null
+            };
+            // TODO: send requestData to your backend here
+
+            submitOverlay.classList.add('show');
+            setTimeout(function() {
+                submitOverlay.classList.remove('show');
+                document.getElementById('request-name').value = '';
+                document.getElementById('request-email').value = '';
+                document.getElementById('request-password').value = '';
+                document.getElementById('request-password-confirm').value = '';
+                document.querySelectorAll('#pw-hints .dot').forEach(function(d) { d.className = 'dot'; });
+                hintMatch.className = 'dot';
+                hintMatchLabel.textContent = 'Passwords match';
+                resetPhoto();
                 goTo('signin');
-            });
+            }, 2600);
+        });
 
-            window.addEventListener('load', function() {
-                stage.style.height = views.signin.offsetHeight + 'px';
-            });
-            requestAnimationFrame(function() {
-                stage.style.height = views.signin.offsetHeight + 'px';
-            });
-
-            const EYE_OPEN = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
-            const EYE_OFF = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
-
-            function wireToggle(btn, input) {
-                let visible = false;
-                btn.addEventListener('click', function() {
-                    visible = !visible;
-                    input.type = visible ? 'text' : 'password';
-                    btn.querySelector('svg').innerHTML = visible ? EYE_OFF : EYE_OPEN;
-                });
-            }
-
-            const passwordInput = document.getElementById('password');
-            const reqPwInput = document.getElementById('request-password');
-            const reqPwConfirmInput = document.getElementById('request-password-confirm');
-
-            wireToggle(document.getElementById('toggle-password'), passwordInput);
-            wireToggle(document.getElementById('toggle-req-pw'), reqPwInput);
-            wireToggle(document.getElementById('toggle-req-pw-confirm'), reqPwConfirmInput);
-
-            const requestName = document.getElementById('request-name');
-            requestName.addEventListener('input', function() {
-                const cleaned = this.value.replace(/[0-9]/g, '').toUpperCase();
-                if (cleaned !== this.value) this.value = cleaned;
-            });
-            requestName.addEventListener('keypress', function(e) {
-                if (/[0-9]/.test(e.key)) e.preventDefault();
-            });
-
-            const hintUpper = document.getElementById('hint-upper');
-            const hintLower = document.getElementById('hint-lower');
-            const hintNumber = document.getElementById('hint-number');
-            const hintLength = document.getElementById('hint-length');
-
-            function validatePassword(pw) {
-                const hasUpper = /[A-Z]/.test(pw);
-                const hasLower = /[a-z]/.test(pw);
-                const hasNumber = /\d/.test(pw);
-                const hasLength = pw.length >= 8;
-
-                hintUpper.className = 'dot' + (hasUpper ? ' valid' : '');
-                hintLower.className = 'dot' + (hasLower ? ' valid' : '');
-                hintNumber.className = 'dot' + (hasNumber ? ' valid' : '');
-                hintLength.className = 'dot' + (hasLength ? ' valid' : '');
-
-                return hasUpper && hasLower && hasNumber && hasLength;
-            }
-
-            reqPwInput.addEventListener('input', function() {
-                validatePassword(this.value);
-                checkPasswordsMatch();
-            });
-
-            const hintMatch = document.getElementById('hint-match');
-            const hintMatchLabel = document.getElementById('hint-match-label');
-
-            function checkPasswordsMatch() {
-                const pw = reqPwInput.value;
-                const confirm = reqPwConfirmInput.value;
-                if (confirm.length === 0) {
-                    hintMatch.className = 'dot';
-                    hintMatchLabel.textContent = 'Passwords match';
-                    return null;
-                }
-                const matches = pw === confirm;
-                hintMatch.className = 'dot' + (matches ? ' valid' : ' invalid-dot');
-                hintMatchLabel.textContent = matches ? 'Passwords match' : 'Passwords do not match';
-                return matches;
-            }
-
-            reqPwConfirmInput.addEventListener('input', checkPasswordsMatch);
-
-            const accounts = {
-                'admin@ynad.com': { password: 'ynad2026', role: 'Admin' },
-                'manager@ynad.com': { password: 'ynad2026', role: 'Manager' },
-                'viewer@ynad.com': { password: 'ynad2026', role: 'Viewer' }
-            };
-
-            document.getElementById('signin-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value.trim();
-                if (!email || !password) {
-                    showToast('error', 'Error', 'Please fill in all fields.');
-                    return;
-                }
-                const account = accounts[email.toLowerCase()];
-                if (account && account.password === password) {
-                    showToast('success', 'Sign in successful', 'Welcome back — you have ' + account.role + ' access. Redirecting…');
-                    setTimeout(function() { window.location.href = 'index.html'; }, 1400);
-                } else {
-                    showToast('error', 'Login Failed', 'The email address or password is incorrect. Please try again.');
-                }
-            });
-
-            document.getElementById('reset-btn').addEventListener('click', function() {
-                const email = document.getElementById('reset-email').value.trim();
-                if (!email) {
-                    showToast('error', 'Error', 'Please enter your email address.');
-                    return;
-                }
-                showToast('info', 'Reset Email Sent', 'Instructions sent to ' + email + '. Check your inbox.');
-            });
-
-            const submitOverlay = document.getElementById('submit-overlay');
-
-            document.getElementById('send-request-btn').addEventListener('click', function() {
-                const name = document.getElementById('request-name').value.trim();
-                const email = document.getElementById('request-email').value.trim();
-                const password = document.getElementById('request-password').value;
-                const passwordConfirm = document.getElementById('request-password-confirm').value;
-
-                if (!name || !email || !password || !passwordConfirm) {
-                    showToast('error', 'Error', 'Please fill in all fields.');
-                    return;
-                }
-
-                if (!validatePassword(password)) {
-                    showToast('error', 'Weak Password', 'Password must contain uppercase, lowercase, a number, and be at least 8 characters.');
-                    return;
-                }
-
-                if (password !== passwordConfirm) {
-                    showToast('error', 'Password Mismatch', 'Your password and confirmation do not match.');
-                    return;
-                }
-
-                submitOverlay.classList.add('show');
-                setTimeout(function() {
-                    submitOverlay.classList.remove('show');
-                    document.getElementById('request-name').value = '';
-                    document.getElementById('request-email').value = '';
-                    document.getElementById('request-password').value = '';
-                    document.getElementById('request-password-confirm').value = '';
-                    document.querySelectorAll('#pw-hints .dot').forEach(function(d) { d.className = 'dot'; });
-                    hintMatch.className = 'dot';
-                    hintMatchLabel.textContent = 'Passwords match';
-                    goTo('signin');
-                }, 2600);
-            });
-
-        })();
-    </script>
+    })();
+</script>
 
     <script>
         /* ================================================================
