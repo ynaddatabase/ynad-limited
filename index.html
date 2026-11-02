@@ -4412,7 +4412,7 @@ function closeMenuWithEffect() {
                                 <div class="media-menu-item" data-sub="opening-${index}">
                                     <span>OPENING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        <a href="#" onclick="return false;">VIDEO</a>
+                                        ${buildLatestVideoLinkHtml(openingVideos)}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
@@ -4420,7 +4420,7 @@ function closeMenuWithEffect() {
                                 <div class="media-menu-item" data-sub="ongoing-${index}">
                                     <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        ${buildOngoingVideoLinksHtml(getOngoingCount(project, 'video'))}
+                                        ${buildNumberedLinksHtml(ongoingVideos, 'video')}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
@@ -4428,7 +4428,7 @@ function closeMenuWithEffect() {
                                 <div class="media-menu-item" data-sub="proposal-${index}">
                                     <span>PROPOSAL</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        <a href="#" onclick="return false;">VIDEO</a>
+                                        ${buildLatestVideoLinkHtml(proposalVideos)}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
