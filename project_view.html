@@ -373,7 +373,7 @@
     }
     .overview-label{color:#334155;font-size:13px}
     .overview-value{color:#64748b;font-size:13px;line-height:1.7}
-    .overview-image-wrap{position:relative;min-height:620px;overflow:hidden;background:#dbe3ea;cursor:pointer}
+    .overview-image-wrap{position:relative;min-height:620px;overflow:hidden;background:#dbe3ea}
     .overview-image{
       width:100%;height:100%;object-fit:cover;display:block;
       transition:transform .75s cubic-bezier(.16,1,.3,1);
@@ -411,21 +411,24 @@
     .gallery-item:hover img{transform:scale(1.055);filter:brightness(.92)}
     .gallery-item:hover::after{opacity:1}
 
-    /* Lightbox: two image layers create a real left/right slide transition */
+    /* Fullscreen gallery viewer with a bottom thumbnail filmstrip */
     .lightbox{
-      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);
+      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.96);
       display:flex;align-items:center;justify-content:center;
-      opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;padding:36px;
+      opacity:0;visibility:hidden;pointer-events:none;
+      transition:opacity .3s ease,visibility .3s ease;
+      padding:58px 28px 112px;overflow:hidden;
     }
-    .lightbox.open{opacity:1;visibility:visible}
+    .lightbox.open{opacity:1;visibility:visible;pointer-events:auto}
     .lightbox-stage{
       position:relative;
       width:min(88vw,1500px);
-      height:86vh;
+      height:calc(100vh - 172px);
+      min-height:280px;
       display:flex;align-items:center;justify-content:center;
       overflow:hidden;isolation:isolate;
       opacity:0;transform:scale(.975);
-      transition:opacity .3s ease,transform .3s ease;
+      transition:opacity .3s ease,transform .3s ease,height .3s ease;
     }
     .lightbox.open .lightbox-stage{opacity:1;transform:scale(1)}
     .lightbox-stage .lightbox-photo{
@@ -434,34 +437,77 @@
       object-fit:contain;
       box-shadow:0 25px 70px rgba(0,0,0,.45);
       transform:translateX(0);opacity:1;
-      /* A slower, balanced ease makes the outgoing and incoming photos glide. */
       transition:transform .86s cubic-bezier(.4,0,.2,1),opacity .72s ease;
-      user-select:none;-webkit-user-drag:none;
-      pointer-events:none;
+      user-select:none;-webkit-user-drag:none;pointer-events:none;
     }
-    .lightbox-stage .lightbox-photo.is-hidden{
-      visibility:hidden;opacity:0;transform:translateX(0);
-    }
+    .lightbox-stage .lightbox-photo.is-hidden{visibility:hidden;opacity:0;transform:translateX(0)}
     .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(110%)}
     .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-110%)}
     .lightbox-stage .lightbox-photo.is-leaving-left{opacity:0;transform:translateX(-110%)}
     .lightbox-stage .lightbox-photo.is-leaving-right{opacity:0;transform:translateX(110%)}
     .lightbox-stage .lightbox-photo.is-active{visibility:visible;opacity:1;transform:translateX(0)}
-    .lightbox-btn{
-      position:absolute;width:46px;height:46px;border-radius:50%;
-      background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);color:#fff;
-      display:flex;align-items:center;justify-content:center;cursor:pointer;
-      transition:background .25s ease,border-color .25s ease,transform .25s ease;
+
+    .lightbox-topbar{
+      position:absolute;top:0;left:0;right:0;height:58px;z-index:5;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 22px;color:#fff;pointer-events:none;
     }
-    .lightbox-btn:hover{background:var(--accent);border-color:var(--accent)}
-    .lightbox-close{right:24px;top:18px}
-    .lightbox-prev{left:24px;top:50%;transform:translateY(-50%)}
-    .lightbox-next{right:24px;top:50%;transform:translateY(-50%)}
+    .lightbox-counter{
+      position:static;transform:none;
+      font-size:13px;font-weight:500;letter-spacing:.12em;
+      color:rgba(255,255,255,.9);font-variant-numeric:tabular-nums;
+    }
+    .lightbox-top-actions{display:flex;align-items:center;gap:12px;pointer-events:auto}
+    .lightbox-btn{
+      width:38px;height:38px;border-radius:4px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;
+      transition:background .22s ease,border-color .22s ease,transform .22s ease;
+    }
+    .lightbox-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+    .lightbox-download.is-downloading{opacity:.55;pointer-events:none}
+    .lightbox-prev,.lightbox-next{position:absolute;z-index:4;top:50%}
+    .lightbox-prev{left:24px;transform:translateY(-50%)}
+    .lightbox-next{right:24px;transform:translateY(-50%)}
     .lightbox-prev:hover{transform:translateY(-50%) scale(1.07)}
     .lightbox-next:hover{transform:translateY(-50%) scale(1.07)}
-    .lightbox-counter{
-      position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
-      font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.8);
+
+    .lightbox-thumbnails{
+      position:absolute;left:0;right:0;bottom:0;z-index:6;
+      height:94px;padding:10px 18px;
+      display:flex;align-items:center;gap:7px;
+      overflow-x:auto;overflow-y:hidden;
+      background:rgba(0,0,0,.48);
+      opacity:1;transform:translateY(0);
+      transition:transform .32s ease,opacity .28s ease;
+      scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .lightbox-thumbnails::-webkit-scrollbar{display:none}
+    .lightbox-thumbnail{
+      position:relative;flex:0 0 86px;width:86px;height:66px;padding:0;
+      border:2px solid rgba(255,255,255,.45);border-radius:3px;
+      background:#171717;overflow:hidden;cursor:pointer;opacity:.76;
+      transition:opacity .2s ease,border-color .2s ease,transform .2s ease;
+    }
+    .lightbox-thumbnail img{display:block;width:100%;height:100%;object-fit:cover}
+    .lightbox-thumbnail:hover{opacity:1;transform:translateY(-2px)}
+    .lightbox-thumbnail.active{opacity:1;border-color:var(--accent)}
+    .lightbox-thumbnail:focus-visible{outline:2px solid #fff;outline-offset:2px}
+    .lightbox.thumbnails-hidden{padding-bottom:24px}
+    .lightbox.thumbnails-hidden .lightbox-stage{height:calc(100vh - 90px)}
+    .lightbox.thumbnails-hidden .lightbox-thumbnails{
+      opacity:0;transform:translateY(110%);pointer-events:none;
+    }
+
+    @media (max-width:620px){
+      .lightbox{padding:58px 10px 96px}
+      .lightbox-stage{width:100%;height:calc(100vh - 154px)}
+      .lightbox-topbar{padding:0 13px}
+      .lightbox-thumbnails{height:82px;padding:8px 10px;gap:6px}
+      .lightbox-thumbnail{flex-basis:72px;width:72px;height:56px}
+      .lightbox-prev{left:8px}.lightbox-next{right:8px}
+      .lightbox-btn{width:35px;height:35px}
+      .lightbox.thumbnails-hidden .lightbox-stage{height:calc(100vh - 78px)}
     }
 
     .loading,.error-state{
@@ -668,11 +714,19 @@
     </div>
   </div>
 
-  <!-- Lightbox with arrows -->
+  <!-- Fullscreen gallery viewer -->
   <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="lightbox-btn lightbox-close" type="button" aria-label="Close image" onclick="closeLightbox()">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
+    <div class="lightbox-topbar">
+      <div id="lightboxCounter" class="lightbox-counter">1 / 1</div>
+      <div class="lightbox-top-actions">
+        <button class="lightbox-btn lightbox-download" type="button" aria-label="Download selected image" title="Download image" onclick="downloadLightboxImage()">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button class="lightbox-btn lightbox-close" type="button" aria-label="Close gallery" title="Close gallery" onclick="closeLightbox()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
     <button class="lightbox-btn lightbox-prev" type="button" aria-label="Previous photo" onclick="lightboxStep(-1)">
       <i class="fa-solid fa-chevron-left"></i>
     </button>
@@ -683,7 +737,7 @@
     <button class="lightbox-btn lightbox-next" type="button" aria-label="Next photo" onclick="lightboxStep(1)">
       <i class="fa-solid fa-chevron-right"></i>
     </button>
-    <div id="lightboxCounter" class="lightbox-counter"></div>
+    <div id="lightboxThumbnails" class="lightbox-thumbnails" aria-label="Gallery thumbnails"></div>
   </div>
 
   <script>
@@ -711,10 +765,8 @@
       'Well-planned natural light and ventilation'
     ];
 
-    /* Photos in the order they were uploaded in project_add (13 max):
-       #1  -> beside the Overview section
-       #2..#13 -> Gallery (12 images, in the same order) */
-    const OVERVIEW_PHOTO_COUNT = 1;
+    /* Gallery photos are numbered independently from 1.
+       The cover (c_photo_url) is used in both the Hero and Overview sections. */
     const GALLERY_PHOTO_COUNT = 12;
     let lightboxImages = [];
     let lightboxIndex = 0;
@@ -959,16 +1011,21 @@
        RENDER
        ================================================================ */
     function renderProject(project) {
-      const photos = normalizePhotoUrls(project.photo_urls).slice(0, OVERVIEW_PHOTO_COUNT + GALLERY_PHOTO_COUNT);
+      const uploadedPhotos = normalizePhotoUrls(project.photo_urls);
+      const coverPhoto = firstValue(project, ['c_photo_url'], '');
 
-      /* Hero = C-Photo (same as the homepage slideshow). Falls back to the first photo. */
-      const heroImage = firstValue(project, ['c_photo_url'], photos[0] || FALLBACK_HERO);
+      /* The same uploaded cover photo is used in the Hero and beside Overview. */
+      const heroImage = coverPhoto || uploadedPhotos[0] || FALLBACK_HERO;
+      const overviewImage = heroImage;
 
-      const overviewImage = photos[0] || heroImage;
-      const galleryPhotos = photos.slice(OVERVIEW_PHOTO_COUNT, OVERVIEW_PHOTO_COUNT + GALLERY_PHOTO_COUNT);
+      /* If a dedicated cover exists, all photo_urls belong to the Gallery.
+         Without a dedicated cover, retain the first photo as the Hero fallback. */
+      const gallerySource = coverPhoto ? uploadedPhotos : uploadedPhotos.slice(1);
+      const galleryPhotos = gallerySource.slice(0, GALLERY_PHOTO_COUNT);
 
-      /* Lightbox follows the exact upload order: #1 (overview) -> #2 ... #13 */
-      lightboxImages = photos.slice();
+      /* Gallery numbering starts from 1; the cover photo is not counted as a gallery item. */
+      lightboxImages = galleryPhotos.slice();
+      buildLightboxThumbnails();
 
       const features = buildFeatures(project);
       const overviewRows = buildOverviewRows(project);
@@ -993,14 +1050,12 @@
         </div>
       `).join('');
 
-      const galleryHtml = galleryPhotos.map((img, i) => {
-        const lightboxPos = OVERVIEW_PHOTO_COUNT + i;
-        return `
+      const galleryHtml = galleryPhotos.map((img, i) => `
         <div class="gallery-item reveal" style="transition-delay:${Math.min(i,11)*.035}s"
-             onclick="openLightbox(${lightboxPos})">
+             onclick="openLightbox(${i})">
           <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${i+1}" loading="${i<4?'eager':'lazy'}">
-        </div>`;
-      }).join('');
+        </div>`
+      ).join('');
 
       const locationHtml = locationLink
         ? `<a class="hero-location" href="${escapeAttr(locationLink)}" target="_blank" rel="noopener" title="Open project location">
@@ -1050,7 +1105,7 @@
               <h2 class="overview-heading">Overview</h2>
               <div class="overview-list">${overviewHtml}</div>
             </div>
-            <div class="overview-image-wrap" ${photos.length ? 'onclick="openLightbox(0)"' : ''}>
+            <div class="overview-image-wrap">
               <img class="overview-image" src="${escapeAttr(overviewImage)}" alt="${escapeAttr(name)} overview image" loading="lazy">
             </div>
           </section>
@@ -1188,6 +1243,75 @@
     function updateLightboxCounter() {
       const counter = document.getElementById('lightboxCounter');
       if (counter) counter.textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+
+      document.querySelectorAll('.lightbox-thumbnail').forEach((thumb, index) => {
+        const active = index === lightboxIndex;
+        thumb.classList.toggle('active', active);
+        if (active) thumb.setAttribute('aria-current', 'true');
+        else thumb.removeAttribute('aria-current');
+      });
+    }
+
+    function buildLightboxThumbnails() {
+      const strip = document.getElementById('lightboxThumbnails');
+      if (!strip) return;
+      strip.innerHTML = lightboxImages.map((url, index) => `
+        <button class="lightbox-thumbnail${index === lightboxIndex ? ' active' : ''}"
+                type="button" aria-label="View image ${index + 1}"
+                title="Image ${index + 1}" onclick="selectLightboxImage(${index})">
+          <img src="${escapeAttr(url)}" alt="" loading="lazy">
+        </button>
+      `).join('');
+    }
+
+    function selectLightboxImage(index) {
+      if (!lightboxImages.length) return;
+      lightboxTransitionToken++;
+      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
+      lightboxTransitionTimer = null;
+      lightboxAnimating = false;
+      lightboxPendingDirection = 0;
+      showLightbox(index);
+    }
+
+    async function downloadLightboxImage() {
+      const imageUrl = lightboxImages[lightboxIndex];
+      if (!imageUrl) return;
+
+      const button = document.querySelector('.lightbox-download');
+      if (button) button.classList.add('is-downloading');
+
+      let fileName = `gallery-image-${lightboxIndex + 1}.jpg`;
+      try {
+        const parsedUrl = new URL(imageUrl, window.location.href);
+        const pathName = decodeURIComponent(parsedUrl.pathname.split('/').pop() || '');
+        if (pathName) fileName = pathName.includes('.') ? pathName : `${pathName}.jpg`;
+      } catch (_) {}
+
+      try {
+        const response = await fetch(imageUrl, { mode: 'cors' });
+        if (!response.ok) throw new Error(`Image download failed (${response.status})`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+      } catch (error) {
+        console.warn('Direct image download was blocked; opening the image instead:', error);
+        window.open(imageUrl, '_blank', 'noopener');
+      } finally {
+        if (button) button.classList.remove('is-downloading');
+      }
+    }
+
+    function setLightboxThumbnailsVisible(visible) {
+      const box = document.getElementById('lightbox');
+      if (!box) return;
+      box.classList.toggle('thumbnails-hidden', !visible);
     }
 
     function resetLightboxLayers() {
@@ -1227,6 +1351,7 @@
 
       const box = document.getElementById('lightbox');
       showLightbox(index);
+      setLightboxThumbnailsVisible(true);
       box.classList.add('open');
       box.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
@@ -1343,7 +1468,7 @@
       lightboxAnimating = false;
       lightboxPendingDirection = 0;
       resetLightboxLayers();
-      box.classList.remove('open');
+      box.classList.remove('open', 'thumbnails-hidden');
       box.setAttribute('aria-hidden','true');
       document.body.style.overflow = '';
     }
@@ -1367,7 +1492,14 @@
       const isOpen = box.classList.contains('open');
 
       if (e.key === 'Escape') {
-        if (isOpen) closeLightbox();
+        if (isOpen) {
+          /* First Escape hides the thumbnail strip; the next one closes the viewer. */
+          if (!box.classList.contains('thumbnails-hidden')) {
+            setLightboxThumbnailsVisible(false);
+          } else {
+            closeLightbox();
+          }
+        }
         closeAllHeroMenus();
         return;
       }
