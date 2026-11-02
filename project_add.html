@@ -880,6 +880,7 @@ projectFormEl.addEventListener('submit', async function (e) {
     info_overview: parseOverview(),
     media_category: mediaTypeSelect.value || null,
     video_link: v('pVideo'),
+    video_urls: v('pVideo') ? [{ url: v('pVideo'), date: new Date().toISOString().slice(0, 10), type: (mediaTypeSelect.value || '').toLowerCase() }] : [],
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
     photo_urls: photoUrls,
