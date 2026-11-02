@@ -4402,7 +4402,7 @@ function closeMenuWithEffect() {
                                 <div class="media-menu-item" data-sub="ongoing-${index}">
                                     <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="media-submenu">
-                                        ${buildOngoingVideoLinksHtml(project.ongoing_video_count ?? 3)}
+                                        ${buildOngoingVideoLinksHtml(getOngoingCount(project, 'video'))}
                                         <a href="#" onclick="return false;">RAW PHOTO</a>
                                         <a href="#" onclick="return false;">RAW VIDEO</a>
                                     </div>
