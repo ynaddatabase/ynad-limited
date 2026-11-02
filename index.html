@@ -4320,6 +4320,12 @@ function closeMenuWithEffect() {
             const parsedPhotos = normalizePhotoUrls(project.photo_urls);
             const photos = parsedPhotos.length > 0 ? parsedPhotos : [FALLBACK_IMAGE];
 
+            const openingReport = getMediaItems(project, 'report_urls', 'opening').slice(-1)[0];
+            const ongoingReports = getMediaItems(project, 'report_urls', 'ongoing');
+            const openingVideos = getMediaItems(project, 'video_urls', 'opening');
+            const ongoingVideos = getMediaItems(project, 'video_urls', 'ongoing');
+            const proposalVideos = getMediaItems(project, 'video_urls', 'proposal');
+
             const imagesHtml = photos.map(url => `
                 <div class="zoom-wrapper flex-shrink-0 w-full h-full cursor-pointer">
                     <img src="${escapeHtml(url)}" class="project-img-item" alt="${escapeHtml(project.project_name || 'Project image')}" loading="lazy">
