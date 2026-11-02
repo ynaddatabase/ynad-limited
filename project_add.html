@@ -883,7 +883,7 @@ projectFormEl.addEventListener('submit', async function (e) {
     documents_url: documentsUrl,
     c_photo_url: cPhotoUrl,
     photo_urls: photoUrls,
-    report_urls: reportUrl ? [{ url: reportUrl, date: new Date().toISOString().slice(0, 10) }] : [],
+    report_urls: reportUrl ? [{ url: reportUrl, date: new Date().toISOString().slice(0, 10), type: (mediaTypeSelect.value || '').toLowerCase() }] : [],
     raw_photos_link: rawPhotos,
     raw_video_link: rawVideos
   };
