@@ -4379,7 +4379,7 @@ function closeMenuWithEffect() {
                                     <span>REPORT</span><i class="fa-solid fa-chevron-right"></i>
                                     <div class="files-submenu">
                                         <a href="${openingReport ? escapeHtml(openingReport.url) : '#'}"
-                                           target="${project.report_url ? '_blank' : '_self'}"
+                                           target="${openingReport ? '_blank' : '_self'}"
                                            ${project.report_url ? '' : 'onclick="return false;"'}>
                                             OPENING REPORT
                                         </a>
