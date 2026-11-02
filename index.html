@@ -4385,7 +4385,7 @@ function closeMenuWithEffect() {
                                         </a>
                                             <div class="files-menu-item" data-sub="ongoing-report-${index}">
                                             <span>ONGOING</span>
-                                            ${getOngoingCount(project, 'report') > 0 ? `
+                                            ${ongoingReports.length > 0 ? `
                                             <i class="fa-solid fa-chevron-right"></i>
                                             <div class="files-submenu">
                                                 ${buildOngoingReportLinksHtml(getOngoingCount(project, 'report'))}
