@@ -4264,6 +4264,12 @@ function closeMenuWithEffect() {
         // are uploaded, shows "7TH VIDEO, 6TH VIDEO, 5TH VIDEO, ... 1ST VIDEO".
         // The most recently uploaded video is always the highest number and
         // always appears at the top of the list.
+        function getOngoingCount(project, type) {
+            const arr = project['ongoing_' + type + '_urls'];
+            if (Array.isArray(arr)) return arr.length;
+            return Math.max(0, Number(project['ongoing_' + type + '_count']) || 0);
+        }
+
         function buildOngoingVideoLinksHtml(totalOngoingVideos) {
             const count = Number(totalOngoingVideos) || 0;
             if (count <= 0) return '';
