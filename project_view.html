@@ -31,531 +31,638 @@
       overflow-x:hidden;
     }
 
-    .project-page{
-      opacity:0;
-      transform:translateY(18px);
-      animation:pageIn .75s cubic-bezier(.16,1,.3,1) forwards;
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ================================================================
+       TOP LOADING BAR (same as other pages)
+       ================================================================ */
+    #pageLoadingBar{
+      position:fixed;top:0;left:0;right:0;height:3px;
+      background:transparent;z-index:99999;pointer-events:none;overflow:hidden;
+    }
+    #pageLoadingProgress{
+      width:8%;height:100%;
+      background:linear-gradient(90deg,#b45309,#d97706,#f59e0b,#d97706,#b45309);
+      box-shadow:0 0 10px rgba(217,119,6,.70);
+      transition:width .45s ease,opacity .35s ease;
     }
 
-    @keyframes pageIn{
-      to{opacity:1;transform:translateY(0)}
+    /* ================================================================
+       SHARED HEADER (sourced from index.html) — same spec as other pages
+       ================================================================ */
+    #mainNav{
+      position:fixed;top:0;left:0;right:0;z-index:50;
+      background:rgba(0,0,0,.48);
+      border-bottom:1px solid rgba(255,255,255,.1);
+      transition:transform .35s cubic-bezier(.4,0,.2,1),background-color .35s ease,border-color .35s ease,box-shadow .35s ease;
+      transform:translateY(0);
     }
-
-    .topbar{
-      position:fixed;
-      top:0;left:0;right:0;
-      height:72px;
-      z-index:50;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 28px;
-      color:#fff;
-      background:linear-gradient(to bottom,rgba(0,0,0,.52),rgba(0,0,0,.18));
-      border-bottom:1px solid rgba(255,255,255,.12);
-      transition:background .35s ease,box-shadow .35s ease,transform .35s ease;
-    }
-
-    .topbar.solid{
-      background:rgba(255,255,255,.97);
-      color:#0f172a;
+    #mainNav.nav-hidden{transform:translateY(-100%)}
+    #mainNav.nav-solid{
+      background-color:#ffffff;
       border-bottom-color:#e5e7eb;
-      box-shadow:0 8px 24px rgba(15,23,42,.08);
-      backdrop-filter:blur(14px);
+      box-shadow:0 6px 18px rgba(15,23,42,.08);
     }
-
-    .brand{
-      display:flex;align-items:center;gap:10px;
-      font-size:14px;font-weight:600;letter-spacing:.12em;
-      text-transform:uppercase;
+    #mainNav .nav-adaptive{color:#fff;transition:color .35s ease}
+    #mainNav.nav-solid .nav-adaptive{color:#1b1d1d}
+    #mainNav .nav-adaptive-muted{color:rgba(255,255,255,.85);transition:color .35s ease}
+    #mainNav.nav-solid .nav-adaptive-muted{color:#3a3c3c}
+    #mainNav .nav-icon-btn{
+      background:rgba(255,255,255,.1);
+      border:1px solid transparent;
+      transition:background-color .25s ease,color .25s ease,border-color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease;
     }
-
-    .brand-mark{
-      width:30px;height:30px;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      border:1px solid currentColor;
-      font-size:11px;
+    #mainNav.nav-solid .nav-icon-btn{background:#f1f5f9;border-color:#e2e8f0}
+    #mainNav .nav-icon-btn:hover{
+      background-color:#d97706;border-color:#d97706;color:#fff !important;
+      transform:translateY(-3px) scale(1.08);
+      box-shadow:0 8px 20px rgba(217,119,6,.35);
     }
+    #mainNav #searchIconBtn:hover{transform:scale(1.05)}
+    #searchBoxWrap.search-open #searchIconBtn:hover{transform:translateX(2px) scale(1.05)}
 
-    .top-actions{display:flex;align-items:center;gap:10px}
-    .top-btn{
+    #userProfileBtn{background:#fff;color:#64748b;border-color:#d97706}
+    #userProfileBtn .profile-fallback-icon{font-size:15px;line-height:1;transition:color .35s ease,transform .25s ease}
+    #userProfileBtn:hover .profile-fallback-icon{transform:scale(1.05)}
+    #userProfileBtn.is-authenticated{background:transparent}
+    #userProfileBtn img{display:block;width:100%;height:100%;object-fit:cover}
+    #userProfileBtn .profile-fallback-icon[hidden],#userProfileBtn img[hidden]{display:none !important}
+    #userDropdownMenu .profile-avatar-large{background:#fff;color:#64748b}
+    #userDropdownMenu .profile-user-name{color:#1b1d1d}
+    #userDropdownMenu .profile-user-email{color:#64748b}
+    #userDropdownMenu .auth-action{background:#fff;color:#55575a;border:1px solid #e2e8f0}
+    #userDropdownMenu .auth-action:hover{background:#d97706;color:#fff;border-color:#d97706}
+
+    .hamburger-icon{transition:transform .2s cubic-bezier(.4,0,.2,1);display:inline-block}
+    .hamburger-icon.clicked{transform:scale(1.25)}
+
+    #pageContentWrapper{transition:filter .6s ease-in-out}
+    #pageContentWrapper.blurred{filter:blur(6px);pointer-events:none}
+
+    #menuOverlay{
+      position:fixed;inset:0;z-index:100;display:flex;justify-content:flex-end;
+      background-color:rgba(0,0,0,.4);backdrop-filter:blur(2px);
+      opacity:0;visibility:hidden;
+      transition:opacity .7s ease,visibility .7s ease;pointer-events:none;
+    }
+    #menuOverlay.open{opacity:1;visibility:visible;pointer-events:auto}
+    #menuBox{transform:translateX(100%);transition:transform .7s cubic-bezier(.16,1,.3,1)}
+    #menuOverlay.open #menuBox{transform:translateX(0)}
+
+    #settingsDropdownMenu,#userDropdownMenu{
+      opacity:0;visibility:hidden;transform:translateY(12px) scale(.96);
+      transition:all .25s cubic-bezier(.16,1,.3,1);pointer-events:none;
+    }
+    #settingsDropdownMenu.open,#userDropdownMenu.open{
+      opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto;
+    }
+    #settingsDropdownMenu a{transition:background-color .22s ease,color .22s ease}
+
+    #searchBoxWrap{height:40px;padding-right:2px}
+    #searchDropdownMenu.open{right:0}
+    #homeContactLoginGroup{
+      position:relative;z-index:5;will-change:transform;
+      transition:transform .45s cubic-bezier(.4,0,.2,1);
+    }
+    #homeContactLoginGroup.icons-pushed{transform:translateX(-270px)}
+    #searchDropdownMenu{
+      position:absolute;right:0;top:50%;
+      transform:translateY(-50%) translateX(12px);
       width:40px;height:40px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.22);
-      background:rgba(255,255,255,.10);
-      color:inherit;
-      display:flex;align-items:center;justify-content:center;
-      cursor:pointer;
-      transition:all .25s ease;
+      opacity:0;visibility:hidden;overflow:hidden;
+      transition:width .4s cubic-bezier(.16,1,.3,1),opacity .3s ease,visibility .4s ease,transform .4s cubic-bezier(.16,1,.3,1);
+      pointer-events:none;white-space:nowrap;
     }
-    .topbar.solid .top-btn{
-      background:#f8fafc;border-color:#e2e8f0;color:#0f172a;
+    #searchDropdownMenu.open{
+      width:250px;opacity:1;visibility:visible;
+      transform:translateY(-50%) translateX(0);pointer-events:auto;
     }
-    .top-btn:hover{
-      background:var(--accent);
-      border-color:var(--accent);
-      color:#fff;
-      transform:translateY(-2px) scale(1.04);
+    @media (min-width:640px){#searchDropdownMenu.open{width:270px}}
+    #searchDropdownMenu input{padding-right:38px}
+    #searchIconBtn{
+      transition:width .3s cubic-bezier(.34,1.56,.64,1),height .3s cubic-bezier(.34,1.56,.64,1),background-color .25s ease,color .25s ease,border-color .25s ease,transform .3s ease,box-shadow .3s ease;
+    }
+    #searchBoxWrap.search-open #searchIconBtn{
+      width:30px;height:30px;
+      background-color:#d97706 !important;color:#fff !important;border-color:#d97706 !important;
+      transform:translateX(-5px);
+    }
+    #searchBoxWrap.search-open #searchIconBtn:hover{
+      background-color:#b45309 !important;border-color:#b45309 !important;
+      transform:translateX(-5px) scale(1.05);
     }
 
+    .theme-mode-switch{
+      --theme-index:1;position:relative;display:flex;align-items:center;gap:2px;padding:3px;
+      border-radius:999px;background:rgba(255,255,255,.1);border:1px solid transparent;
+      transition:background-color .45s ease,border-color .45s ease;
+    }
+    .theme-mode-switch::before{
+      content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:999px;
+      background:#d97706;transform:translateX(calc(var(--theme-index) * 30px));
+      transition:transform .45s cubic-bezier(.4,0,.2,1),background-color .35s ease;
+      z-index:0;pointer-events:none;
+    }
+    #mainNav.nav-solid .theme-mode-switch{background:#f1f5f9;border-color:#e2e8f0}
+    .theme-mode-btn{
+      position:relative;z-index:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+      border-radius:999px;border:none;background:transparent;color:inherit;opacity:.7;cursor:pointer;
+      font-size:.72rem;transition:color .35s ease,opacity .25s ease,transform .25s ease;
+    }
+    .theme-mode-btn:hover{opacity:1;transform:scale(1.08)}
+    .theme-mode-btn.active{color:#fff !important;opacity:1}
+
+    body.theme-transition,body.theme-transition *{
+      transition-property:color,background-color,border-color,fill,stroke !important;
+      transition-duration:.45s !important;
+      transition-timing-function:ease !important;
+    }
+
+    /* ================================================================
+       PROJECT PAGE
+       ================================================================ */
+    .project-page{opacity:0;animation:pageIn .75s ease forwards}
+    @keyframes pageIn{to{opacity:1}}
+
+    /* Hero — fills the full browser viewport, so no white strip below it */
     .hero{
       position:relative;
       width:100%;
-      min-height:92vh;
-      height:min(940px,92vh);
+      height:100vh;
+      height:100dvh;
+      min-height:520px;
       background:#111827;
-      overflow:hidden;
     }
-
+    .hero-bg{position:absolute;inset:0;overflow:hidden}
     .hero-image{
-      position:absolute;inset:0;
-      width:100%;height:100%;
-      object-fit:cover;
-      object-position:center;
-      transform:scale(1.035);
-      opacity:0;
+      position:absolute;inset:0;width:100%;height:100%;
+      object-fit:cover;object-position:center;
+      transform:scale(1.035);opacity:0;
       animation:heroImageIn 1.15s ease .05s forwards;
     }
-
     @keyframes heroImageIn{
       from{opacity:0;transform:scale(1.07)}
       to{opacity:1;transform:scale(1)}
     }
-
-    .hero::after{
-      content:"";
-      position:absolute;inset:0;
-      background:linear-gradient(to bottom,rgba(0,0,0,.24) 0%,rgba(0,0,0,.05) 42%,rgba(0,0,0,.62) 100%);
+    .hero-bg::after{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(to bottom,rgba(0,0,0,.30) 0%,rgba(0,0,0,.04) 40%,rgba(0,0,0,.60) 100%);
       pointer-events:none;
     }
 
     .hero-content{
       position:absolute;
-      left:5.5vw;
       right:5.5vw;
-      bottom:8vh;
+      bottom:96px;
       z-index:2;
-      display:flex;
-      justify-content:flex-end;
-      align-items:flex-end;
-    }
-
-    .hero-copy{
-      width:min(760px,78vw);
+      max-width:min(780px,80vw);
       text-align:right;
       color:#fff;
     }
-
     .hero-kicker{
-      font-size:12px;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      margin-bottom:10px;
-      opacity:.9;
+      display:inline-flex;align-items:center;gap:10px;
+      font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+      color:#fbbf24;margin-bottom:10px;
+      text-shadow:0 2px 10px rgba(0,0,0,.35);
     }
-
+    .hero-kicker::before{
+      content:"";display:inline-block;width:26px;height:2px;background:#d97706;border-radius:2px;
+    }
     .hero-title{
       margin:0;
-      font-size:clamp(34px,5vw,74px);
-      line-height:1.02;
-      font-weight:300;
-      letter-spacing:.02em;
+      font-size:clamp(26px,2.7vw,40px);
+      line-height:1.15;
+      font-weight:400;
+      letter-spacing:.04em;
       text-transform:uppercase;
-      text-shadow:0 3px 18px rgba(0,0,0,.25);
+      text-shadow:0 3px 18px rgba(0,0,0,.30);
     }
-
     .hero-location{
+      display:inline-flex;align-items:center;gap:8px;
       margin-top:14px;
-      font-size:14px;
-      letter-spacing:.07em;
-      text-transform:uppercase;
-      opacity:.95;
+      font-size:14px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+      color:#fff;text-decoration:none;
+      text-shadow:0 2px 10px rgba(0,0,0,.35);
     }
+    .hero-location i{color:#f59e0b;font-size:13px}
+    a.hero-location{cursor:pointer;transition:color .2s ease}
+    a.hero-location:hover{color:#fbbf24}
+    a.hero-location span{
+      background-image:linear-gradient(#f59e0b,#f59e0b);
+      background-repeat:no-repeat;background-position:0 100%;background-size:0 1.5px;
+      padding-bottom:2px;transition:background-size .3s ease;
+    }
+    a.hero-location:hover span{background-size:100% 1.5px}
 
     .hero-scroll{
-      position:absolute;
-      left:50%;bottom:18px;
-      transform:translateX(-50%);
-      z-index:3;
-      width:28px;height:28px;
-      border-radius:50%;
-      border:1px solid rgba(255,255,255,.7);
-      color:#fff;
+      position:absolute;left:50%;bottom:76px;transform:translateX(-50%);
+      z-index:3;width:28px;height:28px;border-radius:50%;
+      border:1px solid rgba(255,255,255,.7);color:#fff;
       display:flex;align-items:center;justify-content:center;
-      animation:floatY 1.8s ease-in-out infinite;
-      cursor:pointer;
+      animation:floatY 1.8s ease-in-out infinite;cursor:pointer;
     }
-
     @keyframes floatY{
       0%,100%{transform:translate(-50%,0)}
       50%{transform:translate(-50%,5px)}
     }
 
-    .section{
-      width:100%;
-      padding:88px 6vw;
+    /* Hero info bar: M / HO codes + FILES + MEDIA over a low-opacity black gradient */
+    .hero-bar{
+      position:absolute;left:0;right:0;bottom:0;z-index:5;
+      min-height:60px;padding:0 5.5vw;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      background:linear-gradient(to top,rgba(0,0,0,.66),rgba(0,0,0,.34));
+      border-top:1px solid rgba(255,255,255,.10);
+      backdrop-filter:blur(3px);
+      color:#fff;
     }
-
-    .summary-section{
-      background:#fff;
-      text-align:center;
+    .hero-codes{
+      display:flex;align-items:center;gap:10px;
+      font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.82);white-space:nowrap;
     }
-
-    .summary-copy{
-      max-width:1060px;
-      margin:0 auto;
-      color:#475569;
-      font-size:14px;
-      line-height:2;
+    .hero-codes .code-divider{width:1px;height:14px;background:rgba(255,255,255,.35)}
+    .hero-actions{display:flex;align-items:center;gap:6px}
+    .hero-btn{
+      display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+      border:none;border-radius:4px;background:transparent;cursor:pointer;
+      font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+      transition:background .2s ease,color .2s ease;
     }
+    .hero-btn.files{color:#93c5fd}
+    .hero-btn.files:hover,.hero-btn.files[aria-expanded="true"]{background:#2563eb;color:#fff}
+    .hero-btn.media{color:#fbbf24}
+    .hero-btn.media:hover,.hero-btn.media[aria-expanded="true"]{background:#d97706;color:#fff}
 
+    /* FILES / MEDIA dropdowns (open upward from the bar, hover-only nested menus) */
+    .hm-wrap{position:relative}
+    .hm-wrap.files-wrap{--hm-accent:#60a5fa}
+    .hm-wrap.media-wrap{--hm-accent:#f59e0b}
+    .hm-menu{
+      position:absolute;bottom:calc(100% + 10px);left:50%;
+      transform:translateX(-50%) translateY(4px);
+      min-width:150px;padding:7px 6px;
+      background:#1e293b;border:1px solid #334155;border-radius:8px;
+      box-shadow:0 14px 34px rgba(0,0,0,.45);
+      opacity:0;visibility:hidden;pointer-events:none;
+      transition:opacity .18s ease,transform .18s ease,visibility .18s ease;
+      z-index:70;text-align:left;
+    }
+    .hm-menu.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+    .hm-item,.hm-link{
+      position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;
+      width:100%;min-height:30px;padding:6px 8px;
+      background:transparent;color:#fff;
+      font-size:10px;line-height:1.2;font-weight:700;letter-spacing:.04em;
+      text-decoration:none;text-align:left;cursor:pointer;
+      transition:color .16s ease,transform .16s ease;
+    }
+    .hm-item:hover,.hm-item.hover-open,.hm-link:hover{color:var(--hm-accent);transform:translateX(2px)}
+    .hm-item > i,.hm-link > i{font-size:8px;color:#64748b;flex:0 0 auto;transition:color .16s ease}
+    .hm-item:hover > i,.hm-item.hover-open > i,.hm-link:hover > i{color:var(--hm-accent)}
+    .hm-sub{
+      position:absolute;left:calc(100% + 7px);top:-7px;min-width:150px;padding:7px 6px;
+      display:none;flex-direction:column;gap:1px;
+      background:#1e293b;border:1px solid #334155;border-radius:8px;
+      box-shadow:0 14px 34px rgba(0,0,0,.45);z-index:71;
+    }
+    .hm-item:hover > .hm-sub,.hm-item.hover-open > .hm-sub{display:flex}
+    .hm-sub.flip-left{left:auto;right:calc(100% + 7px)}
+    .hm-sub a{
+      display:block;width:100%;padding:6px 8px;
+      font-size:9.5px;font-weight:600;letter-spacing:.03em;color:#fff;
+      text-decoration:none;white-space:nowrap;background:transparent;
+      transition:color .16s ease,transform .16s ease;
+    }
+    .hm-sub a:hover{color:var(--hm-accent);transform:translateX(2px)}
+
+    /* Sections */
+    .section{width:100%;padding:88px 6vw}
+    .summary-section{background:#fff;text-align:center}
+    .summary-copy{max-width:1060px;margin:0 auto;color:#475569;font-size:14px;line-height:2}
     .section-heading{
-      margin:0 0 42px;
-      font-size:clamp(28px,3.2vw,44px);
-      font-weight:300;
-      letter-spacing:.04em;
-      text-align:center;
-      text-transform:uppercase;
-      color:#374151;
+      margin:0 0 42px;font-size:clamp(28px,3.2vw,44px);font-weight:300;
+      letter-spacing:.04em;text-align:center;text-transform:uppercase;color:#374151;
     }
-
-    .features-section{
-      padding-top:30px;
-      padding-bottom:96px;
-    }
-
+    .features-section{padding-top:30px;padding-bottom:96px}
     .feature-grid{
-      max-width:1120px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:28px 58px;
+      max-width:1120px;margin:0 auto;display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 58px;
     }
-
-    .feature-item{
-      position:relative;
-      padding-left:28px;
-      color:#334155;
-      font-size:13px;
-      line-height:1.75;
-    }
-
+    .feature-item{position:relative;padding-left:28px;color:#334155;font-size:13px;line-height:1.75}
     .feature-item::before{
-      content:"";
-      position:absolute;
-      left:0;top:.68em;
-      width:15px;height:1px;
-      background:#64748b;
+      content:"";position:absolute;left:0;top:.68em;width:15px;height:1px;background:#64748b;
       transition:width .3s ease,background .3s ease;
     }
-
-    .feature-item:hover::before{
-      width:21px;
-      background:var(--accent);
-    }
-
-    .feature-item.reveal{
-      opacity:0;
-      transform:translateY(18px);
-      transition:opacity .65s ease,transform .65s ease;
-    }
-
-    .feature-item.reveal.visible{
-      opacity:1;transform:translateY(0);
-    }
+    .feature-item:hover::before{width:21px;background:var(--accent)}
+    .feature-item.reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+    .feature-item.reveal.visible{opacity:1;transform:translateY(0)}
 
     .overview-section{
-      padding:0;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      min-height:620px;
-      background:#fff;
+      padding:0;display:grid;grid-template-columns:1fr 1fr;min-height:620px;background:#fff;
     }
-
-    .overview-copy{
-      padding:82px 6vw 74px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-
+    .overview-copy{padding:82px 6vw 74px;display:flex;flex-direction:column;justify-content:center}
     .overview-heading{
-      margin:0 0 42px;
-      font-size:clamp(28px,3.1vw,44px);
-      font-weight:300;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      color:#475569;
+      margin:0 0 42px;font-size:clamp(28px,3.1vw,44px);font-weight:300;
+      letter-spacing:.05em;text-transform:uppercase;color:#475569;
     }
-
-    .overview-list{
-      max-width:650px;
-      display:grid;
-      gap:24px;
-    }
-
+    .overview-list{max-width:650px;display:grid;gap:24px}
     .overview-row{
-      display:grid;
-      grid-template-columns:180px 1fr;
-      gap:24px;
-      padding-bottom:18px;
-      border-bottom:1px solid #eef2f7;
+      display:grid;grid-template-columns:180px 1fr;gap:24px;
+      padding-bottom:18px;border-bottom:1px solid #eef2f7;
     }
-
-    .overview-label{
-      color:#334155;
-      font-size:13px;
-    }
-
-    .overview-value{
-      color:#64748b;
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .overview-image-wrap{
-      position:relative;
-      min-height:620px;
-      overflow:hidden;
-      background:#dbe3ea;
-    }
-
+    .overview-label{color:#334155;font-size:13px}
+    .overview-value{color:#64748b;font-size:13px;line-height:1.7}
+    .overview-image-wrap{position:relative;min-height:620px;overflow:hidden;background:#dbe3ea;cursor:pointer}
     .overview-image{
-      width:100%;height:100%;
-      object-fit:cover;
-      display:block;
+      width:100%;height:100%;object-fit:cover;display:block;
       transition:transform .75s cubic-bezier(.16,1,.3,1);
     }
+    .overview-image-wrap:hover .overview-image{transform:scale(1.035)}
 
-    .overview-image-wrap:hover .overview-image{
-      transform:scale(1.035);
-    }
-
-    .gallery-section{
-      background:var(--gallery);
-      color:#fff;
-      padding:86px 0 0;
-    }
-
+    /* Gallery: 12 images (4 x 3) */
+    .gallery-section{background:var(--gallery);color:#fff;padding:86px 0 0}
     .gallery-title{
-      margin:0;
-      padding:0 6vw 46px;
-      text-align:center;
-      font-size:32px;
-      line-height:1;
-      font-weight:300;
-      letter-spacing:.06em;
-      text-transform:uppercase;
+      margin:0;padding:0 6vw 46px;text-align:center;font-size:32px;line-height:1;
+      font-weight:300;letter-spacing:.06em;text-transform:uppercase;
     }
-
-    .gallery-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:2px;
-      background:#202020;
-    }
-
+    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:#202020}
     .gallery-item{
-      position:relative;
-      min-height:300px;
-      overflow:hidden;
-      background:#222;
-      cursor:pointer;
-      opacity:0;
-      transform:translateY(18px);
-      transition:opacity .65s ease,transform .65s ease;
+      position:relative;min-height:300px;overflow:hidden;background:#222;cursor:pointer;
+      opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;
     }
-
-    .gallery-item.visible{
-      opacity:1;transform:translateY(0);
-    }
-
+    .gallery-item.visible{opacity:1;transform:translateY(0)}
     .gallery-item img{
-      width:100%;height:100%;
-      min-height:300px;
-      object-fit:cover;
-      display:block;
+      width:100%;height:100%;min-height:300px;object-fit:cover;display:block;
       transition:transform .6s cubic-bezier(.16,1,.3,1),filter .35s ease;
     }
-
     .gallery-item::after{
-      content:"";
-      position:absolute;inset:0;
+      content:"";position:absolute;inset:0;
       background:linear-gradient(to top,rgba(0,0,0,.42),transparent 48%);
-      opacity:0;
-      transition:opacity .35s ease;
+      opacity:0;transition:opacity .35s ease;
     }
-
-    .gallery-item:hover img{
-      transform:scale(1.055);
-      filter:brightness(.92);
-    }
-
+    .gallery-item:hover img{transform:scale(1.055);filter:brightness(.92)}
     .gallery-item:hover::after{opacity:1}
 
-    .map-card{
-      grid-column:span 2;
-      min-height:300px;
-      background:#1f1f1f;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .map-card iframe{
-      width:100%;height:100%;
-      min-height:300px;
-      border:0;
-      display:block;
-      filter:grayscale(.08) contrast(1.03);
-    }
-
-    .map-label{
-      position:absolute;
-      top:18px;left:18px;
-      z-index:2;
-      padding:8px 12px;
-      border-radius:4px;
-      background:rgba(0,0,0,.68);
-      color:#fff;
-      font-size:10px;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      backdrop-filter:blur(8px);
-    }
-
+    /* Lightbox with previous / next arrows */
     .lightbox{
-      position:fixed;inset:0;
-      z-index:100;
-      background:rgba(0,0,0,.92);
+      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);
       display:flex;align-items:center;justify-content:center;
-      opacity:0;visibility:hidden;
-      transition:opacity .3s ease,visibility .3s ease;
-      padding:36px;
+      opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;padding:36px;
     }
     .lightbox.open{opacity:1;visibility:visible}
     .lightbox img{
-      max-width:min(92vw,1500px);
-      max-height:88vh;
-      object-fit:contain;
+      max-width:min(88vw,1500px);max-height:86vh;object-fit:contain;
       box-shadow:0 25px 70px rgba(0,0,0,.45);
-      transform:scale(.97);
-      transition:transform .35s ease;
+      transform:scale(.97);transition:transform .35s ease,opacity .2s ease;
+      user-select:none;-webkit-user-drag:none;
     }
     .lightbox.open img{transform:scale(1)}
-    .lightbox-close{
-      position:absolute;
-      right:24px;top:18px;
-      width:42px;height:42px;border-radius:50%;
-      background:rgba(255,255,255,.09);
-      border:1px solid rgba(255,255,255,.22);
-      color:#fff;
-      display:flex;align-items:center;justify-content:center;
-      cursor:pointer;
+    .lightbox-btn{
+      position:absolute;width:46px;height:46px;border-radius:50%;
+      background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);color:#fff;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;
+      transition:background .25s ease,border-color .25s ease,transform .25s ease;
+    }
+    .lightbox-btn:hover{background:var(--accent);border-color:var(--accent)}
+    .lightbox-close{right:24px;top:18px}
+    .lightbox-prev{left:24px;top:50%;transform:translateY(-50%)}
+    .lightbox-next{right:24px;top:50%;transform:translateY(-50%)}
+    .lightbox-prev:hover{transform:translateY(-50%) scale(1.07)}
+    .lightbox-next:hover{transform:translateY(-50%) scale(1.07)}
+    .lightbox-counter{
+      position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+      font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.8);
     }
 
-    footer{
-      background:#101010;
-      color:#aab2bd;
-      padding:46px 6vw;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:24px;
-      flex-wrap:wrap;
+    .loading,.error-state{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:40px;text-align:center;font-size:13px;letter-spacing:.08em;
+      text-transform:uppercase;color:#64748b;
     }
 
-    .footer-brand{
-      color:#fff;
-      font-size:13px;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-    }
+    /* Dark theme (follows the header theme switch) */
+    body.theme-effective-dark{background-color:#131414 !important;color:#e2e8f0}
+    body.theme-effective-dark .summary-section,
+    body.theme-effective-dark .features-section,
+    body.theme-effective-dark .overview-section{background:#131414}
+    body.theme-effective-dark .summary-copy{color:#c7c5c2}
+    body.theme-effective-dark .section-heading,
+    body.theme-effective-dark .overview-heading{color:#fff}
+    body.theme-effective-dark .feature-item{color:#d1d5db}
+    body.theme-effective-dark .feature-item::before{background:#a8a6a3}
+    body.theme-effective-dark .overview-label{color:#e5e7eb}
+    body.theme-effective-dark .overview-value{color:#a8a6a3}
+    body.theme-effective-dark .overview-row{border-bottom-color:#2a2c2c}
+    body.theme-effective-dark .overview-image-wrap{background:#232525}
 
-    .footer-meta{
-      font-size:11px;
-      letter-spacing:.05em;
-      opacity:.82;
-    }
+    body.theme-effective-dark #settingsDropdownMenu,
+    body.theme-effective-dark #userDropdownMenu,
+    body.theme-effective-dark #searchDropdownMenu,
+    body.theme-effective-dark #menuBox{background-color:#232525 !important;border-color:#3a3c3c !important}
+    body.theme-light #settingsDropdownMenu,
+    body.theme-light #userDropdownMenu,
+    body.theme-light #searchDropdownMenu,
+    body.theme-light #menuBox{background-color:#fff !important;border-color:#e2e8f0 !important}
+    body.theme-effective-dark .text-slate-900,
+    body.theme-effective-dark .text-slate-800,
+    body.theme-effective-dark .text-slate-700,
+    body.theme-effective-dark .text-black,
+    body.theme-effective-dark .text-gray-900,
+    body.theme-effective-dark .text-gray-800,
+    body.theme-effective-dark .text-gray-700{color:#fff !important}
+    body.theme-effective-dark .text-slate-600,
+    body.theme-effective-dark .text-slate-500,
+    body.theme-effective-dark .text-slate-400,
+    body.theme-effective-dark .nav-adaptive-muted{color:#c7c5c2 !important}
+    body.theme-effective-dark .border-slate-100,
+    body.theme-effective-dark .border-slate-200,
+    body.theme-effective-dark .border-slate-300{border-color:#3a3c3c !important}
+    body.theme-effective-dark .bg-slate-50,
+    body.theme-effective-dark .bg-white{background-color:#232525 !important}
+    body.theme-effective-dark #searchDropdownMenu input{color:#fff !important}
+    body.theme-effective-dark #searchDropdownMenu input::placeholder{color:#a8a6a3}
+    body.theme-effective-dark #settingsDropdownMenu a{color:#e2e8f0 !important}
+    body.theme-effective-dark #settingsDropdownMenu a:hover,
+    body.theme-light #settingsDropdownMenu a:hover{background-color:#d97706 !important;color:#fff !important}
+    body.theme-effective-dark #mainNav.nav-solid{background-color:#131414 !important;border-bottom-color:#3a3c3c !important}
+    body.theme-effective-dark #mainNav.nav-solid .nav-icon-btn,
+    body.theme-effective-dark #mainNav.nav-solid .theme-mode-switch{background-color:#2a2c2c !important;border-color:#3a3c3c !important}
+    body.theme-effective-dark #mainNav.nav-solid .nav-adaptive{color:#fff !important}
+    body.theme-effective-dark .theme-mode-btn.active{color:#fff !important}
+    body.theme-effective-dark #userProfileBtn{background:#2a2c2c;border-color:#f59e0b;color:#c7c5c2}
+    body.theme-effective-dark #userDropdownMenu .profile-avatar-large{background:#2a2c2c;color:#c7c5c2;border-color:#55575a !important}
+    body.theme-effective-dark #userDropdownMenu .profile-user-name{color:#fff !important}
+    body.theme-effective-dark #userDropdownMenu .profile-user-email{color:#a8a6a3 !important}
+    body.theme-effective-dark #userDropdownMenu .auth-action{background:#2a2c2c;color:#c7c5c2;border-color:#3a3c3c}
+    body.theme-effective-dark #userDropdownMenu .auth-action:hover{background:#d97706;color:#fff;border-color:#d97706}
 
-    .loading,
-    .error-state{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:40px;
-      text-align:center;
-      font-size:13px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:#64748b;
-    }
-
-    @media (max-width: 980px){
+    @media (max-width:980px){
       .feature-grid{grid-template-columns:repeat(2,1fr);gap:24px 30px}
       .overview-section{grid-template-columns:1fr}
       .overview-image-wrap{min-height:420px}
       .gallery-grid{grid-template-columns:repeat(2,1fr)}
-      .map-card{grid-column:span 2}
     }
 
-    @media (max-width: 620px){
-      .topbar{height:62px;padding:0 14px}
-      .brand{font-size:11px}
-      .top-btn{width:36px;height:36px}
-      .hero{min-height:80vh;height:80vh}
-      .hero-content{left:18px;right:18px;bottom:52px}
-      .hero-copy{width:100%;text-align:left}
-      .hero-title{font-size:38px}
-      .hero-location{font-size:11px}
+    @media (max-width:620px){
+      .hero{min-height:480px}
+      .hero-content{left:18px;right:18px;bottom:96px;max-width:none;text-align:left}
+      .hero-title{font-size:26px}
+      .hero-location{font-size:12px}
+      .hero-scroll{display:none}
+      .hero-bar{padding:8px 14px;flex-wrap:wrap}
+      .hero-codes{font-size:11px}
       .section{padding:64px 20px}
       .feature-grid{grid-template-columns:1fr}
       .section-heading{margin-bottom:30px}
       .overview-copy{padding:58px 20px}
       .overview-row{grid-template-columns:1fr;gap:6px}
       .overview-image-wrap{min-height:330px}
-      .gallery-title{padding:68px 20px 30px;font-size:28px}
+      .gallery-title{padding:0 20px 30px;font-size:28px}
       .gallery-grid{grid-template-columns:1fr}
       .gallery-item{min-height:270px}
       .gallery-item img{min-height:270px}
-      .map-card{grid-column:span 1;min-height:320px}
-      .map-card iframe{min-height:320px}
+      .lightbox-prev{left:10px}
+      .lightbox-next{right:10px}
     }
   </style>
 </head>
 
-<body>
-  <div id="app">
-    <div class="loading">Loading project...</div>
+<body class="bg-white text-slate-800">
+
+  <div id="pageLoadingBar" aria-hidden="true">
+    <div id="pageLoadingProgress"></div>
   </div>
 
+  <div id="pageContentWrapper">
+
+    <!-- Header is sourced directly from index.html so one header stays shared. -->
+    <div id="indexHeaderContainer" aria-label="Site header"></div>
+
+    <script>
+      window.__indexHeaderReady = (async function loadIndexHeader() {
+        const container = document.getElementById('indexHeaderContainer');
+        if (!container) return;
+
+        try {
+          const response = await fetch('index.html', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Unable to load index.html');
+
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const nav = doc.querySelector('#mainNav');
+          if (!nav) throw new Error('Header #mainNav was not found in index.html');
+
+          container.replaceChildren(nav.cloneNode(true));
+
+          const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
+          const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
+          if (homeLink) homeLink.href = 'index.html';
+
+          if (contactLink) {
+            contactLink.href = 'index.html#siteFooterContainer';
+            contactLink.addEventListener('click', function (event) {
+              const footer = document.getElementById('siteFooterContainer');
+              if (footer) {
+                event.preventDefault();
+                footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+          }
+
+          document.dispatchEvent(new CustomEvent('ynad-index-header-ready'));
+        } catch (error) {
+          console.error('Shared index header failed to load:', error);
+          container.innerHTML = '';
+        }
+      })();
+    </script>
+
+    <!-- Project content is rendered here -->
+    <div id="app">
+      <div class="loading">Loading project...</div>
+    </div>
+
+    <!-- Footer Section — loaded dynamically from footer.html (same as index.html) -->
+    <div id="siteFooterContainer"></div>
+
+    <script>
+    (function(){
+      const container = document.getElementById('siteFooterContainer');
+      if (!container) return;
+
+      fetch('footer.html', { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) throw new Error('Unable to load footer.html');
+          return response.text();
+        })
+        .then(html => {
+          const template = document.createElement('template');
+          template.innerHTML = html;
+
+          const scripts = Array.from(template.content.querySelectorAll('script'));
+          scripts.forEach(script => script.remove());
+
+          container.replaceChildren(template.content.cloneNode(true));
+
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            for (const attr of oldScript.attributes) {
+              newScript.setAttribute(attr.name, attr.value);
+            }
+            newScript.textContent = oldScript.textContent;
+            document.body.appendChild(newScript);
+            newScript.remove();
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          container.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;background:#0f172a;">Footer failed to load.</div>';
+        });
+    })();
+    </script>
+
+  </div>
+
+  <!-- Right Overlay Menu (same as other pages) -->
+  <div id="menuOverlay" onclick="handleOverlayClick(event)">
+    <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+      <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="mt-20 flex-1 flex flex-col">
+        <iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none; width:100%; height:260px;"></iframe>
+      </div>
+
+      <div class="pb-10"></div>
+    </div>
+  </div>
+
+  <!-- Lightbox with arrows -->
   <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="lightbox-close" type="button" aria-label="Close image" onclick="closeLightbox()">
+    <button class="lightbox-btn lightbox-close" type="button" aria-label="Close image" onclick="closeLightbox()">
       <i class="fa-solid fa-xmark"></i>
     </button>
+    <button class="lightbox-btn lightbox-prev" type="button" aria-label="Previous photo" onclick="lightboxStep(-1)">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
     <img id="lightboxImage" src="" alt="Project gallery preview">
+    <button class="lightbox-btn lightbox-next" type="button" aria-label="Next photo" onclick="lightboxStep(1)">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+    <div id="lightboxCounter" class="lightbox-counter"></div>
   </div>
 
   <script>
+    if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+    window.scrollTo(0, 0);
+
     const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-    const FALLBACK_IMAGES = [
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=86',
-      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1497366858526-0766cadbe8fa?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=84',
-      'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1200&q=84'
-    ];
+    const FALLBACK_HERO = 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1800&q=80';
 
     const SAMPLE_FEATURES = [
       'Premium architectural planning with efficient functional spaces',
@@ -572,6 +679,17 @@
       'Well-planned natural light and ventilation'
     ];
 
+    /* Photos in the order they were uploaded in project_add (13 max):
+       #1  -> beside the Overview section
+       #2..#13 -> Gallery (12 images, in the same order) */
+    const OVERVIEW_PHOTO_COUNT = 1;
+    const GALLERY_PHOTO_COUNT = 12;
+    let lightboxImages = [];
+    let lightboxIndex = 0;
+
+    /* ================================================================
+       HELPERS
+       ================================================================ */
     function normalizePhotoUrls(raw) {
       if (!raw) return [];
       if (Array.isArray(raw)) return raw.filter(Boolean);
@@ -628,8 +746,49 @@
       return direct || district || country;
     }
 
-    function mapQuery(project) {
-      return encodeURIComponent(projectLocation(project));
+    function ordinalSuffix(n) {
+      const rem100 = n % 100;
+      if (rem100 >= 11 && rem100 <= 13) return n + 'th';
+      switch (n % 10) {
+        case 1: return n + 'st';
+        case 2: return n + 'nd';
+        case 3: return n + 'rd';
+        default: return n + 'th';
+      }
+    }
+
+    function parseMediaItems(raw) {
+      if (!raw) return [];
+      let arr = raw;
+      if (typeof raw === 'string') {
+        try { arr = JSON.parse(raw); } catch (e) { arr = [raw]; }
+      }
+      if (!Array.isArray(arr)) return [];
+      return arr.map(x => typeof x === 'string' ? { url: x } : x).filter(x => x && x.url);
+    }
+
+    function getMediaItems(project, field, type) {
+      let items = parseMediaItems(project[field]);
+      if (!items.length) {
+        const legacy = field === 'report_urls' ? project.report_url : (field === 'video_urls' ? project.video_link : null);
+        if (legacy) items = [{ url: legacy }];
+      }
+      const st = String(project.status || '').toLowerCase();
+      const defType = st === 'completed' ? 'opening' : (st === 'upcoming' ? 'proposal' : 'ongoing');
+      return items.filter(x => (x.type || defType) === type);
+    }
+
+    function buildNumberedLinksHtml(items, label) {
+      let html = '';
+      for (let n = items.length; n >= 1; n--) {
+        html += `<a href="${escapeAttr(items[n - 1].url)}" target="_blank" rel="noopener">${ordinalSuffix(n)} ${label}</a>\n`;
+      }
+      return html;
+    }
+
+    function buildLatestVideoLinkHtml(items) {
+      if (!items.length) return '<a href="#" onclick="return false;">VIDEO</a>';
+      return `<a href="${escapeAttr(items[items.length - 1].url)}" target="_blank" rel="noopener">VIDEO</a>`;
     }
 
     function buildOverviewRows(project) {
@@ -645,7 +804,6 @@
         ['Structural Consultant', firstValue(project, ['structural_consultant'], '—')],
         ['RAJUK Approval No', firstValue(project, ['rajuk_approval_no','approval_no'], '—')]
       ];
-
       return rows.filter(row => row[1] !== '—' || row[0] === 'Address');
     }
 
@@ -675,25 +833,112 @@
       );
     }
 
-    function chooseImages(project) {
-      const existing = normalizePhotoUrls(project.photo_urls);
-      const all = [];
-      if (existing.length) all.push(...existing);
-      for (const img of FALLBACK_IMAGES) {
-        if (all.length >= 14) break;
-        if (!all.includes(img)) all.push(img);
-      }
-      return all.slice(0,14);
+    /* Hero + FILES / MEDIA bar */
+    function buildHeroBarHtml(project) {
+      const openingReport = getMediaItems(project, 'report_urls', 'opening').slice(-1)[0];
+      const ongoingReports = getMediaItems(project, 'report_urls', 'ongoing');
+      const openingVideos = getMediaItems(project, 'video_urls', 'opening');
+      const ongoingVideos = getMediaItems(project, 'video_urls', 'ongoing');
+      const proposalVideos = getMediaItems(project, 'video_urls', 'proposal');
+
+      const bd = safe(project.bd_number);
+      const ho = safe(project.ho_number);
+      const codesHtml = (bd || ho) ? `
+        <div class="hero-codes">
+          ${bd ? `<span>${escapeHtml(bd)}</span>` : ''}
+          ${(bd && ho) ? `<span class="code-divider"></span>` : ''}
+          ${ho ? `<span>HO-${escapeHtml(String(ho).replace(/^HO-/i,''))}</span>` : ''}
+        </div>` : '<div></div>';
+
+      return `
+        <div class="hero-bar">
+          ${codesHtml}
+
+          <div class="hero-actions">
+            <div class="hm-wrap files-wrap">
+              <button type="button" class="hero-btn files" aria-expanded="false" onclick="toggleHeroMenu(event, 'filesMenu-hero')">
+                <i class="fa-solid fa-folder-open"></i><span>FILES</span>
+              </button>
+              <div id="filesMenu-hero" class="hm-menu" role="menu">
+                <div class="hm-item">
+                  <span>REPORT</span><i class="fa-solid fa-chevron-right"></i>
+                  <div class="hm-sub">
+                    <a href="${openingReport ? escapeAttr(openingReport.url) : '#'}"
+                       target="${openingReport ? '_blank' : '_self'}"
+                       ${openingReport ? 'rel="noopener"' : 'onclick="return false;"'}>OPENING REPORT</a>
+                    <div class="hm-item">
+                      <span>ONGOING</span>
+                      ${ongoingReports.length > 0 ? `
+                      <i class="fa-solid fa-chevron-right"></i>
+                      <div class="hm-sub">
+                        ${buildNumberedLinksHtml(ongoingReports, 'report')}
+                      </div>` : ''}
+                    </div>
+                  </div>
+                </div>
+                <a class="hm-link" href="${project.documents_url ? escapeAttr(project.documents_url) : '#'}"
+                   target="${project.documents_url ? '_blank' : '_self'}"
+                   ${project.documents_url ? 'rel="noopener"' : 'onclick="return false;"'}>DOCUMENTS</a>
+              </div>
+            </div>
+
+            <div class="hm-wrap media-wrap">
+              <button type="button" class="hero-btn media" aria-expanded="false" onclick="toggleHeroMenu(event, 'mediaMenu-hero')">
+                <i class="fa-solid fa-photo-film"></i><span>MEDIA</span>
+              </button>
+              <div id="mediaMenu-hero" class="hm-menu" role="menu">
+                <div class="hm-item">
+                  <span>OPENING</span><i class="fa-solid fa-chevron-right"></i>
+                  <div class="hm-sub">
+                    ${buildLatestVideoLinkHtml(openingVideos)}
+                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                  </div>
+                </div>
+                <div class="hm-item">
+                  <span>ONGOING</span><i class="fa-solid fa-chevron-right"></i>
+                  <div class="hm-sub">
+                    ${buildNumberedLinksHtml(ongoingVideos, 'video')}
+                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                  </div>
+                </div>
+                <div class="hm-item">
+                  <span>PROPOSAL</span><i class="fa-solid fa-chevron-right"></i>
+                  <div class="hm-sub">
+                    ${buildLatestVideoLinkHtml(proposalVideos)}
+                    <a href="#" onclick="return false;">RAW PHOTO</a>
+                    <a href="#" onclick="return false;">RAW VIDEO</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
     }
 
+    /* ================================================================
+       RENDER
+       ================================================================ */
     function renderProject(project) {
-      const images = chooseImages(project);
-      const heroImage = images[0];
+      const photos = normalizePhotoUrls(project.photo_urls).slice(0, OVERVIEW_PHOTO_COUNT + GALLERY_PHOTO_COUNT);
+
+      /* Hero = C-Photo (same as the homepage slideshow). Falls back to the first photo. */
+      const heroImage = firstValue(project, ['c_photo_url'], photos[0] || FALLBACK_HERO);
+
+      const overviewImage = photos[0] || heroImage;
+      const galleryPhotos = photos.slice(OVERVIEW_PHOTO_COUNT, OVERVIEW_PHOTO_COUNT + GALLERY_PHOTO_COUNT);
+
+      /* Lightbox follows the exact upload order: #1 (overview) -> #2 ... #13 */
+      lightboxImages = photos.slice();
+
       const features = buildFeatures(project);
       const overviewRows = buildOverviewRows(project);
       const summary = buildSummary(project);
       const name = firstValue(project, ['project_name','name'], 'Project Details');
       const location = projectLocation(project);
+      const category = firstValue(project, ['category','project_type'], 'Project');
+      const locationLink = safe(project.location_link).trim();
 
       document.title = `${name} | YNAD Construction`;
 
@@ -710,42 +955,47 @@
         </div>
       `).join('');
 
-      const galleryHtml = images.slice(0,13).map((img, idx) => `
-        <div class="gallery-item reveal" style="transition-delay:${Math.min(idx,12)*.035}s"
-             onclick="openLightbox('${escapeAttr(img)}')">
-          <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${idx+1}" loading="${idx<4?'eager':'lazy'}">
-        </div>
-      `).join('');
+      const galleryHtml = galleryPhotos.map((img, i) => {
+        const lightboxPos = OVERVIEW_PHOTO_COUNT + i;
+        return `
+        <div class="gallery-item reveal" style="transition-delay:${Math.min(i,11)*.035}s"
+             onclick="openLightbox(${lightboxPos})">
+          <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${i+1}" loading="${i<4?'eager':'lazy'}">
+        </div>`;
+      }).join('');
 
-      const lastImage = images[13] || images[0];
+      const locationHtml = locationLink
+        ? `<a class="hero-location" href="${escapeAttr(locationLink)}" target="_blank" rel="noopener" title="Open project location">
+             <i class="fa-solid fa-location-dot"></i><span>${escapeHtml(location)}</span>
+           </a>`
+        : `<div class="hero-location"><i class="fa-solid fa-location-dot"></i><span>${escapeHtml(location)}</span></div>`;
+
+      const galleryBlock = galleryPhotos.length ? `
+          <section class="gallery-section">
+            <h2 class="gallery-title">Gallery</h2>
+            <div class="gallery-grid">${galleryHtml}</div>
+          </section>` : '';
 
       const app = document.getElementById('app');
       app.innerHTML = `
         <div class="project-page">
-          <header id="topbar" class="topbar">
-            <div class="brand">
-              <div class="brand-mark">YN</div>
-              <span>YNAD Construction</span>
-            </div>
-            <div class="top-actions">
-              <button class="top-btn" type="button" title="Back to projects" onclick="goBack()">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-            </div>
-          </header>
 
           <section class="hero" id="heroSection">
-            <img class="hero-image" src="${escapeAttr(heroImage)}" alt="${escapeAttr(name)}">
-            <div class="hero-content">
-              <div class="hero-copy">
-                <div class="hero-kicker">${escapeHtml(firstValue(project,['project_type','category'],'Project'))}</div>
-                <h1 class="hero-title">${escapeHtml(name)}</h1>
-                <div class="hero-location">${escapeHtml(location)}</div>
-              </div>
+            <div class="hero-bg">
+              <img class="hero-image" src="${escapeAttr(heroImage)}" alt="${escapeAttr(name)}">
             </div>
+
+            <div class="hero-content">
+              <div class="hero-kicker">${escapeHtml(category)}</div>
+              <h1 class="hero-title">${escapeHtml(name)}</h1>
+              ${locationHtml}
+            </div>
+
             <a href="#summary" class="hero-scroll" aria-label="Scroll to project summary">
               <i class="fa-solid fa-chevron-down text-[10px]"></i>
             </a>
+
+            ${buildHeroBarHtml(project)}
           </section>
 
           <section id="summary" class="section summary-section">
@@ -762,43 +1012,17 @@
               <h2 class="overview-heading">Overview</h2>
               <div class="overview-list">${overviewHtml}</div>
             </div>
-            <div class="overview-image-wrap">
-              <img class="overview-image" src="${escapeAttr(images[1] || heroImage)}" alt="${escapeAttr(name)} overview image" loading="lazy">
+            <div class="overview-image-wrap" ${photos.length ? 'onclick="openLightbox(0)"' : ''}>
+              <img class="overview-image" src="${escapeAttr(overviewImage)}" alt="${escapeAttr(name)} overview image" loading="lazy">
             </div>
           </section>
 
-          <section class="gallery-section">
-            <h2 class="gallery-title">Gallery</h2>
-
-            <div class="gallery-grid">
-              ${galleryHtml}
-              <div class="gallery-item reveal" style="transition-delay:.05s"
-                   onclick="openLightbox('${escapeAttr(lastImage)}')">
-                <img src="${escapeAttr(lastImage)}" alt="${escapeAttr(name)} gallery 14" loading="lazy">
-              </div>
-
-              <div class="map-card">
-                <div class="map-label"><i class="fa-solid fa-location-dot mr-1"></i> Project Location</div>
-                <iframe
-                  title="Project Google Map Preview"
-                  src="https://www.google.com/maps?q=${mapQuery(project)}&output=embed"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                  allowfullscreen>
-                </iframe>
-              </div>
-            </div>
-          </section>
-
-          <footer>
-            <div class="footer-brand">YNAD Construction</div>
-            <div class="footer-meta">${escapeHtml(name)} · ${escapeHtml(location)}</div>
-          </footer>
+          ${galleryBlock}
         </div>
       `;
 
       setupScrollEffects();
-      setupHeader();
+      bindHeaderScroll();
     }
 
     async function loadProject() {
@@ -858,17 +1082,52 @@
       }
     }
 
-    function setupHeader() {
-      const topbar = document.getElementById('topbar');
-      const hero = document.getElementById('heroSection');
-      if (!topbar || !hero) return;
+    /* ================================================================
+       HEADER SCROLL (same behaviour as the other pages):
+       transparent over the hero, solid white after it,
+       hides on scroll-down and returns on scroll-up.
+       ================================================================ */
+    function bindHeaderScroll() {
+      const run = function () {
+        const nav = document.getElementById('mainNav');
+        if (!nav || nav.dataset.scrollBound === 'true') return;
+        nav.dataset.scrollBound = 'true';
 
-      const onScroll = () => {
-        topbar.classList.toggle('solid', window.scrollY > hero.offsetHeight - 90);
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        function handleNavScroll() {
+          const currentScrollY = window.scrollY;
+          const hero = document.getElementById('heroSection');
+          const pastHero = hero
+            ? currentScrollY >= hero.offsetTop + hero.offsetHeight - nav.offsetHeight
+            : currentScrollY > 4;
+
+          nav.classList.toggle('nav-solid', pastHero);
+
+          if (currentScrollY <= 4) {
+            nav.classList.remove('nav-hidden');
+          } else if (currentScrollY > lastScrollY) {
+            nav.classList.add('nav-hidden');
+          } else if (currentScrollY < lastScrollY) {
+            nav.classList.remove('nav-hidden');
+          }
+
+          lastScrollY = currentScrollY;
+          ticking = false;
+        }
+
+        window.addEventListener('scroll', function () {
+          if (!ticking) {
+            window.requestAnimationFrame(handleNavScroll);
+            ticking = true;
+          }
+        }, { passive: true });
+
+        handleNavScroll();
       };
 
-      window.addEventListener('scroll', onScroll, {passive:true});
-      onScroll();
+      Promise.resolve(window.__indexHeaderReady).then(run);
     }
 
     function setupScrollEffects() {
@@ -885,13 +1144,38 @@
       items.forEach(item => observer.observe(item));
     }
 
-    function openLightbox(src) {
-      const box = document.getElementById('lightbox');
+    /* ================================================================
+       LIGHTBOX (arrow buttons, keyboard arrows, swipe)
+       ================================================================ */
+    function showLightbox(index) {
+      if (!lightboxImages.length) return;
+      const total = lightboxImages.length;
+      lightboxIndex = ((index % total) + total) % total;
+
       const image = document.getElementById('lightboxImage');
-      image.src = src;
+      const counter = document.getElementById('lightboxCounter');
+      image.style.opacity = '0';
+      image.onload = function () { image.style.opacity = '1'; };
+      image.src = lightboxImages[lightboxIndex];
+      if (image.complete) image.style.opacity = '1';
+      counter.textContent = (lightboxIndex + 1) + ' / ' + total;
+
+      const hideArrows = total < 2;
+      document.querySelector('.lightbox-prev').style.display = hideArrows ? 'none' : 'flex';
+      document.querySelector('.lightbox-next').style.display = hideArrows ? 'none' : 'flex';
+    }
+
+    function openLightbox(index) {
+      if (!lightboxImages.length) return;
+      const box = document.getElementById('lightbox');
+      showLightbox(index);
       box.classList.add('open');
       box.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
+    }
+
+    function lightboxStep(direction) {
+      showLightbox(lightboxIndex + direction);
     }
 
     function closeLightbox() {
@@ -905,11 +1189,567 @@
       if (e.target.id === 'lightbox') closeLightbox();
     });
 
+    (function () {
+      let startX = 0;
+      const box = document.getElementById('lightbox');
+      box.addEventListener('touchstart', e => { startX = e.changedTouches[0].clientX; }, { passive: true });
+      box.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 50) lightboxStep(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    })();
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeLightbox();
+      const box = document.getElementById('lightbox');
+      const isOpen = box.classList.contains('open');
+
+      if (e.key === 'Escape') {
+        if (isOpen) closeLightbox();
+        closeAllHeroMenus();
+        return;
+      }
+      if (!isOpen) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); lightboxStep(1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lightboxStep(-1); }
     });
 
-    loadProject();
+    /* ================================================================
+       FILES / MEDIA DROPDOWNS (hero bar)
+       Top-level opens on click, nested menus are hover-only.
+       ================================================================ */
+    const HM_ITEM_SEL = '.hm-item';
+    const hmHoverTimers = new WeakMap();
+    const hmWrapTimers = new WeakMap();
+
+    function clearHeroMenuHover(menu) {
+      if (!menu) return;
+      menu.querySelectorAll(HM_ITEM_SEL).forEach(function (item) {
+        item.classList.remove('hover-open');
+        const t = hmHoverTimers.get(item);
+        if (t) clearTimeout(t);
+      });
+      menu.querySelectorAll('.hm-sub').forEach(function (s) { s.classList.remove('flip-left'); });
+    }
+
+    function closeHeroMenu(menu) {
+      if (!menu) return;
+      menu.classList.remove('open');
+      clearHeroMenuHover(menu);
+      const btn = menu.closest('.hm-wrap') && menu.closest('.hm-wrap').querySelector('button');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function closeAllHeroMenus() {
+      document.querySelectorAll('.hm-menu.open').forEach(closeHeroMenu);
+    }
+
+    function positionHeroSubmenus(menu) {
+      if (!menu) return;
+      menu.querySelectorAll('.hm-sub').forEach(function (sub) {
+        sub.classList.remove('flip-left');
+        const rect = sub.getBoundingClientRect();
+        if (rect.right > window.innerWidth - 8) sub.classList.add('flip-left');
+      });
+    }
+
+    function toggleHeroMenu(event, menuId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const menu = document.getElementById(menuId);
+      if (!menu) return;
+
+      document.querySelectorAll('.hm-menu.open').forEach(function (other) {
+        if (other !== menu) closeHeroMenu(other);
+      });
+
+      const willOpen = !menu.classList.contains('open');
+      clearHeroMenuHover(menu);
+      menu.classList.toggle('open', willOpen);
+      const btn = menu.closest('.hm-wrap').querySelector('button');
+      if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+
+      if (willOpen) requestAnimationFrame(function () { positionHeroSubmenus(menu); });
+    }
+
+    /* Nested rows never lock open on click */
+    document.addEventListener('click', function (e) {
+      const nested = e.target.closest(HM_ITEM_SEL);
+      if (!nested) return;
+      if (nested.closest('.hm-sub')) return;
+      e.stopPropagation();
+    });
+
+    document.addEventListener('mouseover', function (e) {
+      const wrap = e.target.closest('.hm-wrap');
+      if (wrap) {
+        const wt = hmWrapTimers.get(wrap);
+        if (wt) clearTimeout(wt);
+      }
+
+      const item = e.target.closest(HM_ITEM_SEL);
+      if (!item || !item.parentElement) return;
+
+      const old = hmHoverTimers.get(item);
+      if (old) clearTimeout(old);
+
+      Array.from(item.parentElement.children).forEach(function (sibling) {
+        if (sibling !== item && sibling.classList && sibling.classList.contains('hover-open')) {
+          sibling.classList.remove('hover-open');
+        }
+      });
+
+      const sub = item.querySelector(':scope > .hm-sub');
+      if (!sub) return;
+
+      item.classList.add('hover-open');
+      requestAnimationFrame(function () {
+        sub.classList.remove('flip-left');
+        if (sub.getBoundingClientRect().right > window.innerWidth - 8) sub.classList.add('flip-left');
+      });
+    });
+
+    document.addEventListener('mouseout', function (e) {
+      let el = e.target.closest(HM_ITEM_SEL);
+      while (el) {
+        const item = el;
+        const stillInside = e.relatedTarget && item.contains(e.relatedTarget);
+        if (!stillInside) {
+          const old = hmHoverTimers.get(item);
+          if (old) clearTimeout(old);
+          hmHoverTimers.set(item, setTimeout(function () {
+            if (!item.matches(':hover')) item.classList.remove('hover-open');
+          }, 180));
+        }
+        el = item.parentElement ? item.parentElement.closest(HM_ITEM_SEL) : null;
+      }
+
+      const wrap = e.target.closest('.hm-wrap');
+      if (wrap && !(e.relatedTarget && wrap.contains(e.relatedTarget))) {
+        const old = hmWrapTimers.get(wrap);
+        if (old) clearTimeout(old);
+        hmWrapTimers.set(wrap, setTimeout(function () {
+          if (!wrap.matches(':hover')) closeHeroMenu(wrap.querySelector('.hm-menu'));
+        }, 250));
+      }
+    });
+
+    /* ================================================================
+       HEADER FUNCTIONS (profile, settings, search, theme, menu)
+       ================================================================ */
+    function getUserAvatarUrl(user) {
+      if (!user) return '';
+      const metadata = user.user_metadata || {};
+      const identities = Array.isArray(user.identities) ? user.identities : [];
+      const identityData = identities[0] && identities[0].identity_data ? identities[0].identity_data : {};
+      return metadata.avatar_url ||
+             metadata.picture ||
+             metadata.profile_image ||
+             metadata.photo_url ||
+             identityData.avatar_url ||
+             identityData.picture ||
+             '';
+    }
+
+    function getUserDisplayName(user) {
+      if (!user) return 'Guest User';
+      const metadata = user.user_metadata || {};
+      return metadata.full_name ||
+             metadata.name ||
+             metadata.user_name ||
+             metadata.username ||
+             (user.email ? user.email.split('@')[0] : 'User');
+    }
+
+    function setProfileImage(img, fallback, url) {
+      if (!img || !fallback) return;
+      if (!url) {
+        img.hidden = true;
+        img.removeAttribute('src');
+        fallback.hidden = false;
+        return;
+      }
+      img.onload = function () { img.hidden = false; fallback.hidden = true; };
+      img.onerror = function () { img.hidden = true; img.removeAttribute('src'); fallback.hidden = false; };
+      img.src = url;
+    }
+
+    function updateProfileUI(user) {
+      const profileBtn = document.getElementById('userProfileBtn');
+      const profileImg = document.getElementById('userProfileImage');
+      const profileFallback = document.getElementById('userProfileFallback');
+      const dropdownImg = document.getElementById('userDropdownImage');
+      const dropdownFallback = document.getElementById('userDropdownFallback');
+      const nameEl = document.getElementById('profileUserName');
+      const emailEl = document.getElementById('profileUserEmail');
+      const authAction = document.getElementById('profileAuthAction');
+      const authIcon = document.getElementById('profileAuthActionIcon');
+      const authText = document.getElementById('profileAuthActionText');
+
+      const loggedIn = !!user;
+
+      if (profileBtn) {
+        profileBtn.classList.toggle('is-authenticated', loggedIn);
+        profileBtn.title = loggedIn ? 'Profile' : 'Log in';
+      }
+
+      const avatarUrl = getUserAvatarUrl(user);
+      setProfileImage(profileImg, profileFallback, avatarUrl);
+      setProfileImage(dropdownImg, dropdownFallback, avatarUrl);
+
+      if (nameEl) nameEl.textContent = loggedIn ? getUserDisplayName(user) : 'Guest User';
+      if (emailEl) emailEl.textContent = loggedIn ? (user.email || 'Signed in') : 'Not logged in';
+
+      if (authAction && authIcon && authText) {
+        if (loggedIn) {
+          authAction.href = '#';
+          authAction.title = 'Log out';
+          authIcon.className = 'fa-solid fa-right-from-bracket';
+          authText.textContent = 'LOG OUT';
+          authAction.onclick = handleLogout;
+        } else {
+          authAction.href = 'login.html';
+          authAction.title = 'Log in';
+          authIcon.className = 'fa-solid fa-right-to-bracket';
+          authText.textContent = 'LOG IN';
+          authAction.onclick = null;
+        }
+      }
+    }
+
+    async function handleLogout(event) {
+      if (event) event.preventDefault();
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        updateProfileUI(null);
+        const dropdown = document.getElementById('userDropdownMenu');
+        if (dropdown) dropdown.classList.remove('open');
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    }
+
+    async function initAuthState() {
+      try {
+        if (window.__indexHeaderReady) await window.__indexHeaderReady;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        updateProfileUI(session ? session.user : null);
+        supabaseClient.auth.onAuthStateChange(function (_event, newSession) {
+          updateProfileUI(newSession ? newSession.user : null);
+        });
+      } catch (error) {
+        console.error('Auth state initialization failed:', error);
+        updateProfileUI(null);
+      }
+    }
+
+    function toggleSettingsDropdown(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('settingsDropdownMenu');
+      const userDropdown = document.getElementById('userDropdownMenu');
+      const searchDropdown = document.getElementById('searchDropdownMenu');
+      const searchBoxWrap = document.getElementById('searchBoxWrap');
+      const iconGroup = document.getElementById('homeContactLoginGroup');
+      if(userDropdown) userDropdown.classList.remove('open');
+      if(searchDropdown) searchDropdown.classList.remove('open');
+      if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+      if(iconGroup) iconGroup.classList.remove('icons-pushed');
+      dropdown.classList.toggle('open');
+    }
+
+    function toggleUserDropdown(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('userDropdownMenu');
+      const searchDropdown = document.getElementById('searchDropdownMenu');
+      const searchBoxWrap = document.getElementById('searchBoxWrap');
+      const settingsDropdown = document.getElementById('settingsDropdownMenu');
+      const iconGroup = document.getElementById('homeContactLoginGroup');
+      if(searchDropdown) searchDropdown.classList.remove('open');
+      if(searchBoxWrap) searchBoxWrap.classList.remove('search-open');
+      if(settingsDropdown) settingsDropdown.classList.remove('open');
+      if(iconGroup) iconGroup.classList.remove('icons-pushed');
+      dropdown.classList.toggle('open');
+    }
+
+    function toggleSearchDropdown(event) {
+      event.stopPropagation();
+      const wrap = document.getElementById('searchBoxWrap');
+      const searchDropdown = document.getElementById('searchDropdownMenu');
+      const userDropdown = document.getElementById('userDropdownMenu');
+      const settingsDropdown = document.getElementById('settingsDropdownMenu');
+      const iconGroup = document.getElementById('homeContactLoginGroup');
+      if(userDropdown) userDropdown.classList.remove('open');
+      if(settingsDropdown) settingsDropdown.classList.remove('open');
+
+      const isOpen = searchDropdown.classList.contains('open');
+
+      if (!isOpen) {
+        searchDropdown.classList.add('open');
+        wrap.classList.add('search-open');
+        if(iconGroup) iconGroup.classList.add('icons-pushed');
+        document.getElementById('projectSearchInput').focus();
+      } else {
+        const query = document.getElementById('projectSearchInput').value.trim();
+        if (query) {
+          executeSearch();
+        } else {
+          searchDropdown.classList.remove('open');
+          wrap.classList.remove('search-open');
+          if(iconGroup) iconGroup.classList.remove('icons-pushed');
+        }
+      }
+    }
+
+    window.addEventListener('click', function(e) {
+      const userDropdown = document.getElementById('userDropdownMenu');
+      const profileBtn = document.getElementById('userProfileBtn');
+      if (userDropdown && userDropdown.classList.contains('open')) {
+        if (!userDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+          userDropdown.classList.remove('open');
+        }
+      }
+
+      const settingsDropdown = document.getElementById('settingsDropdownMenu');
+      const settingsBtn = document.getElementById('settingsIconBtn');
+      if (settingsDropdown && settingsDropdown.classList.contains('open')) {
+        if (!settingsDropdown.contains(e.target) && !settingsBtn.contains(e.target)) {
+          settingsDropdown.classList.remove('open');
+        }
+      }
+
+      const searchBoxWrap = document.getElementById('searchBoxWrap');
+      const searchDropdown = document.getElementById('searchDropdownMenu');
+      if (searchDropdown && searchDropdown.classList.contains('open')) {
+        if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
+          searchDropdown.classList.remove('open');
+          searchBoxWrap.classList.remove('search-open');
+          const iconGroup = document.getElementById('homeContactLoginGroup');
+          if(iconGroup) iconGroup.classList.remove('icons-pushed');
+        }
+      }
+
+      /* Close FILES / MEDIA when clicking outside them */
+      document.querySelectorAll('.hm-menu.open').forEach(function (menu) {
+        const wrap = menu.closest('.hm-wrap');
+        if (wrap && !wrap.contains(e.target)) closeHeroMenu(menu);
+      });
+    });
+
+    /* Search: finds a project by code, name, organization, donor, country or
+       district, then opens its project view page. */
+    async function executeSearch() {
+      const input = document.getElementById('projectSearchInput');
+      const feedback = document.getElementById('searchResultFeedback');
+      const query = input.value.trim().toUpperCase();
+
+      if (!query) {
+        feedback.textContent = 'Please enter project details.';
+        feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50';
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from('projects')
+        .select('id, bd_number, ho_number, project_name, local_name, organization, donor_name, donated_country, district');
+
+      if (error) {
+        feedback.textContent = 'Search failed. Please try again.';
+        feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50';
+        return;
+      }
+
+      const matches = (data || []).filter(p =>
+        [p.bd_number, p.ho_number, p.project_name, p.local_name, p.organization, p.donor_name, p.donated_country, p.district]
+          .some(v => String(v || '').toUpperCase().includes(query))
+      );
+
+      if (matches.length > 0) {
+        feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50';
+        feedback.textContent = matches.length === 1
+          ? 'Found 1 matching project! Opening...'
+          : `Found ${matches.length} matching projects! Opening the first one...`;
+        setTimeout(() => {
+          window.location.href = 'project_view.html?id=' + encodeURIComponent(matches[0].id);
+        }, 700);
+      } else {
+        feedback.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50';
+        feedback.textContent = `No match found for "${input.value.trim()}".`;
+      }
+    }
+
+    function handleProjectSearch(event) {
+      if (event.key === 'Enter') executeSearch();
+    }
+
+    function setThemeMode(mode) {
+      const validModes = ['light', 'dynamic', 'dark'];
+      if (!validModes.includes(mode)) mode = 'dynamic';
+
+      const switcher = document.getElementById('themeModeSwitch');
+      const buttons = document.querySelectorAll('.theme-mode-btn');
+      const indexMap = { light: 0, dynamic: 1, dark: 2 };
+
+      buttons.forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+      });
+
+      if (switcher) switcher.style.setProperty('--theme-index', indexMap[mode]);
+
+      const body = document.body;
+      body.classList.add('theme-transition');
+      body.classList.remove('theme-light', 'theme-dynamic', 'theme-dark', 'theme-effective-dark');
+      body.classList.add('theme-' + mode);
+
+      const prefersDark = window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      const isEffectiveDark = mode === 'dark' || (mode === 'dynamic' && prefersDark);
+      if (isEffectiveDark) body.classList.add('theme-effective-dark');
+
+      document.documentElement.classList.toggle('dark', isEffectiveDark);
+
+      try {
+        const menuFrame = document.getElementById('menuLinksFrame');
+        if (menuFrame && menuFrame.contentWindow) {
+          menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+        }
+      } catch (e) {}
+
+      window.clearTimeout(window.__ynadThemeTransitionTimer);
+      window.__ynadThemeTransitionTimer = window.setTimeout(function() {
+        body.classList.remove('theme-transition');
+      }, 500);
+
+      try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
+    }
+
+    window.addEventListener('message', function(e) {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'ynad-request-theme') {
+        const isEffectiveDark = document.body.classList.contains('theme-effective-dark');
+        try {
+          const menuFrame = document.getElementById('menuLinksFrame');
+          if (menuFrame && menuFrame.contentWindow && e.source === menuFrame.contentWindow) {
+            menuFrame.contentWindow.postMessage({ type: 'ynad-theme', dark: isEffectiveDark }, '*');
+          }
+        } catch (err) {}
+      }
+    });
+
+    (function initThemeMode() {
+      let saved = 'dynamic';
+      try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+
+      document.addEventListener('DOMContentLoaded', async function() {
+        try { if (window.__indexHeaderReady) await window.__indexHeaderReady; } catch (e) {}
+
+        setThemeMode(saved);
+
+        if (window.matchMedia) {
+          const media = window.matchMedia('(prefers-color-scheme: dark)');
+          const syncDynamicTheme = function() {
+            if (document.body.classList.contains('theme-dynamic')) setThemeMode('dynamic');
+          };
+          if (media.addEventListener) media.addEventListener('change', syncDynamicTheme);
+          else if (media.addListener) media.addListener(syncDynamicTheme);
+        }
+      });
+    })();
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'ynad-theme-mode') {
+        try { setThemeMode(localStorage.getItem('ynad-theme-mode') || 'dynamic'); } catch (err) {}
+      }
+    });
+
+    function openMenuWithEffect() {
+      const icon = document.getElementById('hamburgerBtnIcon');
+      const pageWrapper = document.getElementById('pageContentWrapper');
+      const overlay = document.getElementById('menuOverlay');
+      const menuFrame = document.getElementById('menuLinksFrame');
+
+      icon.classList.add('clicked');
+
+      setTimeout(() => {
+        icon.classList.remove('clicked');
+        pageWrapper.classList.add('blurred');
+
+        setTimeout(() => {
+          menuFrame.src = 'menu.html';
+          overlay.classList.add('open');
+          document.body.style.overflow = 'hidden';
+
+          menuFrame.onload = function () {
+            try { menuFrame.contentWindow.postMessage({ type: 'ynad-menu-open' }, '*'); } catch (e) {}
+          };
+        }, 200);
+
+      }, 200);
+    }
+
+    function closeMenuWithEffect() {
+      const overlay = document.getElementById('menuOverlay');
+      const pageWrapper = document.getElementById('pageContentWrapper');
+      const menuFrame = document.getElementById('menuLinksFrame');
+
+      try {
+        if (menuFrame && menuFrame.contentWindow) {
+          menuFrame.contentWindow.postMessage({ type: 'ynad-menu-closing' }, '*');
+        }
+      } catch (e) {}
+
+      setTimeout(() => {
+        overlay.classList.remove('open');
+
+        setTimeout(() => {
+          pageWrapper.classList.remove('blurred');
+          document.body.style.overflow = 'auto';
+          menuFrame.src = 'about:blank';
+        }, 400);
+
+      }, 380);
+    }
+
+    function handleOverlayClick(event) {
+      if (event.target === document.getElementById('menuOverlay')) closeMenuWithEffect();
+    }
+
+    /* bfcache / back button: clear leftover states */
+    window.addEventListener('pageshow', function () {
+      const pageWrapper = document.getElementById('pageContentWrapper');
+      if (pageWrapper) pageWrapper.classList.remove('blurred');
+      closeAllHeroMenus();
+    });
+
+    /* ================================================================
+       START
+       ================================================================ */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProject();
+      initAuthState();
+
+      const loadingProgress = document.getElementById('pageLoadingProgress');
+      const finishPageLoad = () => {
+        if (!loadingProgress) return;
+        loadingProgress.style.width = '100%';
+        setTimeout(() => { loadingProgress.style.opacity = '0'; }, 250);
+        setTimeout(() => {
+          const bar = document.getElementById('pageLoadingBar');
+          if (bar) bar.style.display = 'none';
+        }, 650);
+      };
+
+      if (loadingProgress) {
+        requestAnimationFrame(() => { loadingProgress.style.width = '72%'; });
+      }
+
+      if (document.readyState === 'complete') {
+        finishPageLoad();
+      } else {
+        window.addEventListener('load', finishPageLoad, { once: true });
+      }
+    });
   </script>
 </body>
 </html>
