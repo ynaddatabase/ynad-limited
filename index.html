@@ -4264,30 +4264,40 @@ function closeMenuWithEffect() {
         // are uploaded, shows "7TH VIDEO, 6TH VIDEO, 5TH VIDEO, ... 1ST VIDEO".
         // The most recently uploaded video is always the highest number and
         // always appears at the top of the list.
-        function getOngoingCount(project, type) {
-            const arr = project['ongoing_' + type + '_urls'];
-            if (Array.isArray(arr)) return arr.length;
-            return Math.max(0, Number(project['ongoing_' + type + '_count']) || 0);
+        function parseMediaItems(raw) {
+            if (!raw) return [];
+            let arr = raw;
+            if (typeof raw === 'string') {
+                try { arr = JSON.parse(raw); } catch (e) { arr = [raw]; }
+            }
+            if (!Array.isArray(arr)) return [];
+            return arr.map(x => typeof x === 'string' ? { url: x } : x).filter(x => x && x.url);
         }
 
-        function buildOngoingVideoLinksHtml(totalOngoingVideos) {
-            const count = Number(totalOngoingVideos) || 0;
-            if (count <= 0) return '';
+        // Returns the uploaded items (oldest -> newest) of one type for a project.
+        function getMediaItems(project, field, type) {
+            let items = parseMediaItems(project[field]);
+            if (!items.length) {
+                const legacy = field === 'report_urls' ? project.report_url : (field === 'video_urls' ? project.video_link : null);
+                if (legacy) items = [{ url: legacy }];
+            }
+            const st = String(project.status || '').toLowerCase();
+            const defType = st === 'completed' ? 'opening' : (st === 'upcoming' ? 'proposal' : 'ongoing');
+            return items.filter(x => (x.type || defType) === type);
+        }
+
+        // Newest first: 3RD REPORT, 2ND REPORT, 1ST REPORT (each opens its real file).
+        function buildNumberedLinksHtml(items, label) {
             let html = '';
-            for (let n = count; n >= 1; n--) {
-                html += `<a href="#" onclick="return false;">${ordinalSuffix(n)} video</a>\n`;
+            for (let n = items.length; n >= 1; n--) {
+                html += `<a href="${escapeHtml(items[n - 1].url)}" target="_blank" rel="noopener">${ordinalSuffix(n)} ${label}</a>\n`;
             }
             return html;
         }
 
-        function buildOngoingReportLinksHtml(totalOngoingReports) {
-            const count = Number(totalOngoingReports) || 0;
-            if (count <= 0) return '';
-            let html = '';
-            for (let n = count; n >= 1; n--) {
-                html += `<a href="#" onclick="return false;">${ordinalSuffix(n)} report</a>\n`;
-            }
-            return html;
+        function buildLatestVideoLinkHtml(items) {
+            if (!items.length) return '<a href="#" onclick="return false;">VIDEO</a>';
+            return `<a href="${escapeHtml(items[items.length - 1].url)}" target="_blank" rel="noopener">VIDEO</a>`;
         }
 
         // Handles photo_urls whether it's stored as a real array (jsonb),
