@@ -906,6 +906,8 @@ projectFormEl.addEventListener('submit', async function (e) {
     const join = (a, b) => [a, b].filter(Boolean).join(', ') || null;
     u.photo_urls = [...(existing.photo_urls || []), ...photoUrls];
     u.report_urls = [...(existing.report_urls || []), ...record.report_urls];
+    const oldVideos = existing.video_urls || [];
+    u.video_urls = [...oldVideos, ...record.video_urls.filter(nv => !oldVideos.some(ov => ov.url === nv.url))];
     const rp = join(existing.raw_photos_link, rawPhotos), rv = join(existing.raw_video_link, rawVideos);
     if (rp) u.raw_photos_link = rp;
     if (rv) u.raw_video_link = rv;
