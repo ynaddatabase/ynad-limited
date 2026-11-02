@@ -896,7 +896,7 @@ projectFormEl.addEventListener('submit', async function (e) {
        - Edit mode (?edit=id): empty text fields are cleared too.
        - Photos / reports / raw media / documents / C-photo are always kept unless new ones are given. */
     const u = {};
-    const keepOld = ['photo_urls', 'report_urls', 'raw_photos_link', 'raw_video_link', 'documents_url', 'c_photo_url'];
+    const keepOld = ['photo_urls', 'report_urls', 'video_urls', 'raw_photos_link', 'raw_video_link', 'documents_url', 'c_photo_url'];
     Object.entries(record).forEach(([k, val]) => {
       if (editRecord && !keepOld.includes(k)) { u[k] = val; return; }
       if (val === null || val === '' || (Array.isArray(val) && !val.length)) return;
