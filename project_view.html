@@ -386,7 +386,13 @@
       margin:0;padding:0 6vw 46px;text-align:center;font-size:32px;line-height:1;
       font-weight:300;letter-spacing:.06em;text-transform:uppercase;
     }
-    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:#202020}
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:6px;
+      padding:6px;
+      background:#202020;
+    }
     .gallery-item{
       position:relative;min-height:300px;overflow:hidden;background:#222;cursor:pointer;
       opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;
@@ -404,20 +410,41 @@
     .gallery-item:hover img{transform:scale(1.055);filter:brightness(.92)}
     .gallery-item:hover::after{opacity:1}
 
-    /* Lightbox with previous / next arrows */
+    /* Lightbox: two image layers create a real left/right slide transition */
     .lightbox{
       position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);
       display:flex;align-items:center;justify-content:center;
       opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;padding:36px;
     }
     .lightbox.open{opacity:1;visibility:visible}
-    .lightbox img{
-      max-width:min(88vw,1500px);max-height:86vh;object-fit:contain;
-      box-shadow:0 25px 70px rgba(0,0,0,.45);
-      transform:scale(.97);transition:transform .35s ease,opacity .2s ease;
-      user-select:none;-webkit-user-drag:none;
+    .lightbox-stage{
+      position:relative;
+      width:min(88vw,1500px);
+      height:86vh;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;isolation:isolate;
+      opacity:0;transform:scale(.975);
+      transition:opacity .3s ease,transform .3s ease;
     }
-    .lightbox.open img{transform:scale(1)}
+    .lightbox.open .lightbox-stage{opacity:1;transform:scale(1)}
+    .lightbox-stage .lightbox-photo{
+      position:absolute;inset:0;
+      display:block;width:100%;height:100%;max-width:none;max-height:none;
+      object-fit:contain;
+      box-shadow:0 25px 70px rgba(0,0,0,.45);
+      transform:translateX(0);opacity:1;
+      transition:transform .46s cubic-bezier(.22,.68,0,1),opacity .38s ease;
+      user-select:none;-webkit-user-drag:none;
+      pointer-events:none;
+    }
+    .lightbox-stage .lightbox-photo.is-hidden{
+      visibility:hidden;opacity:0;transform:translateX(0);
+    }
+    .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(110%)}
+    .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-110%)}
+    .lightbox-stage .lightbox-photo.is-leaving-left{opacity:0;transform:translateX(-110%)}
+    .lightbox-stage .lightbox-photo.is-leaving-right{opacity:0;transform:translateX(110%)}
+    .lightbox-stage .lightbox-photo.is-active{visibility:visible;opacity:1;transform:translateX(0)}
     .lightbox-btn{
       position:absolute;width:46px;height:46px;border-radius:50%;
       background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);color:#fff;
@@ -519,7 +546,7 @@
       .overview-row{grid-template-columns:1fr;gap:6px}
       .overview-image-wrap{min-height:330px}
       .gallery-title{padding:0 20px 30px;font-size:28px}
-      .gallery-grid{grid-template-columns:1fr}
+      .gallery-grid{grid-template-columns:1fr;gap:6px;padding:6px}
       .gallery-item{min-height:270px}
       .gallery-item img{min-height:270px}
       .lightbox-prev{left:10px}
@@ -647,7 +674,10 @@
     <button class="lightbox-btn lightbox-prev" type="button" aria-label="Previous photo" onclick="lightboxStep(-1)">
       <i class="fa-solid fa-chevron-left"></i>
     </button>
-    <img id="lightboxImage" src="" alt="Project gallery preview">
+    <div class="lightbox-stage">
+      <img id="lightboxImage" class="lightbox-photo is-active" src="" alt="Project gallery preview">
+      <img id="lightboxIncomingImage" class="lightbox-photo is-hidden" src="" alt="" aria-hidden="true">
+    </div>
     <button class="lightbox-btn lightbox-next" type="button" aria-label="Next photo" onclick="lightboxStep(1)">
       <i class="fa-solid fa-chevron-right"></i>
     </button>
@@ -686,6 +716,12 @@
     const GALLERY_PHOTO_COUNT = 12;
     let lightboxImages = [];
     let lightboxIndex = 0;
+    let lightboxCurrentImage = document.getElementById('lightboxImage');
+    let lightboxIncomingImage = document.getElementById('lightboxIncomingImage');
+    let lightboxAnimating = false;
+    let lightboxPendingDirection = 0;
+    let lightboxTransitionToken = 0;
+    let lightboxTransitionTimer = null;
 
     /* ================================================================
        HELPERS
@@ -1147,18 +1183,33 @@
     /* ================================================================
        LIGHTBOX (arrow buttons, keyboard arrows, swipe)
        ================================================================ */
+    function updateLightboxCounter() {
+      const counter = document.getElementById('lightboxCounter');
+      if (counter) counter.textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+    }
+
+    function resetLightboxLayers() {
+      if (lightboxCurrentImage) {
+        lightboxCurrentImage.className = 'lightbox-photo is-active';
+        lightboxCurrentImage.onload = null;
+        lightboxCurrentImage.onerror = null;
+      }
+      if (lightboxIncomingImage) {
+        lightboxIncomingImage.className = 'lightbox-photo is-hidden';
+        lightboxIncomingImage.onload = null;
+        lightboxIncomingImage.onerror = null;
+        lightboxIncomingImage.removeAttribute('src');
+      }
+    }
+
     function showLightbox(index) {
       if (!lightboxImages.length) return;
       const total = lightboxImages.length;
       lightboxIndex = ((index % total) + total) % total;
 
-      const image = document.getElementById('lightboxImage');
-      const counter = document.getElementById('lightboxCounter');
-      image.style.opacity = '0';
-      image.onload = function () { image.style.opacity = '1'; };
-      image.src = lightboxImages[lightboxIndex];
-      if (image.complete) image.style.opacity = '1';
-      counter.textContent = (lightboxIndex + 1) + ' / ' + total;
+      resetLightboxLayers();
+      lightboxCurrentImage.src = lightboxImages[lightboxIndex];
+      updateLightboxCounter();
 
       const hideArrows = total < 2;
       document.querySelector('.lightbox-prev').style.display = hideArrows ? 'none' : 'flex';
@@ -1167,6 +1218,11 @@
 
     function openLightbox(index) {
       if (!lightboxImages.length) return;
+      lightboxTransitionToken++;
+      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
+      lightboxAnimating = false;
+      lightboxPendingDirection = 0;
+
       const box = document.getElementById('lightbox');
       showLightbox(index);
       box.classList.add('open');
@@ -1174,12 +1230,117 @@
       document.body.style.overflow = 'hidden';
     }
 
+    function finishLightboxStep(nextIndex, token, current, incoming, finishHandler) {
+      if (token !== lightboxTransitionToken) return;
+      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
+      if (finishHandler) incoming.removeEventListener('transitionend', finishHandler);
+      lightboxTransitionTimer = null;
+
+      // Swap the two image layers instead of reloading the visible image.
+      current.id = 'lightboxIncomingImage';
+      incoming.id = 'lightboxImage';
+      lightboxCurrentImage = incoming;
+      lightboxIncomingImage = current;
+
+      lightboxCurrentImage.className = 'lightbox-photo is-active';
+      lightboxIncomingImage.className = 'lightbox-photo is-hidden';
+      lightboxIncomingImage.onload = null;
+      lightboxIncomingImage.onerror = null;
+      lightboxIncomingImage.removeAttribute('src');
+
+      lightboxIndex = nextIndex;
+      updateLightboxCounter();
+      lightboxAnimating = false;
+
+      if (lightboxPendingDirection !== 0) {
+        const queuedDirection = Math.sign(lightboxPendingDirection);
+        lightboxPendingDirection -= queuedDirection;
+        window.setTimeout(() => animateLightboxStep(queuedDirection), 35);
+      }
+    }
+
+    function animateLightboxStep(direction) {
+      if (!lightboxImages.length || lightboxImages.length < 2) return;
+      const total = lightboxImages.length;
+      const nextIndex = ((lightboxIndex + direction) % total + total) % total;
+      const current = lightboxCurrentImage;
+      const incoming = lightboxIncomingImage;
+      const token = ++lightboxTransitionToken;
+      let started = false;
+      let finished = false;
+
+      lightboxAnimating = true;
+      incoming.className = 'lightbox-photo ' + (direction > 0 ? 'is-entering-right' : 'is-entering-left');
+      incoming.onload = null;
+      incoming.onerror = null;
+
+      let onSlideEnd = null;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        finishLightboxStep(nextIndex, token, current, incoming, onSlideEnd);
+      };
+
+      const startTransition = () => {
+        if (started || token !== lightboxTransitionToken) return;
+        started = true;
+        incoming.onload = null;
+        incoming.onerror = null;
+
+        // Force the starting position to be painted before moving the new image.
+        void incoming.offsetWidth;
+        requestAnimationFrame(() => {
+          if (token !== lightboxTransitionToken) return;
+          current.classList.remove('is-active');
+          current.classList.add(direction > 0 ? 'is-leaving-left' : 'is-leaving-right');
+          incoming.classList.remove('is-entering-right', 'is-entering-left');
+          incoming.classList.add('is-active');
+        });
+
+        onSlideEnd = function (event) {
+          if (event.target === incoming && event.propertyName === 'transform') finish();
+        };
+        incoming.addEventListener('transitionend', onSlideEnd);
+        // Fallback for reduced-motion settings or browsers without transition events.
+        lightboxTransitionTimer = window.setTimeout(finish, 520);
+      };
+
+      incoming.onerror = () => {
+        if (token !== lightboxTransitionToken) return;
+        incoming.onload = null;
+        incoming.onerror = null;
+        lightboxAnimating = false;
+        showLightbox(nextIndex);
+        if (lightboxPendingDirection !== 0) {
+          const queuedDirection = Math.sign(lightboxPendingDirection);
+          lightboxPendingDirection -= queuedDirection;
+          window.setTimeout(() => animateLightboxStep(queuedDirection), 35);
+        }
+      };
+      incoming.onload = startTransition;
+      incoming.src = lightboxImages[nextIndex];
+
+      if (incoming.complete && incoming.naturalWidth > 0) startTransition();
+    }
+
     function lightboxStep(direction) {
-      showLightbox(lightboxIndex + direction);
+      if (!lightboxImages.length || !direction) return;
+      const step = direction > 0 ? 1 : -1;
+      if (lightboxAnimating) {
+        lightboxPendingDirection += step;
+        return;
+      }
+      animateLightboxStep(step);
     }
 
     function closeLightbox() {
       const box = document.getElementById('lightbox');
+      lightboxTransitionToken++;
+      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
+      lightboxTransitionTimer = null;
+      lightboxAnimating = false;
+      lightboxPendingDirection = 0;
+      resetLightboxLayers();
       box.classList.remove('open');
       box.setAttribute('aria-hidden','true');
       document.body.style.overflow = '';
