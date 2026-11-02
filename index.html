@@ -3861,11 +3861,6 @@ function closeMenuWithEffect() {
             }
         }
 
-        // Builds the ONGOING submenu's video links: given a total count of
-        // uploaded ongoing videos, lists them newest-first — i.e. if 7 videos
-        // are uploaded, shows "7TH VIDEO, 6TH VIDEO, 5TH VIDEO, ... 1ST VIDEO".
-        // The most recently uploaded video is always the highest number and
-        // always appears at the top of the list.
         function parseMediaItems(raw) {
             if (!raw) return [];
             let arr = raw;
