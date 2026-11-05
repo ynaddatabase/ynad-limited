@@ -100,6 +100,8 @@ body.manage-on .tools{display:flex}
 .tools button{width:30px;height:30px;border:0;border-radius:6px;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;font-size:11px}
 .tools button:hover{background:#d97706}
 .tools .del:hover{background:#dc2626}
+.tools .drag{cursor:grab;touch-action:none}
+.tools .drag:active{cursor:grabbing}
 body.theme-effective-dark .pg-head{background:#131414;border-color:#2a2c2c}
 body.theme-effective-dark .pg-head h1{color:#fff}
 
@@ -129,8 +131,6 @@ body.theme-effective-dark .pg-head h1{color:#fff}
 .fld input,.fld textarea,.fld select{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font:14px/1.55 'Poppins',sans-serif;color:#0f172a;background:#fff;outline:0;transition:border-color .2s,box-shadow .2s}
 .fld input:focus,.fld textarea:focus,.fld select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)}
 .fld textarea{resize:vertical;min-height:90px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:520px){.row2{grid-template-columns:1fr}}
 .err{display:none;color:#dc2626;font-size:12px;font-weight:500;margin:0 0 12px}
 .pick{display:inline-flex;gap:8px;align-items:center;padding:9px 14px;border:1.5px dashed #cbd5e1;border-radius:9px;background:transparent;font:600 12px 'Poppins',sans-serif;color:#64748b;cursor:pointer}
 .pick:hover{border-color:#d97706;color:#d97706}
@@ -145,23 +145,39 @@ body.theme-effective-dark .fld input,body.theme-effective-dark .fld textarea,bod
 body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 </style>
 <style>
+/* ---------- photo loading (shimmer + blur-in, same as project gallery) ---------- */
+@keyframes shimmerMove{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes lbSpin{to{transform:rotate(360deg)}}
+
 /* ---------- team grid (active members) ---------- */
 .team-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:36px 28px}
 @media(max-width:1000px){.team-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:720px){.team-grid{grid-template-columns:repeat(2,1fr);gap:28px 16px}}
 .card{position:relative;opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .6s cubic-bezier(.22,.61,.36,1)}
 .card.revealed{opacity:1;transform:none}
-.tphoto{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#e5e7eb;cursor:pointer;border:1.5px solid #dbe1e8;transition:border-color .3s}
+.card.dragging-src{opacity:.25!important}
+.tphoto{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;cursor:pointer;border:1.5px solid #dbe1e8;transition:border-color .3s;
+  background:linear-gradient(100deg,#e5e7eb 30%,#f3f4f6 50%,#e5e7eb 70%);background-size:200% 100%;animation:shimmerMove 1.5s linear infinite}
+.tphoto.img-loaded{animation:none;background:#e5e7eb}
 .tphoto:hover{border-color:#d97706}
-body.theme-effective-dark .tphoto{border-color:#3a3c3c}
-.tphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+body.theme-effective-dark .tphoto{border-color:#3a3c3c;background:linear-gradient(100deg,#222 30%,#343434 50%,#222 70%);background-size:200% 100%}
+body.theme-effective-dark .tphoto.img-loaded{animation:none;background:#2a2c2c}
+.tphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;
+  opacity:0;filter:blur(16px);transform:scale(1.06);
+  transition:opacity .9s ease,filter 1s ease,transform 1s cubic-bezier(.16,1,.3,1)}
+.tphoto.img-loaded img{opacity:1;filter:blur(0);transform:scale(1)}
+.tphoto.img-loaded:hover img{transform:scale(1.06)}
 .tphoto::after{content:"";position:absolute;inset:0;background:rgba(217,119,6,.14);opacity:0;transition:opacity .3s;pointer-events:none}
-.tphoto:hover img{transform:scale(1.06)}
 .tphoto:hover::after{opacity:1}
 .tbody{padding:14px 2px 0}
 .tname{margin:0;font-size:14px;line-height:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#232525}
 .tdesig{margin-top:3px;font-size:12.5px;font-weight:400;color:#d97706}
 body.theme-effective-dark .tname{color:#fff}
+
+/* drag & drop reorder */
+body.dragging-card{user-select:none;-webkit-user-select:none;cursor:grabbing}
+.drag-ghost{position:fixed;z-index:700;margin:0;pointer-events:none;opacity:.94!important;transition:none!important;transform:scale(1.04) rotate(1.5deg)!important;filter:drop-shadow(0 18px 30px rgba(0,0,0,.35))}
+.drag-ghost .tools{display:none!important}
 
 /* ---------- resigned employees (auto-scroll right to left) ---------- */
 .resigned{max-width:1300px;margin:0 auto;padding:46px 0 72px;display:none}
@@ -177,8 +193,15 @@ body.theme-effective-dark .rs-head h2{color:#c7c5c2}
 @keyframes mqMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .mq-group{display:flex;flex:0 0 auto;gap:34px;padding-right:34px}
 .ritem{position:relative;width:118px;text-align:center;cursor:pointer}
-.rphoto{position:relative;width:92px;height:92px;margin:0 auto;border-radius:50%;overflow:hidden;background:#e5e7eb;border:1.5px solid #cbd5e1;transition:border-color .3s,transform .3s}
-.rphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;filter:grayscale(.35)}
+.rphoto{position:relative;width:92px;height:92px;margin:0 auto;border-radius:50%;overflow:hidden;border:1.5px solid #cbd5e1;transition:border-color .3s,transform .3s;
+  background:linear-gradient(100deg,#e5e7eb 30%,#f3f4f6 50%,#e5e7eb 70%);background-size:200% 100%;animation:shimmerMove 1.5s linear infinite}
+.rphoto.img-loaded{animation:none;background:#e5e7eb}
+body.theme-effective-dark .rphoto{border-color:#3a3c3c;background:linear-gradient(100deg,#222 30%,#343434 50%,#222 70%);background-size:200% 100%}
+body.theme-effective-dark .rphoto.img-loaded{animation:none;background:#2a2c2c}
+.rphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;
+  opacity:0;filter:blur(10px) grayscale(.35);transform:scale(1.06);
+  transition:opacity .8s ease,filter .9s ease,transform .9s cubic-bezier(.16,1,.3,1)}
+.rphoto.img-loaded img{opacity:1;filter:blur(0) grayscale(.35);transform:scale(1)}
 .rphoto .noimg{font-size:30px}
 .ritem:hover .rphoto{border-color:#d97706;transform:scale(1.06)}
 .ritem .tools{top:-4px;right:2px}
@@ -186,24 +209,23 @@ body.theme-effective-dark .rs-head h2{color:#c7c5c2}
 .rname{margin-top:10px;font-size:11.5px;font-weight:600;line-height:1.3;letter-spacing:.04em;text-transform:uppercase;color:#232525}
 .rdesig{margin-top:2px;font-size:10.5px;color:#d97706}
 body.theme-effective-dark .rname{color:#fff}
-body.theme-effective-dark .rphoto{border-color:#3a3c3c}
 .avatar-row{display:flex;gap:14px;align-items:center}
-.avatar-prev{flex:0 0 auto;width:84px;height:104px;border-radius:8px;overflow:hidden;background:#e5e7eb;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:28px}
+.avatar-prev{flex:0 0 auto;width:96px;height:96px;border-radius:14px;overflow:hidden;background:#e5e7eb;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:28px}
 .avatar-prev img{width:100%;height:100%;object-fit:cover;object-position:top}
 .avatar-btns{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ---------- photo crop popup ---------- */
+/* ---------- photo crop popup (square frame = same shape as the card photo) ---------- */
 .avatar-note{margin-top:6px;font-size:11px;color:#94a3b8;width:100%}
 .crop-bg{position:fixed;inset:0;z-index:450;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.6);backdrop-filter:blur(8px)}
 .crop-bg.open{display:flex;animation:mdIn .25s ease}
-.crop-card{width:100%;max-width:380px;padding:22px;background:#fff;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.35)}
+.crop-card{width:100%;max-width:400px;padding:22px;background:#fff;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.35)}
 .crop-card h3{margin:0;font-size:17px;font-weight:600;color:#0f172a}
 .crop-card>p{margin:4px 0 0;font-size:12px;color:#64748b;line-height:1.5}
-.crop-stage{position:relative;width:320px;height:380px;max-width:100%;margin:16px auto 0;overflow:hidden;border-radius:10px;background:#0b1020;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crop-stage{position:relative;width:340px;height:340px;margin:16px auto 0;overflow:hidden;border-radius:10px;background:#0b1020;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .crop-stage.dragging{cursor:grabbing}
 .crop-stage img{position:absolute;max-width:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
-.crop-frame{position:absolute;left:40px;top:40px;width:240px;height:300px;border-radius:14px;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 600px rgba(0,0,0,.6);pointer-events:none}
-.crop-zoom{display:flex;align-items:center;gap:10px;margin:16px auto 0;width:320px;max-width:100%}
+.crop-frame{position:absolute;left:40px;top:40px;width:260px;height:260px;border-radius:18px;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 800px rgba(0,0,0,.6);pointer-events:none}
+.crop-zoom{display:flex;align-items:center;gap:10px;margin:16px auto 0;width:340px;max-width:100%}
 .crop-zoom button{width:32px;height:32px;flex-shrink:0;border-radius:50%;border:1.5px solid #e2e8f0;background:#fff;color:#334155;cursor:pointer;font-size:11px}
 .crop-zoom button:hover{border-color:#d97706;color:#d97706}
 .crop-zoom input[type=range]{flex:1;min-width:0;accent-color:#d97706;cursor:pointer}
@@ -220,11 +242,25 @@ body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3
 .tv-count{font-size:13px;font-weight:500;letter-spacing:.12em;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.9)}
 .tv-btn{width:38px;height:38px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .22s,border-color .22s,transform .22s,opacity .25s}
 .tv-btn:hover{background:#d97706;border-color:#d97706}
-.tv-stage{position:absolute;left:0;top:0;bottom:0;width:66.6667%;padding:76px 70px 36px;display:flex;align-items:center;justify-content:center}
-.tv-img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.18)}
-.tv-no{display:none;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:90px;align-items:center;justify-content:center}
-@keyframes tvIn{from{opacity:0;transform:translateX(var(--x,0)) scale(.82);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
-.tv.open .tv-img.in,.tv.open .tv-no.in{animation:tvIn .85s cubic-bezier(.22,.61,.36,1) both}
+.tv-stage{position:absolute;left:0;top:0;bottom:0;width:66.6667%;overflow:hidden;isolation:isolate}
+.tv-stage::after{content:"";position:absolute;left:50%;top:50%;z-index:3;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;border:3px solid rgba(255,255,255,.18);border-top-color:#d97706;animation:lbSpin .8s linear infinite;opacity:0;transition:opacity .25s;pointer-events:none}
+.tv-stage.is-busy::after{opacity:1}
+
+/* slide animation: old photo shrinks + slides away, new photo slides in and grows */
+.tv-slide{position:absolute;inset:0;padding:76px 70px 36px;display:flex;align-items:center;justify-content:center;
+  transform:translateX(0) scale(1);opacity:1;transform-origin:center center;will-change:transform,opacity;
+  transition:transform .8s cubic-bezier(.22,.61,.36,1),opacity .6s ease,filter .6s ease;pointer-events:none}
+.tv-slide.is-hidden{visibility:hidden;opacity:0;transform:none}
+.tv-slide.is-entering-right{opacity:0;transform:translateX(70%) scale(.85)}
+.tv-slide.is-entering-left{opacity:0;transform:translateX(-70%) scale(.85)}
+.tv-slide.is-leaving-left{opacity:0;transform:translateX(-55%) scale(.55)}
+.tv-slide.is-leaving-right{opacity:0;transform:translateX(55%) scale(.55)}
+.tv-slide.is-active{visibility:visible;opacity:1;transform:none}
+.tv-slide.no-anim{transition:none!important}
+.tv-img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.18);
+  opacity:1;filter:blur(0);transition:opacity .8s ease,filter .9s ease;user-select:none;-webkit-user-drag:none}
+.tv-img.is-loading{opacity:0;filter:blur(12px)}
+.tv-no{display:flex;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:90px;align-items:center;justify-content:center}
 .tv-nav{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:44px;height:44px;opacity:.6;background:rgba(0,0,0,.35)}
 .tv-nav:hover{opacity:1}
 #tvPrev{left:16px}#tvNext{right:16px}
@@ -244,7 +280,8 @@ body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3
 .tvt-line{width:44px;height:2px;background:#d97706;margin:20px 0}
 .tvt-desc{margin:0;font-size:14px;line-height:1.9;color:rgba(255,255,255,.82);white-space:pre-line}
 @media(max-width:820px){
-  .tv-stage{width:100%;bottom:42%;padding:64px 20px 14px}
+  .tv-stage{width:100%;bottom:42%}
+  .tv-slide{padding:64px 20px 14px}
   .tv-text{top:auto;left:0;width:auto;height:42%;padding:22px 22px 24px;border-left:0;border-top:1px solid rgba(255,255,255,.1)}
   .tvt-name{font-size:20px}
   #tvPrev{left:8px}#tvNext{right:8px}
@@ -261,7 +298,7 @@ body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3
     <h1>YNAD Team</h1>
     <div id="manageWrap" class="manage-wrap">
       <button id="addBtn" class="btn solid" style="display:none" onclick="openForm()"><i class="fa-solid fa-plus"></i> Add Member</button>
-      <button id="manageBtn" class="btn icon" onclick="toggleManage()" title="Manage (edit / delete)"><i class="fa-solid fa-pen-to-square"></i></button>
+      <button id="manageBtn" class="btn icon" onclick="toggleManage()" title="Manage (edit / delete / reorder)"><i class="fa-solid fa-pen-to-square"></i></button>
     </div>
   </section>
 
@@ -295,11 +332,8 @@ body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3
     <div class="fld"><label>Name <em>*</em></label><input id="fName" maxlength="80" placeholder="Full name"></div>
     <div class="fld"><label>Designation</label><input id="fDesig" maxlength="80" placeholder="e.g. Site Engineer"></div>
     <div class="fld"><label>Description <small id="descCount">0 / 400</small></label><textarea id="fDesc" rows="4" maxlength="400" oninput="descCount()" placeholder="About this person (shown when the photo is opened)"></textarea></div>
-    <div class="row2">
-      <div class="fld"><label>Employee status</label>
-        <select id="fStatus"><option value="active">Active</option><option value="resigned">Ex-Employee</option></select></div>
-      <div class="fld"><label>Display order <small>1 = first</small></label><input id="fOrder" type="number" min="1" placeholder="1"></div>
-    </div>
+    <div class="fld"><label>Employee status</label>
+      <select id="fStatus"><option value="active">Active</option><option value="resigned">Ex-Employee</option></select></div>
     <p id="fErr" class="err"></p>
   </div>
   <div class="md-foot"><button class="btn" onclick="closeModal('formModal')">Cancel</button><button id="saveBtn" class="btn solid" onclick="saveMember()">Save</button></div>
@@ -309,12 +343,12 @@ body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3
 <div id="cropModal" class="crop-bg">
   <div class="crop-card">
     <h3>Adjust Photo</h3>
-    <p>Drag to reposition. Use the slider, +/− buttons or mouse wheel to zoom.</p>
+    <p>Drag to reposition. Use the slider, +/− buttons or mouse wheel to zoom. The frame is exactly how the photo appears on the card.</p>
     <div class="crop-stage" id="cropStage">
       <img id="cropImg" alt="" draggable="false">
       <div class="crop-frame"></div>
     </div>
-    <div class="crop-zoom">
+    <div class="crop-zoom" id="cropZoomRow">
       <button type="button" onclick="cropZoomBy(-.2)"><i class="fa-solid fa-minus"></i></button>
       <input type="range" id="cropRange" min="1" max="4" step="0.01" value="1">
       <button type="button" onclick="cropZoomBy(.2)"><i class="fa-solid fa-plus"></i></button>
@@ -386,8 +420,8 @@ document.body.insertAdjacentHTML('beforeend', `
   <div class="tv-top"><div id="tvCount" class="tv-count"></div>
     <button class="tv-btn" type="button" title="Close" aria-label="Close" onclick="closeViewer()"><i class="fa-solid fa-xmark"></i></button></div>
   <div id="tvStage" class="tv-stage">
-    <img id="tvImg" class="tv-img" alt="">
-    <div id="tvNo" class="tv-no"><i class="fa-solid fa-user"></i></div>
+    <div id="tvSlideA" class="tv-slide is-active"></div>
+    <div id="tvSlideB" class="tv-slide is-hidden"></div>
     <button id="tvPrev" class="tv-btn tv-nav" type="button" aria-label="Previous" onclick="tvStep(-1)"><i class="fa-solid fa-chevron-left"></i></button>
     <button id="tvNext" class="tv-btn tv-nav" type="button" aria-label="Next" onclick="tvStep(1)"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
@@ -436,12 +470,12 @@ async function removeFiles(urls) {
   if (paths.length) try { await supabaseClient.storage.from(MEDIA_BUCKET).remove(paths); } catch (e) { console.warn(e); }
 }
 
-/* ---------- manage mode (edit / delete icon) ---------- */
+/* ---------- manage mode (edit / delete / reorder icon) ---------- */
 function setManageUI() {
   $('manageWrap').classList.toggle('show', canManage);
   $('addBtn').style.display = manage ? 'inline-flex' : 'none';
   $('manageBtn').classList.toggle('on', manage);
-  $('manageBtn').title = manage ? 'Done' : 'Manage (edit / delete)';
+  $('manageBtn').title = manage ? 'Done' : 'Manage (edit / delete / reorder)';
   $('manageBtn').innerHTML = `<i class="fa-solid ${manage ? 'fa-check' : 'fa-pen-to-square'}"></i>`;
   document.body.classList.toggle('manage-on', manage);
 }
@@ -591,8 +625,11 @@ initAuthState();
 /* ===== DEMO MODE =====
    true  = sample data below, nothing is saved (to preview the design)
    false = real data from Supabase. Then delete DEMO_MEMBERS too.
-   Supabase needs one new column (run once in SQL editor):
-   alter table team_members add column if not exists status text default 'active'; */
+   Supabase needs these columns (run once in the SQL editor):
+     alter table team_members add column if not exists status text default 'active';
+     alter table team_members add column if not exists photo_orig_url text;   -- full original photo (for re-editing)
+     alter table team_members add column if not exists photo_crop jsonb;      -- saved crop position {z,x,y}
+   Display order: no input any more - drag the grip icon on a card (manage mode) to reorder. */
 const DEMO_MODE = true;
 const face = (s) => `https://picsum.photos/seed/${s}/600/750`;
 const DEMO_MEMBERS = [
@@ -620,19 +657,22 @@ let members = [], editing = null;
 const isResigned = m => m.status === 'resigned';
 const activeList = () => members.filter(m => !isResigned(m));
 const resignedList = () => members.filter(isResigned);
+const nextOrder = () => members.reduce((a, m) => Math.max(a, m.sort_order || 0), 0) + 1;
 
 /* ---------- render ---------- */
-function toolsHtml(m) {
+function toolsHtml(m, withDrag) {
   return `<div class="tools" onclick="event.stopPropagation()">
+    ${withDrag ? `<button class="drag" title="Drag to reorder" onpointerdown="startDrag(event)"><i class="fa-solid fa-grip"></i></button>` : ''}
     <button title="Edit" onclick="openForm('${esc(m.id)}')"><i class="fa-solid fa-pen"></i></button>
     <button class="del" title="Delete" onclick="deleteMember('${esc(m.id)}')"><i class="fa-solid fa-trash"></i></button></div>`;
 }
+const imgLoaded = 'onload="this.parentElement.classList.add(\'img-loaded\')" onerror="this.parentElement.classList.add(\'img-loaded\')"';
 function cardHtml(m, i) {
   return `
-  <article class="card" style="transition-delay:${(i % 4) * .08}s">
-    <div class="tphoto" onclick="openViewer('${esc(m.id)}','active')">
-      ${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}" loading="lazy">` : '<div class="noimg"><i class="fa-solid fa-user"></i></div>'}
-      ${toolsHtml(m)}
+  <article class="card" data-id="${esc(m.id)}" style="transition-delay:${(i % 4) * .08}s">
+    <div class="tphoto${m.photo_url ? '' : ' img-loaded'}" onclick="openViewer('${esc(m.id)}','active')">
+      ${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}" decoding="async" ${imgLoaded}>` : '<div class="noimg"><i class="fa-solid fa-user"></i></div>'}
+      ${toolsHtml(m, true)}
     </div>
     <div class="tbody">
       <h3 class="tname">${esc(m.name)}</h3>
@@ -642,11 +682,17 @@ function cardHtml(m, i) {
 }
 function resignedItem(m) {
   return `<div class="ritem" onclick="openViewer('${esc(m.id)}','resigned')">
-    <div class="rphoto">${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}" loading="lazy">` : '<div class="noimg"><i class="fa-solid fa-user"></i></div>'}</div>
-    ${toolsHtml(m)}
+    <div class="rphoto${m.photo_url ? '' : ' img-loaded'}">${m.photo_url ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}" decoding="async" ${imgLoaded}>` : '<div class="noimg"><i class="fa-solid fa-user"></i></div>'}</div>
+    ${toolsHtml(m, false)}
     <div class="rname">${esc(m.name)}</div>
     ${m.designation ? `<div class="rdesig">${esc(m.designation)}</div>` : ''}
   </div>`;
+}
+/* images that were already cached can finish loading before onload is attached */
+function markLoadedImages(root) {
+  (root || document).querySelectorAll('.tphoto img, .rphoto img').forEach(img => {
+    if (img.complete && img.naturalWidth > 0) img.parentElement.classList.add('img-loaded');
+  });
 }
 function renderResigned() {
   const list = resignedList(), sec = $('resignedSec');
@@ -656,11 +702,12 @@ function renderResigned() {
   const items = Array.from({ length: rep }).flatMap(() => list).map(resignedItem).join('');
   const dur = Math.max(24, list.length * rep * 4);
   $('resignedMq').innerHTML = `<div class="mq-track" style="--dur:${dur}s"><div class="mq-group">${items}</div><div class="mq-group" aria-hidden="true">${items}</div></div>`;
+  markLoadedImages($('resignedMq'));
 }
 function render() {
   const g = $('grid'), list = activeList();
   g.innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="empty">No team members added yet.</div>';
-  observeCards(g); renderResigned();
+  observeCards(g); markLoadedImages(g); renderResigned();
 }
 async function load() {
   if (DEMO_MODE) { members = DEMO_MEMBERS.map(m => ({ ...m })); render(); return; }
@@ -670,15 +717,90 @@ async function load() {
   members = (data || []).map(m => ({ ...m, status: m.status === 'resigned' ? 'resigned' : 'active' })); render();
 }
 
+/* ================= DRAG TO REORDER (grip icon in manage mode) ================= */
+let dg = null;
+function startDrag(e) {
+  if (e.button !== undefined && e.button !== 0) return;
+  e.preventDefault(); e.stopPropagation();
+  const card = e.currentTarget.closest('.card'); if (!card) return;
+  const r = card.getBoundingClientRect();
+  const ghost = card.cloneNode(true);
+  ghost.classList.add('drag-ghost', 'revealed'); ghost.removeAttribute('data-id');
+  ghost.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;`;
+  document.body.appendChild(ghost);
+  card.classList.add('dragging-src'); document.body.classList.add('dragging-card');
+  dg = { card, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, x: e.clientX, y: e.clientY, raf: 0 };
+  addEventListener('pointermove', dragMove); addEventListener('pointerup', dragEnd); addEventListener('pointercancel', dragEnd);
+  dg.raf = requestAnimationFrame(dragTick);
+}
+function dragMove(e) { if (!dg) return; dg.x = e.clientX; dg.y = e.clientY; }
+function moveCard(card, target, after) {
+  const grid = $('grid'), all = [...grid.querySelectorAll('.card')];
+  const first = new Map(all.map(c => [c, c.getBoundingClientRect()]));
+  after ? target.after(card) : target.before(card);
+  all.forEach(c => {
+    if (c === card) return;
+    const a = first.get(c), b = c.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
+    if (!dx && !dy) return;
+    c.style.transition = 'none'; c.style.transform = `translate(${dx}px,${dy}px)`; void c.offsetWidth;
+    c.style.transition = 'transform .28s cubic-bezier(.22,.61,.36,1)'; c.style.transform = '';
+    c.addEventListener('transitionend', () => { c.style.transition = ''; }, { once: true });
+  });
+}
+function dragTick() {
+  if (!dg) return;
+  dg.ghost.style.left = (dg.x - dg.dx) + 'px'; dg.ghost.style.top = (dg.y - dg.dy) + 'px';
+  if (dg.y < 90) scrollBy(0, -16); else if (dg.y > innerHeight - 90) scrollBy(0, 16);
+  const grid = $('grid'), all = [...grid.querySelectorAll('.card')];
+  const target = all.find(c => {
+    if (c === dg.card) return false;
+    const r = c.getBoundingClientRect();
+    return dg.x >= r.left && dg.x <= r.right && dg.y >= r.top && dg.y <= r.bottom;
+  });
+  if (target) moveCard(dg.card, target, all.indexOf(target) > all.indexOf(dg.card));
+  dg.raf = requestAnimationFrame(dragTick);
+}
+function dragEnd() {
+  if (!dg) return;
+  cancelAnimationFrame(dg.raf);
+  removeEventListener('pointermove', dragMove); removeEventListener('pointerup', dragEnd); removeEventListener('pointercancel', dragEnd);
+  dg.ghost.remove(); dg.card.classList.remove('dragging-src'); document.body.classList.remove('dragging-card');
+  dg = null;
+  saveOrder([...$('grid').querySelectorAll('.card')].map(c => c.dataset.id));
+}
+async function saveOrder(ids) {
+  const act = ids.map(id => members.find(m => m.id === id)).filter(Boolean);
+  const ordered = [...act, ...resignedList()], changed = [];
+  ordered.forEach((m, i) => { const n = i + 1; if (m.sort_order !== n) { m.sort_order = n; changed.push(m); } });
+  members.sort((a, b) => a.sort_order - b.sort_order);
+  if (!changed.length) return;
+  if (DEMO_MODE) { toast('Order updated (demo)'); return; }
+  try {
+    const res = await Promise.all(changed.map(m => supabaseClient.from('team_members').update({ sort_order: m.sort_order }).eq('id', m.id).select()));
+    if (res.some(r => r.error || !r.data || !r.data.length)) throw new Error('Not allowed');
+    toast('Order saved');
+  } catch (e) { console.error(e); toast('Could not save order', true); load(); }
+}
+
 /* ================= MEMBER VIEWER (photo 2/3 + info 1/3) ================= */
 let vList = [], vI = 0;
-function tvShow(dir) {
-  const m = vList[vI], img = $('tvImg'), no = $('tvNo');
-  img.classList.remove('in'); no.classList.remove('in'); void img.offsetWidth;
-  const x = dir > 0 ? '90px' : dir < 0 ? '-90px' : '0px';
-  img.style.setProperty('--x', x); no.style.setProperty('--x', x);
-  if (m.photo_url) { img.style.display = 'block'; no.style.display = 'none'; img.src = m.photo_url; img.alt = m.name; img.classList.add('in'); }
-  else { img.style.display = 'none'; img.removeAttribute('src'); no.style.display = 'flex'; no.classList.add('in'); }
+let tvCur = $('tvSlideA'), tvInc = $('tvSlideB');
+let tvAnim = false, tvTok = 0, tvTimer = null, tvTarget = 0, tvPend = 0;
+const TV_FALLBACK_MS = 1000;   /* a bit longer than the .8s CSS transition */
+
+function tvBusy(b) { $('tvStage').classList.toggle('is-busy', !!b); }
+function tvFill(el, m) {
+  el.innerHTML = m.photo_url
+    ? `<img class="tv-img is-loading" src="${esc(m.photo_url)}" alt="${esc(m.name)}" draggable="false" decoding="async">`
+    : '<div class="tv-no"><i class="fa-solid fa-user"></i></div>';
+}
+function tvCounter(i) {
+  $('tvCount').textContent = vList.length > 1 ? (i + 1) + ' / ' + vList.length : '';
+  $('tvPrev').style.display = i <= 0 ? 'none' : 'flex';
+  $('tvNext').style.display = i >= vList.length - 1 ? 'none' : 'flex';
+}
+function tvInfo(i) {
+  const m = vList[i];
   $('tvText').innerHTML =
     `<span class="t tvt-status ${isResigned(m) ? 'off' : ''}">${isResigned(m) ? 'Ex-Employee' : 'Active'}</span>` +
     `<h2 class="t tvt-name">${esc(m.name)}</h2>` +
@@ -686,19 +808,80 @@ function tvShow(dir) {
     `<div class="t tvt-line"></div>` +
     (m.description ? `<p class="t tvt-desc">${esc(m.description)}</p>` : '');
   $('tvText').scrollTop = 0;
-  $('tvCount').textContent = vList.length > 1 ? (vI + 1) + ' / ' + vList.length : '';
-  $('tvPrev').style.display = vI <= 0 ? 'none' : 'flex';
-  $('tvNext').style.display = vI >= vList.length - 1 ? 'none' : 'flex';
+  tvCounter(i);
+}
+function tvCancel() {
+  tvTok++; clearTimeout(tvTimer); tvTimer = null; tvAnim = false; tvPend = 0; tvBusy(false);
+  tvCur.className = 'tv-slide is-active'; tvInc.className = 'tv-slide is-hidden'; tvInc.innerHTML = '';
+}
+function tvInit(i) {
+  vI = i; tvTarget = i;
+  tvFill(tvCur, vList[i]);
+  const img = tvCur.querySelector('img');
+  if (img) {
+    tvBusy(true);
+    const done = () => { img.onload = null; img.onerror = null; img.classList.remove('is-loading'); tvBusy(false); };
+    img.onload = done; img.onerror = done;
+    if (img.complete && img.naturalWidth > 0) done();
+  }
+  tvInfo(i);
+}
+function tvRunQueue() {
+  if (!tvPend) return;
+  const d = Math.sign(tvPend); tvPend -= d;
+  setTimeout(() => tvGo(vI + d, d), 35);
+}
+/* direction 1 = new photo enters from the right, -1 = from the left; the old photo shrinks while sliding away */
+function tvGo(next, dir) {
+  if (next < 0 || next >= vList.length || next === vI) return;
+  const cur = tvCur, inc = tvInc, tok = ++tvTok;
+  let started = false, finished = false, onEnd = null;
+  tvAnim = true; tvTarget = next;
+  tvFill(inc, vList[next]);
+  inc.className = 'tv-slide no-anim ' + (dir > 0 ? 'is-entering-right' : 'is-entering-left');
+  const img = inc.querySelector('img');
+  const finish = () => {
+    if (finished || tok !== tvTok) return; finished = true;
+    clearTimeout(tvTimer); tvTimer = null; inc.removeEventListener('transitionend', onEnd);
+    cur.innerHTML = ''; cur.className = 'tv-slide is-hidden';
+    tvCur = inc; tvInc = cur; inc.className = 'tv-slide is-active';
+    vI = next; tvAnim = false; tvRunQueue();
+  };
+  const start = () => {
+    if (started || tok !== tvTok) return; started = true; tvBusy(false);
+    if (img) { img.onload = null; img.onerror = null; img.classList.remove('is-loading'); }
+    void inc.offsetWidth; inc.classList.remove('no-anim'); void inc.offsetWidth;
+    tvInfo(next);                                 /* text + counter + arrows change together with the photo */
+    requestAnimationFrame(() => {
+      if (tok !== tvTok) return;
+      cur.classList.remove('is-active'); cur.classList.add(dir > 0 ? 'is-leaving-left' : 'is-leaving-right');
+      inc.classList.remove('is-entering-right', 'is-entering-left'); inc.classList.add('is-active');
+    });
+    onEnd = e => { if (e.target === inc && e.propertyName === 'transform') finish(); };
+    inc.addEventListener('transitionend', onEnd);
+    tvTimer = setTimeout(finish, TV_FALLBACK_MS);
+  };
+  tvBusy(true);
+  if (!img || (img.complete && img.naturalWidth > 0)) start();
+  else { img.onload = start; img.onerror = start; }
+}
+function tvStep(d) {
+  if (!vList.length || !d) return;
+  const s = d > 0 ? 1 : -1, base = tvAnim ? tvTarget : vI, target = base + tvPend + s;
+  if (target < 0 || target >= vList.length) return;     /* no looping */
+  if (tvAnim) { tvPend += s; tvCounter(target); return; }
+  tvGo(vI + s, s);
 }
 function openViewer(id, which) {
   vList = which === 'resigned' ? resignedList() : activeList();
-  vI = vList.findIndex(x => x.id === id); if (vI < 0) return;
-  const box = $('tv'); tvShow(0); void box.offsetWidth;
+  const i = vList.findIndex(x => x.id === id); if (i < 0) return;
+  vList.forEach(m => { if (m.photo_url) { const im = new Image(); im.decoding = 'async'; im.src = m.photo_url; } });   /* preload so next/prev is instant */
+  tvCancel();
+  const box = $('tv'); tvInit(i); void box.offsetWidth;
   box.classList.add('open'); box.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
   try { box.focus({ preventScroll: true }); } catch (e) {}
 }
-function closeViewer() { const b = $('tv'); b.classList.remove('open'); b.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
-function tvStep(d) { const n = vI + d; if (n < 0 || n >= vList.length) return; vI = n; tvShow(d); }
+function closeViewer() { const b = $('tv'); b.classList.remove('open'); b.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; tvCancel(); }
 (() => { let x = 0, b = $('tv');
   b.addEventListener('touchstart', e => { x = e.changedTouches[0].clientX; }, { passive: true });
   b.addEventListener('touchend', e => { if (e.target.closest('.tv-text')) return; const d = e.changedTouches[0].clientX - x; if (Math.abs(d) > 50) tvStep(d < 0 ? 1 : -1); }, { passive: true }); })();
@@ -719,7 +902,11 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') { e.preventDefault(); tvStep(-1); }
 });
 
-/* ---- add / edit ---- */
+/* ---- add / edit ----
+   editing.orig      = image shown in the crop popup (the FULL original photo)
+   editing.origFile  = new original file waiting to be uploaded
+   editing.origUrl   = already-saved original photo url
+   editing.crop      = {z,x,y} saved crop position (zoom + offset relative to the frame) */
 function descCount() { $('descCount').textContent = $('fDesc').value.length + ' / 400'; }
 function showAvatar() {
   const url = editing.preview || (editing.keep ? editing.photoUrl : '');
@@ -730,32 +917,43 @@ function showAvatar() {
 }
 function openForm(id) {
   const m = id ? members.find(x => x.id === id) : null;
-  editing = { id: m ? m.id : null, photoUrl: m ? m.photo_url : null, keep: !!(m && m.photo_url), file: null, preview: null, orig: null };
+  editing = { id: m ? m.id : null, photoUrl: m ? m.photo_url : null, keep: !!(m && m.photo_url), file: null, preview: null,
+              orig: (m && m.photo_orig_url) || null, origUrl: (m && m.photo_orig_url) || null, prevOrig: (m && m.photo_orig_url) || null,
+              origFile: null, crop: (m && m.photo_crop) || null, sort: m ? m.sort_order : nextOrder() };
   $('fName').value = m ? m.name : ''; $('fDesig').value = (m && m.designation) || ''; $('fDesc').value = (m && m.description) || '';
   $('fStatus').value = m && isResigned(m) ? 'resigned' : 'active';          /* default = Active */
-  $('fOrder').value = m ? m.sort_order : members.length + 1;
   $('formTitle').textContent = m ? 'Edit Member' : 'Add Member'; $('fErr').style.display = 'none';
   descCount(); showAvatar(); openModal('formModal');
 }
 
-/* ---------- photo pick + crop ---------- */
+/* ---------- photo pick + crop (square frame = card photo shape) ---------- */
 const MAX_PHOTO = 2 * 1024 * 1024, OK_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const CROP = { sw: 320, sh: 380, fw: 240, fh: 300, out: [600, 750] };   /* frame size / saved photo size (4:5) */
-let cr = { nw: 0, nh: 0, base: 1, zoom: 1, ox: 0, oy: 0, url: null, drag: null };
+const CROP = { sw: 340, sh: 340, fw: 260, fh: 260, out: [800, 800] };   /* sizes are re-calculated in layoutCrop() */
+let cr = { nw: 0, nh: 0, base: 1, zoom: 1, ox: 0, oy: 0, url: null, drag: null, file: null };
 
+function layoutCrop() {
+  const S = Math.max(240, Math.min(340, innerWidth - 40 - 44)), F = Math.round(S * .765), o = Math.round((S - F) / 2);
+  CROP.sw = CROP.sh = S; CROP.fw = CROP.fh = F;
+  const st = $('cropStage'); st.style.width = S + 'px'; st.style.height = S + 'px';
+  st.querySelector('.crop-frame').style.cssText = `left:${o}px;top:${o}px;width:${F}px;height:${F}px`;
+  $('cropZoomRow').style.width = S + 'px';
+}
 function pickPhoto(input) {
   const f = input.files[0]; input.value = ''; if (!f) return;
   if (OK_TYPES.indexOf(f.type) < 0) { toast('Please choose a JPG, PNG or WEBP image.', true); return; }
   if (f.size > MAX_PHOTO) { toast('Photo is ' + (f.size / 1048576).toFixed(2) + ' MB. Max allowed is 2 MB.', true); return; }
-  openCrop(URL.createObjectURL(f), false);
+  cr.file = f;
+  openCrop(URL.createObjectURL(f), null);
 }
 function editPhoto() {
+  /* always re-open the FULL original photo with the previously saved position */
   const src = editing.orig || editing.preview || editing.photoUrl;
-  if (src) openCrop(src, true);
+  if (src) openCrop(src, editing.orig ? editing.crop : null);
 }
 function clearPhoto() {
-  if (editing.orig && editing.orig.startsWith('blob:')) URL.revokeObjectURL(editing.orig);
-  editing.file = null; editing.preview = null; editing.keep = false; editing.orig = null; showAvatar();
+  editing.file = null; editing.preview = null; editing.keep = false;
+  editing.orig = null; editing.origFile = null; editing.origUrl = null; editing.crop = null;
+  showAvatar();
 }
 function cropClamp() {
   const sc = cr.base * cr.zoom;
@@ -773,13 +971,15 @@ function cropSetZoom(z) {
   cr.ox *= r; cr.oy *= r; cr.zoom = z; $('cropRange').value = z; cropRender();
 }
 function cropZoomBy(d) { cropSetZoom(cr.zoom + d); }
-function openCrop(url, keep) {
+function openCrop(url, state) {
+  layoutCrop();
   const im = $('cropImg'); cr.url = url;
   if (!url.startsWith('blob:')) im.crossOrigin = 'anonymous'; else im.removeAttribute('crossorigin');
   im.onload = () => {
     cr.nw = im.naturalWidth; cr.nh = im.naturalHeight; if (!cr.nw) return;
     cr.base = Math.max(CROP.fw / cr.nw, CROP.fh / cr.nh);
-    if (!keep) { cr.zoom = 1; cr.ox = 0; cr.oy = 0; }
+    if (state) { cr.zoom = Math.min(4, Math.max(1, +state.z || 1)); cr.ox = (+state.x || 0) * CROP.fw; cr.oy = (+state.y || 0) * CROP.fh; }
+    else { cr.zoom = 1; cr.ox = 0; cr.oy = 0; }
     $('cropRange').value = cr.zoom; cropRender(); openModal('cropModal');
   };
   im.onerror = () => { toast('This image could not be loaded.', true); closeCrop(); };
@@ -788,7 +988,7 @@ function openCrop(url, keep) {
 function closeCrop() {
   closeModal('cropModal');
   if (cr.url && cr.url.startsWith('blob:') && cr.url !== editing.orig) URL.revokeObjectURL(cr.url);
-  cr.url = null;
+  cr.url = null; cr.file = null;
 }
 function saveCrop() {
   const sc = cr.base * cr.zoom, w = cr.nw * sc, h = cr.nh * sc;
@@ -801,8 +1001,9 @@ function saveCrop() {
     c.toBlob(b => {
       if (!b) { toast('Could not save the photo.', true); return; }
       if (editing.preview && editing.preview.startsWith('blob:')) URL.revokeObjectURL(editing.preview);
-      if (editing.orig && editing.orig.startsWith('blob:') && editing.orig !== cr.url) URL.revokeObjectURL(editing.orig);
-      editing.orig = cr.url;                         /* keep source so Edit can re-crop */
+      editing.orig = cr.url;                                   /* full original stays available for the next edit */
+      if (cr.file) { editing.origFile = cr.file; editing.origUrl = null; cr.file = null; }
+      editing.crop = { z: cr.zoom, x: cr.ox / CROP.fw, y: cr.oy / CROP.fh };
       editing.file = new File([b], 'photo.jpg', { type: 'image/jpeg' });
       editing.preview = URL.createObjectURL(b); editing.keep = false;
       cr.url = null; closeModal('cropModal'); showAvatar();
@@ -824,14 +1025,25 @@ function saveCrop() {
   }, true);
 })();
 
+async function writeRow(row, id) {
+  const run = r => (id ? supabaseClient.from('team_members').update(r).eq('id', id) : supabaseClient.from('team_members').insert(r)).select();
+  let res = await run(row);
+  /* if the two new columns were not added yet, save without them */
+  if (res.error && /photo_orig_url|photo_crop/.test(res.error.message || '')) {
+    const { photo_orig_url, photo_crop, ...rest } = row; res = await run(rest);
+  }
+  return res;
+}
 async function saveMember() {
   const err = $('fErr'), btn = $('saveBtn'), name = $('fName').value.trim();
   if (!name) { err.textContent = 'Name is required.'; err.style.display = 'block'; return; }
   err.style.display = 'none';
   const status = $('fStatus').value === 'resigned' ? 'resigned' : 'active';
   if (DEMO_MODE) {
+    const hasOrig = !!(editing.orig && editing.orig !== editing.photoUrl);
     const row = { name, designation: $('fDesig').value.trim(), description: $('fDesc').value.trim(), status,
-                  photo_url: editing.preview || (editing.keep ? editing.photoUrl : null), sort_order: parseInt($('fOrder').value, 10) || members.length + 1 };
+                  photo_url: editing.preview || (editing.keep ? editing.photoUrl : null),
+                  photo_orig_url: hasOrig ? editing.orig : null, photo_crop: hasOrig ? editing.crop : null, sort_order: editing.sort };
     const wasEdit = !!editing.id;
     if (wasEdit) members = members.map(m => m.id === editing.id ? { ...m, ...row } : m);
     else members.push({ id: 'demo-' + Date.now(), ...row });
@@ -840,17 +1052,21 @@ async function saveMember() {
   }
   btn.disabled = true;
   try {
-    let url = editing.keep ? editing.photoUrl : null;
+    let url = editing.keep ? editing.photoUrl : null, origUrl = editing.origUrl;
     if (editing.file) { btn.textContent = 'Uploading...'; url = await uploadImage(editing.file, 'team'); }
+    if (editing.origFile) { btn.textContent = 'Uploading...'; origUrl = await uploadImage(editing.origFile, 'team'); }
+    if (!url) origUrl = null;
     btn.textContent = 'Saving...';
     const row = { name, designation: $('fDesig').value.trim() || null, description: $('fDesc').value.trim() || null, status,
-                  photo_url: url, sort_order: parseInt($('fOrder').value, 10) || members.length + 1 };
+                  photo_url: url, photo_orig_url: origUrl || null, photo_crop: origUrl ? editing.crop : null, sort_order: editing.sort };
     const wasEdit = !!editing.id;
-    const q = wasEdit ? supabaseClient.from('team_members').update(row).eq('id', editing.id) : supabaseClient.from('team_members').insert(row);
-    const { data, error } = await q.select();
+    const { data, error } = await writeRow(row, editing.id);
     if (error) throw error;
     if (!data || !data.length) throw new Error('Not allowed - please log in again.');
-    if (editing.photoUrl && editing.photoUrl !== url) await removeFiles([editing.photoUrl]);
+    const old = [];
+    if (editing.photoUrl && editing.photoUrl !== url) old.push(editing.photoUrl);
+    if (editing.prevOrig && editing.prevOrig !== origUrl) old.push(editing.prevOrig);
+    if (old.length) await removeFiles(old);
     closeModal('formModal'); toast(wasEdit ? 'Member updated' : 'Member added'); await load();
   } catch (e) { console.error(e); err.textContent = 'Save failed - ' + (e.message || 'please try again.'); err.style.display = 'block'; }
   finally { btn.disabled = false; btn.textContent = 'Save'; }
@@ -861,7 +1077,7 @@ async function deleteMember(id) {
   if (DEMO_MODE) { members = members.filter(x => x.id !== id); render(); toast('Member deleted (demo)'); return; }
   const { data, error } = await supabaseClient.from('team_members').delete().eq('id', id).select();
   if (error || !data || !data.length) { toast('Delete failed', true); return; }
-  await removeFiles([m.photo_url]); toast('Member deleted'); load();
+  await removeFiles([m.photo_url, m.photo_orig_url]); toast('Member deleted'); load();
 }
 
 if (DEMO_MODE) document.querySelector('.pg-head').insertAdjacentHTML('beforeend',
