@@ -87,7 +87,10 @@ body.theme-effective-dark #userDropdownMenu .auth-action{background:#2a2c2c;colo
 
 /* ---------- page layout ---------- */
 .pg-head{position:relative;padding:112px 24px 44px;text-align:center;background:#f8fafc;border-bottom:1px solid #e2e8f0}
-.pg-head h1{margin:0;font-size:24px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.7)}
+.pg-head h1{margin:0;font-size:24px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.7);animation:headIn 1.2s cubic-bezier(.22,.61,.36,1) .25s backwards}
+.pg-head::after{content:"";display:block;width:46px;height:2px;margin:18px auto 0;background:#d97706;border-radius:2px;animation:headLine .9s cubic-bezier(.22,.61,.36,1) .9s backwards}
+@keyframes headIn{from{opacity:0;transform:translateY(24px);letter-spacing:.5em;filter:blur(8px)}to{opacity:1;transform:none;letter-spacing:.2em;filter:blur(0)}}
+@keyframes headLine{from{width:0;opacity:0}to{width:46px;opacity:1}}
 .manage-wrap{display:none;position:absolute;top:120px;right:24px;gap:10px;align-items:center}
 .manage-wrap.show{display:flex}
 @media(max-width:767px){.manage-wrap{position:static;justify-content:center;margin-top:18px}}
@@ -136,20 +139,21 @@ body.theme-effective-dark .card{background:#232525;box-shadow:inset 0 -1px 0 #3a
 .fld input,.fld textarea{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font:14px/1.55 'Poppins',sans-serif;color:#0f172a;background:#fff;outline:0;transition:border-color .2s,box-shadow .2s}
 .fld input:focus,.fld textarea:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)}
 .fld textarea{resize:vertical;min-height:90px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:520px){.row2{grid-template-columns:1fr}}
 .hint{font-size:11px;color:#94a3b8;margin:8px 0 0}
 .err{display:none;color:#dc2626;font-size:12px;font-weight:500;margin:0 0 12px}
 .pick{display:inline-flex;gap:8px;align-items:center;padding:9px 14px;border:1.5px dashed #cbd5e1;border-radius:9px;background:transparent;font:600 12px 'Poppins',sans-serif;color:#64748b;cursor:pointer}
 .pick:hover{border-color:#d97706;color:#d97706}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin-top:10px}
-.th{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#e5e7eb;border:2px solid transparent}
+.th{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#e5e7eb;border:2px solid transparent;cursor:grab;transition:opacity .2s,transform .2s,border-color .2s}
 .th.cover{border-color:#d97706}
-.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th.dragging{opacity:.35;transform:scale(.94)}
+.th.over{border-color:#2563eb}
+.th img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .th button{position:absolute;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:10px;cursor:pointer}
 .th .rm{top:4px;right:4px}.th .st{top:4px;left:4px}
 .th button:hover{background:#d97706}.th .rm:hover{background:#dc2626}
 .th.cover .st{background:#d97706}
+.th .no{position:absolute;left:4px;bottom:4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:rgba(0,0,0,.65);color:#fff;font:600 10px/20px 'Poppins',sans-serif;text-align:center;pointer-events:none}
 .toast{position:fixed;right:24px;bottom:24px;z-index:600;padding:11px 16px;border-radius:10px;font:600 13px 'Poppins',sans-serif;color:#fff;background:#16a34a;box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;pointer-events:none}
 .toast.show{opacity:1;transform:none}.toast.bad{background:#dc2626}
 body.theme-effective-dark .md-box{background:#232525}
@@ -160,27 +164,86 @@ body.theme-effective-dark .fld>label{color:#c7c5c2}
 body.theme-effective-dark .fld input,body.theme-effective-dark .fld textarea{background:#131414;border-color:#3a3c3c;color:#fff}
 body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 
-/* ---------- fullscreen photo viewer ---------- */
-.lightbox{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.82);backdrop-filter:blur(7px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
-.lightbox.open{opacity:1;visibility:visible}
-.lb-top{position:absolute;top:0;left:0;right:0;height:52px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(0,0,0,.38);color:#fff}
-.lb-count{font-size:13px;letter-spacing:.12em;font-variant-numeric:tabular-nums}
-.lb-btn{width:38px;height:38px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s}
-.lb-btn:hover{background:#d97706;border-color:#d97706}
-.lb-top .lb-btn+.lb-btn{margin-left:10px}
-.lb-stage{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden}
-.lb-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .35s;user-select:none;-webkit-user-drag:none}
-.lb-nav{position:absolute;z-index:4;top:calc(50% - 48px);transform:translateY(-50%);width:44px;height:44px;opacity:.6;background:rgba(0,0,0,.35)}
-.lb-nav:hover{opacity:1}
+/* ---------- moment viewer (photo 2/3 + text 1/3, video mode) ---------- */
+@keyframes lbSpin{to{transform:rotate(360deg)}}
+.lightbox{position:fixed;inset:0;z-index:300;--th:96px;background:rgba(0,0,0,.82);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s,visibility .3s;overflow:hidden}
+.lightbox.open{opacity:1;visibility:visible;pointer-events:auto}
+.lightbox.no-photos{--th:0px}
+
+.lb-top{position:absolute;top:0;left:0;right:0;height:52px;z-index:8;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(0,0,0,.38);color:#fff;pointer-events:none}
+.lb-count{font-size:13px;font-weight:500;letter-spacing:.12em;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.9);transition:opacity .3s}
+.lb-actions{display:flex;align-items:center;gap:10px;pointer-events:auto}
+.lb-btn{width:38px;height:38px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .22s,border-color .22s,transform .22s,opacity .25s}
+.lb-btn:hover{background:#d97706;border-color:#d97706;transform:translateY(-1px)}
+.lb-download.is-downloading{opacity:.55;pointer-events:none}
+.lightbox.video-on .lb-download{opacity:.35;pointer-events:none}
+.lightbox.video-on .lb-count{opacity:0}
+
+/* photo stage = left 2/3 ; widens to full width in video mode */
+.lb-stage{position:absolute;left:0;top:0;bottom:var(--th);width:66.6667%;overflow:hidden;isolation:isolate;transition:width .85s cubic-bezier(.22,.61,.36,1),bottom .85s cubic-bezier(.22,.61,.36,1)}
+.lightbox.video-mode .lb-stage{width:100%}
+.lb-stage::after{content:"";position:absolute;left:50%;top:50%;z-index:3;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;border:3px solid rgba(255,255,255,.18);border-top-color:#d97706;animation:lbSpin .8s linear infinite;opacity:0;transition:opacity .25s;pointer-events:none}
+.lb-stage.is-busy::after{opacity:1}
+
+/* same slide animation as project view */
+.lb-photo{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;transform:translateX(0) scale(1);opacity:1;filter:blur(0);transform-origin:center center;will-change:transform,opacity;transition:transform .8s cubic-bezier(.22,.61,.36,1),opacity .6s ease,filter .6s ease;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.lb-photo.is-hidden{visibility:hidden;opacity:0;transform:translateX(0) scale(1)}
+.lb-photo.is-entering-right{opacity:0;transform:translateX(70%) scale(.85)}
+.lb-photo.is-entering-left{opacity:0;transform:translateX(-70%) scale(.85)}
+.lb-photo.is-leaving-left{opacity:0;transform:translateX(-55%) scale(.55)}
+.lb-photo.is-leaving-right{opacity:0;transform:translateX(55%) scale(.55)}
+.lb-photo.is-active{visibility:visible;opacity:1;transform:translateX(0) scale(1)}
+.lb-photo.is-active.is-loading{opacity:0;filter:blur(12px)}
+.lb-photo.no-anim{transition:none!important}
+.lightbox.video-on .lb-photo{opacity:0!important}
+
+.lb-nav{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:44px;height:44px;opacity:.6;background:rgba(0,0,0,.35)}
 #lbPrev{left:16px}#lbNext{right:16px}
-.lb-strip{position:absolute;left:0;right:0;bottom:0;z-index:6;height:96px;padding:9px 14px;display:flex;gap:6px;overflow-x:auto;background:rgba(0,0,0,.55);scrollbar-width:none}
+.lb-nav:hover{opacity:1;transform:translateY(-50%) scale(1.07)}
+.lightbox.video-on .lb-nav{display:none!important}
+
+/* video layer */
+.lb-video{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px 20px;opacity:0;visibility:hidden;transform:translateX(-30px);transition:opacity .4s ease,transform .8s cubic-bezier(.22,.61,.36,1),visibility .4s}
+.lightbox.video-on .lb-video{opacity:1;visibility:visible;transform:none}
+.lb-vframe{width:min(100%,calc((100vh - var(--th) - 100px)*1.7778));aspect-ratio:16/9;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.lb-vframe iframe,.lb-vframe video{display:block;width:100%;height:100%;border:0;background:#000}
+.lb-vopen{margin-top:12px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.55);text-decoration:none;transition:color .2s}
+.lb-vopen:hover{color:#f59e0b}
+
+/* text panel = right 1/3 */
+.lb-text{position:absolute;top:0;right:0;bottom:var(--th);width:33.3333%;padding:84px 36px 28px 34px;overflow-y:auto;color:#fff;background:rgba(0,0,0,.28);border-left:1px solid rgba(255,255,255,.1);opacity:0;transform:translateX(24px);transition:opacity .6s ease .15s,transform .8s cubic-bezier(.22,.61,.36,1) .15s,bottom .85s;scrollbar-width:thin}
+.lightbox.open .lb-text{opacity:1;transform:none}
+.lightbox.video-mode .lb-text{opacity:0;transform:translateX(50px);pointer-events:none;transition-delay:0s}
+.lb-text .t{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,.61,.36,1)}
+.lightbox.open .lb-text .t{opacity:1;transform:none}
+.lightbox.open .lb-text .t:nth-child(1){transition-delay:.35s}
+.lightbox.open .lb-text .t:nth-child(2){transition-delay:.48s}
+.lightbox.open .lb-text .t:nth-child(3){transition-delay:.61s}
+.lightbox.open .lb-text .t:nth-child(4){transition-delay:.74s}
+.lbt-date{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;margin-bottom:10px}
+.lbt-title{margin:0;font-size:22px;line-height:1.3;font-weight:500;letter-spacing:.03em;text-transform:uppercase}
+.lbt-line{width:44px;height:2px;background:#d97706;margin:18px 0}
+.lbt-desc{margin:0;font-size:14px;line-height:1.9;color:rgba(255,255,255,.82);white-space:pre-line}
+
+/* thumbnails */
+.lb-strip{position:absolute;left:0;right:0;bottom:0;z-index:6;height:var(--th);padding:9px 14px;display:flex;align-items:center;justify-content:flex-start;gap:6px;overflow-x:auto;overflow-y:hidden;background:rgba(0,0,0,.55);scrollbar-width:none}
 .lb-strip::-webkit-scrollbar{display:none}
-.lb-th{flex:0 0 100px;width:100px;height:76px;padding:0;border:2px solid rgba(255,255,255,.45);border-radius:3px;overflow:hidden;cursor:pointer;opacity:.6;background:#171717;transition:opacity .2s,border-color .2s}
+.lightbox.no-photos .lb-strip{display:none}
+.lb-th{flex:0 0 100px;width:100px;height:76px;padding:0;border:2px solid rgba(255,255,255,.45);border-radius:3px;overflow:hidden;cursor:pointer;opacity:.6;background:#171717;transition:opacity .2s,border-color .2s,transform .2s}
 .lb-th:first-child{margin-left:auto}.lb-th:last-child{margin-right:auto}
 .lb-th img{width:100%;height:100%;object-fit:cover;display:block}
-.lb-th:hover{opacity:1}.lb-th.active{opacity:1;border-color:#d97706}
-@media(max-width:620px){.lb-stage{bottom:80px}.lb-strip{height:80px}.lb-th{flex-basis:76px;width:76px;height:58px}}
+.lb-th:hover{opacity:1;transform:translateY(-2px)}.lb-th.active{opacity:1;border-color:#d97706}
 
+@media(max-width:820px){
+  .lightbox{--th:80px}
+  .lb-stage{width:100%;bottom:calc(var(--th) + 38%)}
+  .lightbox.video-mode .lb-stage{bottom:var(--th)}
+  .lb-text{top:auto;left:0;right:0;width:auto;height:38%;padding:18px 20px;border-left:0;border-top:1px solid rgba(255,255,255,.1)}
+  .lb-th{flex-basis:76px;width:76px;height:58px}
+  .lb-nav{width:38px;height:38px}
+  #lbPrev{left:8px}#lbNext{right:8px}
+  .lb-top{padding:0 13px}
+}
 </style>
 <style>
 .mcard-img{position:relative;height:299px;flex:0 0 299px}
@@ -194,18 +257,20 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 .mcard-img::before{top:8px;left:8px}.mcard-img::after{bottom:8px;right:8px}
 .mcard-img.clickable:hover::before{width:40px;height:40px;border-top-color:#d97706;border-left-color:#d97706}
 .mcard-img.clickable:hover::after{width:40px;height:40px;border-bottom-color:#d97706;border-right-color:#d97706}
-.mcard-count{position:absolute;left:10px;bottom:10px;z-index:20;display:inline-flex;gap:6px;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font-size:11px;font-weight:600}
+.mcard-count{position:absolute;left:10px;bottom:10px;z-index:20;display:inline-flex;gap:8px;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font-size:11px;font-weight:600}
+.mcard-count span{display:inline-flex;gap:5px;align-items:center}
 .mcard-body{display:flex;flex-direction:column;gap:6px;flex:1;padding:16px 19px 20px}
+/* text animation when the card appears */
+.mcard-body>*{opacity:0;transform:translateY(16px);filter:blur(4px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,.61,.36,1),filter .7s ease}
+.card.revealed .mcard-body>*{opacity:1;transform:none;filter:blur(0)}
+.card.revealed .mcard-body>:nth-child(1){transition-delay:.25s}
+.card.revealed .mcard-body>:nth-child(2){transition-delay:.38s}
+.card.revealed .mcard-body>:nth-child(3){transition-delay:.51s}
 .mcard-date{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#d97706}
 .mcard-title{margin:0;font-size:15px;line-height:20px;font-weight:500;letter-spacing:.01em;text-transform:uppercase;color:#232525}
 .mcard-desc{margin:0;font-size:12.5px;line-height:1.75;color:rgba(0,0,0,.65);white-space:pre-line}
-.mcard-link{margin-top:auto;padding-top:8px;display:inline-flex;align-items:center;gap:7px;max-width:100%;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#2563eb;text-decoration:none}
-.mcard-link span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mcard-link:hover{color:#d97706}
 body.theme-effective-dark .mcard-title{color:#fff}
 body.theme-effective-dark .mcard-desc{color:#c7c5c2}
-body.theme-effective-dark .mcard-link{color:#60a5fa}
-body.theme-effective-dark .mcard-link:hover{color:#f59e0b}
 </style>
 </head>
 <body class="bg-white text-slate-800">
@@ -230,18 +295,19 @@ body.theme-effective-dark .mcard-link:hover{color:#f59e0b}
   <div class="md-head"><h3 id="formTitle">Add Moment</h3><button class="md-x" onclick="closeModal('formModal')">&times;</button></div>
   <div class="md-body">
     <div class="fld"><label>Title <em>*</em></label><input id="fTitle" maxlength="120" placeholder="e.g. Foundation stone laying ceremony"></div>
-    <div class="row2">
-      <div class="fld"><label>Date</label><input id="fDate" type="date"></div>
-      <div class="fld"><label>Link button text</label><input id="fLinkLabel" maxlength="40" placeholder="e.g. Watch video"></div>
-    </div>
-    <div class="fld"><label>Link URL</label><input id="fLink" placeholder="https://..."></div>
+    <div class="fld"><label>Date</label><input id="fDate" type="date"></div>
     <div class="fld"><label>History / Description</label><textarea id="fDesc" rows="4" placeholder="Write a short history..."></textarea></div>
+    <div class="fld">
+      <label>Video URL</label>
+      <input id="fVideo" placeholder="https://www.youtube.com/watch?v=...">
+      <p class="hint">YouTube, Vimeo, Facebook, Google Drive or a direct .mp4 link. Opens inside the photo viewer.</p>
+    </div>
     <div class="fld">
       <label>Photos <small id="photoCount">0 / 20</small></label>
       <button type="button" class="pick" onclick="$('fFiles').click()"><i class="fa-solid fa-cloud-arrow-up"></i> Choose photos</button>
       <input id="fFiles" type="file" accept="image/*" multiple hidden onchange="addFiles(this)">
       <div id="thumbs" class="thumbs"></div>
-      <p class="hint">First photo is the cover. Click the star to make another photo the cover.</p>
+      <p class="hint">Drag photos to change the order. Photos show in this serial order. First photo is the cover (star = make cover).</p>
     </div>
     <p id="fErr" class="err"></p>
   </div>
@@ -296,7 +362,7 @@ window.__indexHeaderReady = (async () => {
   } catch (e) { console.error(e); c.innerHTML = '<div style="padding:32px;text-align:center;color:#a8a6a3;background:#1b1d1d;">Footer failed to load.</div>'; }
 })();
 
-/* ---------- injected UI: menu overlay, photo viewer, confirm dialog, toast ---------- */
+/* ---------- injected UI: menu overlay, moment viewer, confirm dialog, toast ---------- */
 document.body.insertAdjacentHTML('beforeend', `
 <div id="menuOverlay" onclick="handleOverlayClick(event)">
   <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
@@ -306,12 +372,23 @@ document.body.insertAdjacentHTML('beforeend', `
   </div>
 </div>
 <div id="lightbox" class="lightbox" aria-hidden="true">
-  <div class="lb-top"><div id="lbCount" class="lb-count">1 / 1</div>
-    <div style="display:flex"><button class="lb-btn" title="Download image" onclick="lbDownload()"><i class="fa-solid fa-download"></i></button><button class="lb-btn" title="Close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button></div></div>
-  <button id="lbPrev" class="lb-btn lb-nav" aria-label="Previous photo" onclick="lbGo(lbI-1)"><i class="fa-solid fa-chevron-left"></i></button>
-  <div class="lb-stage"><img id="lbImg" alt=""></div>
-  <button id="lbNext" class="lb-btn lb-nav" aria-label="Next photo" onclick="lbGo(lbI+1)"><i class="fa-solid fa-chevron-right"></i></button>
-  <div id="lbThumbs" class="lb-strip"></div>
+  <div class="lb-top">
+    <div id="lbCount" class="lb-count">1 / 1</div>
+    <div class="lb-actions">
+      <button id="lbVideoBtn" class="lb-btn" type="button" title="Play video" aria-label="Play video" style="display:none" onclick="lbToggleVideo()"><i class="fa-solid fa-video"></i></button>
+      <button id="lbDlBtn" class="lb-btn lb-download" type="button" title="Download image" aria-label="Download image" onclick="lbDownload()"><i class="fa-solid fa-download"></i></button>
+      <button class="lb-btn" type="button" title="Close" aria-label="Close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div id="lbStage" class="lb-stage">
+    <img id="lbImg" class="lb-photo is-active" src="" alt="">
+    <img id="lbImgIn" class="lb-photo is-hidden" src="" alt="" aria-hidden="true">
+    <div id="lbVideoLayer" class="lb-video"></div>
+    <button id="lbPrev" class="lb-btn lb-nav" type="button" aria-label="Previous photo" onclick="lbStep(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button id="lbNext" class="lb-btn lb-nav" type="button" aria-label="Next photo" onclick="lbStep(1)"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+  <aside id="lbText" class="lb-text"></aside>
+  <div id="lbThumbs" class="lb-strip" aria-label="Photo thumbnails"></div>
 </div>
 <div id="confirmModal" class="md-bg"><div class="md-box sm">
   <div class="md-head"><h3>Are you sure?</h3><button class="md-x" onclick="$('confirmNo').click()">&times;</button></div>
@@ -330,57 +407,6 @@ function askConfirm(text) {
     $('confirmYes').onclick = () => done(true); $('confirmNo').onclick = () => done(false);
   });
 }
-
-/* ---------- photo viewer (click = enlarge, arrows / keys / swipe = previous / next) ---------- */
-let lbImgs = [], lbI = 0, lbBusy = false;
-function lbUpdate() {
-  $('lbCount').textContent = (lbI + 1) + ' / ' + lbImgs.length;
-  $('lbPrev').style.display = lbI <= 0 ? 'none' : 'flex';
-  $('lbNext').style.display = lbI >= lbImgs.length - 1 ? 'none' : 'flex';
-  const strip = $('lbThumbs');
-  strip.querySelectorAll('.lb-th').forEach((t, i) => t.classList.toggle('active', i === lbI));
-  const a = strip.querySelector('.lb-th.active');
-  if (a) strip.scrollTo({ left: a.offsetLeft - strip.clientWidth / 2 + a.offsetWidth / 2, behavior: 'smooth' });
-}
-function openLightbox(imgs, i) {
-  if (!imgs || !imgs.length) return;
-  lbImgs = imgs.slice(); lbI = Math.min(Math.max(i || 0, 0), lbImgs.length - 1); lbBusy = false;
-  $('lbThumbs').innerHTML = lbImgs.map((u, n) => `<button class="lb-th" aria-label="Photo ${n + 1}" onclick="lbGo(${n})"><img src="${esc(u)}" alt=""></button>`).join('');
-  const im = $('lbImg'); im.style.transition = 'none'; im.style.transform = ''; im.style.opacity = 1; im.src = lbImgs[lbI];
-  lbUpdate(); $('lightbox').classList.add('open'); $('lightbox').setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
-  const a = $('lbThumbs').querySelector('.lb-th.active'); if (a) $('lbThumbs').scrollLeft = a.offsetLeft - $('lbThumbs').clientWidth / 2 + a.offsetWidth / 2;
-}
-function closeLightbox() { $('lightbox').classList.remove('open'); $('lightbox').setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
-function lbGo(n) {
-  if (n < 0 || n >= lbImgs.length || n === lbI || lbBusy) return;
-  const dir = n > lbI ? 1 : -1, im = $('lbImg'); lbBusy = true;
-  im.style.transition = ''; im.style.transform = `translateX(${-dir * 60}px) scale(.85)`; im.style.opacity = 0;   /* old photo shrinks away */
-  setTimeout(() => {
-    lbI = n; lbUpdate();
-    const enter = () => { im.onload = im.onerror = null; void im.offsetWidth; im.style.transition = ''; im.style.transform = ''; im.style.opacity = 1; setTimeout(() => lbBusy = false, 300); };
-    im.style.transition = 'none'; im.style.transform = `translateX(${dir * 60}px) scale(.85)`;                      /* new photo slides in */
-    im.onload = im.onerror = enter; im.src = lbImgs[n];
-  }, 260);
-}
-async function lbDownload() {
-  const url = lbImgs[lbI]; if (!url) return;
-  try {
-    const b = await (await fetch(url, { mode: 'cors' })).blob(), a = document.createElement('a');
-    a.href = URL.createObjectURL(b); a.download = decodeURIComponent(url.split('/').pop().split('?')[0]) || 'photo.jpg';
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-  } catch (e) { window.open(url, '_blank', 'noopener'); }
-}
-document.addEventListener('keydown', e => {
-  if (!$('lightbox').classList.contains('open')) return;
-  if (e.key === 'Escape') closeLightbox();
-  else if (e.key === 'ArrowRight') { e.preventDefault(); lbGo(lbI + 1); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); lbGo(lbI - 1); }
-});
-$('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox' || e.target.classList.contains('lb-stage')) closeLightbox(); });
-(() => { let x = 0, b = $('lightbox');
-  b.addEventListener('touchstart', e => { x = e.changedTouches[0].clientX; }, { passive: true });
-  b.addEventListener('touchend', e => { const d = e.changedTouches[0].clientX - x; if (Math.abs(d) > 50) lbGo(lbI + (d < 0 ? 1 : -1)); }, { passive: true }); })();
-$('lightbox').addEventListener('wheel', e => { e.preventDefault(); if (Math.abs(e.deltaY) > 6 && !lbBusy) lbGo(lbI + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
 
 /* ---------- image upload (Supabase Storage) ---------- */
 async function compressImage(file) {
@@ -569,15 +595,15 @@ const MAX_PHOTOS = 20;
 const DEMO_MODE = true;
 const pics = (s, n, w, h) => Array.from({ length: n }, (_, i) => `https://picsum.photos/seed/${s}-${i + 1}/${w}/${h}`);
 const DEMO_MOMENTS = [
-  { id: 'demo-1', title: 'Masjid Opening Ceremony', event_date: '2024-09-02', link_url: 'https://example.com', link_label: 'Watch video',
+  { id: 'demo-1', title: 'Masjid Opening Ceremony', event_date: '2024-09-02', link_url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
     description: 'After eight months of construction, the new masjid was opened for prayer with the local community, donors and our engineering team present.',
     photos: pics('ynad-m1', 10, 900, 600) },
-  { id: 'demo-2', title: 'Foundation Stone Laying', event_date: '2024-03-15', link_url: 'https://example.com', link_label: 'Read report',
+  { id: 'demo-2', title: 'Foundation Stone Laying', event_date: '2024-03-15', link_url: '',
     description: 'The first stone was laid after the site survey and soil test were completed.\nWork started the following week.',
     photos: pics('ynad-m2', 5, 900, 600) },
-  { id: 'demo-3', title: 'Water Well Handover', event_date: '2023-11-20', link_url: '', link_label: '',
+  { id: 'demo-3', title: 'Water Well Handover', event_date: '2023-11-20', link_url: '',
     description: 'Three deep tube wells were handed over to the village committee.', photos: pics('ynad-m3', 3, 900, 600) },
-  { id: 'demo-4', title: 'Winter Relief Distribution', event_date: '2023-12-28', link_url: 'https://example.com', link_label: '',
+  { id: 'demo-4', title: 'Winter Relief Distribution', event_date: '2023-12-28', link_url: '',
     description: '', photos: pics('ynad-m4', 1, 900, 600) }
 ];
 let moments = [], editing = null;
@@ -591,12 +617,12 @@ function photosOf(raw) {
 function fmtDate(d) { try { return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return d; } }
 
 function cardHtml(m, i) {
-  const n = m.photos.length;
+  const n = m.photos.length, hasVideo = !!m.link_url, can = n > 0 || hasVideo;
   return `
   <article class="card reveal" style="transition-delay:${Math.min(i, 3) * .08}s">
-    <div class="mcard-img ${n ? 'clickable' : ''}" ${n ? `onclick="openPhotos('${esc(m.id)}',0)"` : ''}>
+    <div class="mcard-img ${can ? 'clickable' : ''}" ${can ? `onclick="openMoment('${esc(m.id)}',0)"` : ''}>
       <div class="zoom">${n ? `<img src="${esc(m.photos[0])}" alt="${esc(m.title)}" loading="lazy">` : '<div class="noimg"><i class="fa-solid fa-image"></i></div>'}</div>
-      ${n > 1 ? `<span class="mcard-count"><i class="fa-solid fa-images"></i> ${n}</span>` : ''}
+      ${(n > 1 || hasVideo) ? `<span class="mcard-count">${n > 1 ? `<span><i class="fa-solid fa-images"></i> ${n}</span>` : ''}${hasVideo ? '<span><i class="fa-solid fa-video"></i></span>' : ''}</span>` : ''}
       <div class="tools" onclick="event.stopPropagation()">
         <button title="Edit" onclick="openForm('${esc(m.id)}')"><i class="fa-solid fa-pen"></i></button>
         <button class="del" title="Delete" onclick="deleteMoment('${esc(m.id)}')"><i class="fa-solid fa-trash"></i></button>
@@ -606,7 +632,6 @@ function cardHtml(m, i) {
       ${m.event_date ? `<div class="mcard-date">${esc(fmtDate(m.event_date))}</div>` : ''}
       <h3 class="mcard-title">${esc(m.title)}</h3>
       ${m.description ? `<p class="mcard-desc">${esc(m.description)}</p>` : ''}
-      ${m.link_url ? `<a class="mcard-link" href="${esc(m.link_url)}" target="_blank" rel="noopener"><i class="fa-solid fa-link"></i><span>${esc(m.link_label || 'Visit link')}</span></a>` : ''}
     </div>
   </article>`;
 }
@@ -624,24 +649,278 @@ async function load() {
   moments = (data || []).map(m => ({ ...m, photos: photosOf(m.photo_urls) }));
   render();
 }
-function openPhotos(id, i) { const m = moments.find(x => x.id === id); if (m) openLightbox(m.photos, i); }
+
+/* ================= MOMENT VIEWER =================
+   photo (left 2/3) + text (right 1/3)
+   video icon  -> video opens in the photo area, slides to the center, text fades out
+   picture icon -> goes back: photo + details return                                  */
+const LB_FALLBACK_MS = 1000;
+let lbImgs = [], lbI = 0, lbTarget = 0, lbAnim = false, lbPend = 0, lbTok = 0, lbTimer = null,
+    lbWheelLock = false, lbPre = [], lbRaf = 0, lbVideo = '', lbVMode = false, lbVT = null,
+    lbCur = $('lbImg'), lbIn = $('lbImgIn');
+
+function lbArrows(i) {
+  const t = lbImgs.length;
+  $('lbPrev').style.display = (t < 2 || i <= 0) ? 'none' : 'flex';
+  $('lbNext').style.display = (t < 2 || i >= t - 1) ? 'none' : 'flex';
+}
+function lbStripScroll(strip, to, dur) {
+  cancelAnimationFrame(lbRaf);
+  const from = strip.scrollLeft, dist = to - from; if (Math.abs(dist) < 1) return;
+  const t0 = performance.now();
+  const step = now => {
+    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    strip.scrollLeft = from + dist * e;
+    if (p < 1) lbRaf = requestAnimationFrame(step);
+  };
+  lbRaf = requestAnimationFrame(step);
+}
+function lbCenterThumb(th) {
+  const s = $('lbThumbs'); if (!s || !th) return;
+  lbStripScroll(s, Math.max(0, th.offsetLeft - s.clientWidth / 2 + th.offsetWidth / 2), 340);
+}
+function lbPreload() {
+  if (!lbImgs.length || lbPre.length === lbImgs.length) return;
+  lbPre = lbImgs.map(u => { const im = new Image(); im.decoding = 'async'; im.src = u; return im; });
+}
+function lbCounter(idx) {
+  const total = lbImgs.length;
+  const shown = (typeof idx === 'number') ? Math.min(Math.max(idx, 0), Math.max(total - 1, 0)) : lbI;
+  $('lbCount').textContent = total ? (shown + 1) + ' / ' + total : '';
+  $('lbThumbs').querySelectorAll('.lb-th').forEach((t, n) => {
+    const on = n === shown; t.classList.toggle('active', on);
+    if (on) { t.setAttribute('aria-current', 'true'); lbCenterThumb(t); } else t.removeAttribute('aria-current');
+  });
+  lbArrows(shown);
+}
+function lbBuildThumbs() {
+  $('lbThumbs').innerHTML = lbImgs.map((u, n) =>
+    `<button class="lb-th${n === lbI ? ' active' : ''}" type="button" aria-label="View image ${n + 1}" onclick="lbSelect(${n})"><img src="${esc(u)}" alt="" decoding="async"></button>`).join('');
+}
+function lbBusy(b) { $('lbStage').classList.toggle('is-busy', !!b); }
+function lbCancel() {
+  lbTok++; if (lbTimer) clearTimeout(lbTimer); lbTimer = null; lbAnim = false; lbPend = 0; lbBusy(false);
+}
+function lbReset() {
+  lbCur.className = 'lb-photo is-active'; lbCur.onload = null; lbCur.onerror = null;
+  lbIn.className = 'lb-photo is-hidden'; lbIn.onload = null; lbIn.onerror = null; lbIn.removeAttribute('src');
+}
+function lbShow(index) {
+  if (!lbImgs.length) return;
+  lbI = Math.min(Math.max(index, 0), lbImgs.length - 1); lbTarget = lbI;
+  lbReset();
+  const img = lbCur; img.classList.add('is-loading'); lbBusy(true);
+  const done = () => { img.onload = null; img.onerror = null; img.classList.remove('is-loading'); lbBusy(false); };
+  img.onload = done; img.onerror = done; img.src = lbImgs[lbI];
+  if (img.complete && img.naturalWidth > 0) done();
+  lbCounter();
+}
+function lbSelect(index) {
+  if (!lbImgs.length || index < 0 || index >= lbImgs.length || lbVMode) return;
+  if (lbAnim) { lbCancel(); lbReset(); }
+  if (index === lbI) return;
+  lbAnimateTo(index, index > lbI ? 1 : -1);
+}
+async function lbDownload() {
+  const url = lbImgs[lbI]; if (!url) return;
+  const btn = $('lbDlBtn'); btn.classList.add('is-downloading');
+  let name = `moment-photo-${lbI + 1}.jpg`;
+  try { const p = decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); if (p) name = p.includes('.') ? p : p + '.jpg'; } catch (e) {}
+  try {
+    const r = await fetch(url, { mode: 'cors' }); if (!r.ok) throw new Error('download failed');
+    const b = await r.blob(), a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  } catch (e) { window.open(url, '_blank', 'noopener'); }
+  finally { btn.classList.remove('is-downloading'); }
+}
+function lbRunQueued() {
+  if (lbPend === 0) return;
+  const d = Math.sign(lbPend); lbPend -= d;
+  setTimeout(() => lbAnimateTo(lbI + d, d), 35);
+}
+function lbFinish(next, tok, cur, inc, handler) {
+  if (tok !== lbTok) return;
+  if (lbTimer) clearTimeout(lbTimer);
+  if (handler) inc.removeEventListener('transitionend', handler);
+  lbTimer = null;
+  lbCur = inc; lbIn = cur;                       /* swap the two image layers */
+  lbCur.className = 'lb-photo is-active';
+  lbIn.className = 'lb-photo is-hidden'; lbIn.onload = null; lbIn.onerror = null; lbIn.removeAttribute('src');
+  lbI = next; lbCounter(); lbAnim = false;
+  lbRunQueued();
+}
+/* direction 1 = new photo enters from the right, -1 = from the left; old photo shrinks away */
+function lbAnimateTo(next, dir) {
+  const total = lbImgs.length;
+  if (total < 2 || next < 0 || next >= total || next === lbI) return;
+  const cur = lbCur, inc = lbIn, tok = ++lbTok;
+  let started = false, finished = false, onEnd = null;
+  lbAnim = true; lbTarget = next; lbBusy(true);
+  inc.className = 'lb-photo no-anim ' + (dir > 0 ? 'is-entering-right' : 'is-entering-left');
+  inc.onload = null; inc.onerror = null;
+  const finish = () => { if (finished) return; finished = true; lbFinish(next, tok, cur, inc, onEnd); };
+  const start = () => {
+    if (started || tok !== lbTok) return;
+    started = true; lbBusy(false); inc.onload = null; inc.onerror = null;
+    void inc.offsetWidth; inc.classList.remove('no-anim'); void inc.offsetWidth;
+    lbCounter(next);
+    requestAnimationFrame(() => {
+      if (tok !== lbTok) return;
+      cur.classList.remove('is-active'); cur.classList.add(dir > 0 ? 'is-leaving-left' : 'is-leaving-right');
+      inc.classList.remove('is-entering-right', 'is-entering-left'); inc.classList.add('is-active');
+    });
+    onEnd = ev => { if (ev.target === inc && ev.propertyName === 'transform') finish(); };
+    inc.addEventListener('transitionend', onEnd);
+    lbTimer = setTimeout(finish, LB_FALLBACK_MS);
+  };
+  inc.onerror = () => {
+    if (tok !== lbTok) return;
+    inc.onload = null; inc.onerror = null; lbAnim = false; lbBusy(false); lbShow(next); lbRunQueued();
+  };
+  inc.onload = start; inc.src = lbImgs[next];
+  if (inc.complete && inc.naturalWidth > 0) start();
+}
+function lbStep(dir) {
+  if (!lbImgs.length || !dir || lbVMode) return;
+  const step = dir > 0 ? 1 : -1, total = lbImgs.length;
+  const base = lbAnim ? lbTarget : lbI, target = base + lbPend + step;
+  if (target < 0 || target >= total) return;          /* no looping */
+  if (lbAnim) { lbPend += step; lbCounter(target); return; }
+  lbAnimateTo(lbI + step, step);
+}
+
+/* ---- video ---- */
+function videoHtml(url) {
+  const u = String(url || '').trim(); if (!/^https?:\/\//i.test(u)) return '';
+  let m, src = '';
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/i))) src = `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0`;
+  else if ((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i))) src = `https://player.vimeo.com/video/${m[1]}?autoplay=1`;
+  else if (/facebook\.com|fb\.watch/i.test(u)) src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(u)}&show_text=false&autoplay=true`;
+  else if ((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/i))) src = `https://drive.google.com/file/d/${m[1]}/preview`;
+  else if (/\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(u)) return `<div class="lb-vframe"><video src="${esc(u)}" controls autoplay playsinline></video></div>`;
+  else src = u;
+  return `<div class="lb-vframe"><iframe src="${esc(src)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+          <a class="lb-vopen" href="${esc(u)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open in new tab</a>`;
+}
+function lbSetVideoBtn(on) {
+  const b = $('lbVideoBtn');
+  b.innerHTML = `<i class="fa-solid ${on ? 'fa-image' : 'fa-video'}"></i>`;
+  b.title = on ? 'Back to photos' : 'Play video'; b.setAttribute('aria-label', b.title);
+}
+function lbToggleVideo() {
+  if (!lbVideo) return;
+  const box = $('lightbox'); clearTimeout(lbVT);
+  if (!lbVMode) {
+    lbVMode = true;
+    if (lbAnim) { lbCancel(); lbReset(); lbCounter(); }
+    $('lbVideoLayer').innerHTML = videoHtml(lbVideo);
+    box.classList.add('video-on');                                   /* video appears where the photo was */
+    lbVT = setTimeout(() => box.classList.add('video-mode'), 450);   /* then slides to the center, text fades out */
+    lbSetVideoBtn(true);
+  } else {
+    lbVMode = false;
+    box.classList.remove('video-mode', 'video-on');                  /* photo + details come back */
+    lbSetVideoBtn(false);
+    lbVT = setTimeout(() => { if (!lbVMode) $('lbVideoLayer').innerHTML = ''; }, 450);
+  }
+}
+
+/* ---- open / close ---- */
+function lbText(m) {
+  $('lbText').innerHTML =
+    (m.event_date ? `<div class="t lbt-date">${esc(fmtDate(m.event_date))}</div>` : '') +
+    `<h2 class="t lbt-title">${esc(m.title)}</h2><div class="t lbt-line"></div>` +
+    (m.description ? `<p class="t lbt-desc">${esc(m.description)}</p>` : '');
+}
+function openMoment(id, i) {
+  const m = moments.find(x => x.id === id); if (!m) return;
+  const none = !m.photos.length; if (none && !m.link_url) return;
+  const box = $('lightbox');
+  clearTimeout(lbVT); lbCancel();
+  lbImgs = m.photos.slice(); lbPre = []; lbVideo = m.link_url || ''; lbVMode = false;
+  box.classList.remove('video-on', 'video-mode'); box.classList.toggle('no-photos', none);
+  $('lbVideoLayer').innerHTML = '';
+  $('lbVideoBtn').style.display = (lbVideo && !none) ? 'flex' : 'none'; lbSetVideoBtn(false);
+  $('lbDlBtn').style.display = none ? 'none' : 'flex';
+  lbI = Math.min(Math.max(i || 0, 0), Math.max(lbImgs.length - 1, 0)); lbTarget = lbI;
+  lbBuildThumbs(); lbText(m);
+  if (!none) { lbPreload(); lbShow(lbI); }
+  else { lbReset(); lbCur.removeAttribute('src'); $('lbCount').textContent = ''; lbArrows(0); }
+  void box.offsetWidth;                                  /* so the text animates in */
+  box.classList.add('open'); box.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+  const a = $('lbThumbs').querySelector('.lb-th.active'); if (a) $('lbThumbs').scrollLeft = Math.max(0, a.offsetLeft - $('lbThumbs').clientWidth / 2 + a.offsetWidth / 2);
+  if (none) lbToggleVideo();
+}
+function closeLightbox() {
+  const box = $('lightbox');
+  clearTimeout(lbVT); lbCancel(); lbReset(); lbVMode = false;
+  box.classList.remove('open', 'video-on', 'video-mode'); box.setAttribute('aria-hidden', 'true');
+  $('lbVideoLayer').innerHTML = '';                      /* stops the video */
+  document.body.style.overflow = '';
+}
+$('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox' || e.target.id === 'lbStage') closeLightbox(); });
+(() => { let x = 0, skip = false, b = $('lightbox');
+  b.addEventListener('touchstart', e => { x = e.changedTouches[0].clientX; skip = !!e.target.closest('.lb-text'); }, { passive: true });
+  b.addEventListener('touchend', e => { if (skip || lbVMode) return; const d = e.changedTouches[0].clientX - x; if (Math.abs(d) > 50) lbStep(d < 0 ? 1 : -1); }, { passive: true }); })();
+$('lightbox').addEventListener('wheel', e => {
+  if (!$('lightbox').classList.contains('open')) return;
+  if (e.target.closest('.lb-text')) return;              /* let the description scroll */
+  e.preventDefault();
+  if (lbVMode || lbWheelLock) return;
+  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  if (Math.abs(d) < 6) return;
+  lbWheelLock = true; setTimeout(() => { lbWheelLock = false; }, 520);
+  lbStep(d > 0 ? 1 : -1);
+}, { passive: false });
+document.addEventListener('keydown', e => {
+  if (!$('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') { closeLightbox(); return; }
+  if (lbVMode) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); lbStep(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); lbStep(-1); }
+});
 
 /* ---- add / edit ---- */
 function openForm(id) {
   const m = id ? moments.find(x => x.id === id) : null;
   editing = { id: m ? m.id : null, orig: m ? m.photos.slice() : [], items: (m ? m.photos : []).map(url => ({ url })) };
   $('fTitle').value = m ? m.title : ''; $('fDate').value = (m && m.event_date) || '';
-  $('fDesc').value = (m && m.description) || ''; $('fLink').value = (m && m.link_url) || ''; $('fLinkLabel').value = (m && m.link_label) || '';
+  $('fDesc').value = (m && m.description) || ''; $('fVideo').value = (m && m.link_url) || '';
   $('formTitle').textContent = m ? 'Edit Moment' : 'Add Moment'; $('fErr').style.display = 'none';
   renderThumbs(); openModal('formModal');
 }
 function renderThumbs() {
   $('thumbs').innerHTML = editing.items.map((it, i) => `
-    <div class="th ${i === 0 ? 'cover' : ''}"><img src="${esc(it.url || it.preview)}" alt="">
+    <div class="th ${i === 0 ? 'cover' : ''}" draggable="true" data-i="${i}"><img src="${esc(it.url || it.preview)}" alt="" draggable="false">
+      <span class="no">${i + 1}</span>
       <button type="button" class="st" title="Make cover" onclick="makeCover(${i})"><i class="fa-solid fa-star"></i></button>
       <button type="button" class="rm" title="Remove" onclick="removeThumb(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
   $('photoCount').textContent = editing.items.length + ' / ' + MAX_PHOTOS;
 }
+/* drag & drop to reorder photos */
+(() => {
+  const box = $('thumbs'); let from = null;
+  const clear = () => box.querySelectorAll('.th').forEach(t => t.classList.remove('dragging', 'over'));
+  box.addEventListener('dragstart', e => {
+    const t = e.target.closest('.th'); if (!t) return;
+    from = +t.dataset.i; t.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(from)); } catch (err) {}
+  });
+  box.addEventListener('dragover', e => {
+    if (from === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    const t = e.target.closest('.th');
+    box.querySelectorAll('.th.over').forEach(x => { if (x !== t) x.classList.remove('over'); });
+    if (t && +t.dataset.i !== from) t.classList.add('over');
+  });
+  box.addEventListener('drop', e => {
+    if (from === null) return; e.preventDefault();
+    const t = e.target.closest('.th'), to = t ? +t.dataset.i : null;
+    if (to !== null && to !== from) { const [it] = editing.items.splice(from, 1); editing.items.splice(to, 0, it); }
+    from = null; renderThumbs();
+  });
+  box.addEventListener('dragend', () => { from = null; clear(); });
+})();
 function addFiles(input) {
   const files = [...input.files]; input.value = '';
   for (const f of files) {
@@ -658,10 +937,10 @@ async function saveMoment() {
   const err = $('fErr'), btn = $('saveBtn'), title = $('fTitle').value.trim();
   if (!title) { err.textContent = 'Title is required.'; err.style.display = 'block'; return; }
   err.style.display = 'none';
-  let link = $('fLink').value.trim(); if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+  let video = $('fVideo').value.trim(); if (video && !/^https?:\/\//i.test(video)) video = 'https://' + video;
   if (DEMO_MODE) {
     const urls = editing.items.map(it => it.url || it.preview);
-    const row = { title, event_date: $('fDate').value || null, description: $('fDesc').value.trim(), link_url: link, link_label: $('fLinkLabel').value.trim(), photos: urls };
+    const row = { title, event_date: $('fDate').value || null, description: $('fDesc').value.trim(), link_url: video, photos: urls };
     const wasEdit = !!editing.id;
     if (wasEdit) moments = moments.map(m => m.id === editing.id ? { ...m, ...row } : m);
     else moments.unshift({ id: 'demo-' + Date.now(), ...row });
@@ -671,13 +950,13 @@ async function saveMoment() {
   btn.disabled = true;
   try {
     const urls = [], total = editing.items.filter(x => x.file).length; let n = 0;
-    for (const it of editing.items) {
+    for (const it of editing.items) {              /* keeps the order you arranged */
       if (it.file) { btn.textContent = `Uploading ${++n}/${total}...`; urls.push(await uploadImage(it.file, 'moments')); }
       else urls.push(it.url);
     }
     btn.textContent = 'Saving...';
     const row = { title, event_date: $('fDate').value || null, description: $('fDesc').value.trim() || null,
-                  link_url: link || null, link_label: $('fLinkLabel').value.trim() || null, photo_urls: urls };
+                  link_url: video || null, photo_urls: urls };
     const wasEdit = !!editing.id;
     const q = wasEdit ? supabaseClient.from('moments').update(row).eq('id', editing.id) : supabaseClient.from('moments').insert(row);
     const { data, error } = await q.select();
