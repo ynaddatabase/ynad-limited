@@ -417,8 +417,8 @@ function setManageUI() {
   document.body.classList.toggle('manage-on', manage);
 }
 function toggleManage() { if (!canManage) return; manage = !manage; setManageUI(); }
-async function initManage() {
-  const apply = s => { canManage = !REQUIRE_LOGIN_TO_MANAGE || !!s; if (!canManage) manage = false; setManageUI(); };
+async function initManage(force) {
+  const apply = s => { canManage = !!force || !REQUIRE_LOGIN_TO_MANAGE || !!s; if (!canManage) manage = false; setManageUI(); };
   try {
     const { data: { session } } = await supabaseClient.auth.getSession(); apply(session);
     supabaseClient.auth.onAuthStateChange((_e, s) => apply(s));
@@ -563,6 +563,23 @@ initAuthState();
 </script>
 <script>
 const MAX_PHOTOS = 20;
+/* ===== DEMO MODE =====
+   true  = sample data below, nothing is saved (to preview the design)
+   false = real data from Supabase. Then delete DEMO_MOMENTS too. */
+const DEMO_MODE = true;
+const pics = (s, n, w, h) => Array.from({ length: n }, (_, i) => `https://picsum.photos/seed/${s}-${i + 1}/${w}/${h}`);
+const DEMO_MOMENTS = [
+  { id: 'demo-1', title: 'Masjid Opening Ceremony', event_date: '2024-09-02', link_url: 'https://example.com', link_label: 'Watch video',
+    description: 'After eight months of construction, the new masjid was opened for prayer with the local community, donors and our engineering team present.',
+    photos: pics('ynad-m1', 10, 900, 600) },
+  { id: 'demo-2', title: 'Foundation Stone Laying', event_date: '2024-03-15', link_url: 'https://example.com', link_label: 'Read report',
+    description: 'The first stone was laid after the site survey and soil test were completed.\nWork started the following week.',
+    photos: pics('ynad-m2', 5, 900, 600) },
+  { id: 'demo-3', title: 'Water Well Handover', event_date: '2023-11-20', link_url: '', link_label: '',
+    description: 'Three deep tube wells were handed over to the village committee.', photos: pics('ynad-m3', 3, 900, 600) },
+  { id: 'demo-4', title: 'Winter Relief Distribution', event_date: '2023-12-28', link_url: 'https://example.com', link_label: '',
+    description: '', photos: pics('ynad-m4', 1, 900, 600) }
+];
 let moments = [], editing = null;
 
 function photosOf(raw) {
@@ -600,6 +617,7 @@ function render() {
   observeCards(g);
 }
 async function load() {
+  if (DEMO_MODE) { moments = DEMO_MOMENTS.map(m => ({ ...m })); render(); return; }
   const { data, error } = await supabaseClient.from('moments').select('*')
     .order('event_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
   if (error) { console.error(error); $('grid').innerHTML = `<div class="empty" style="color:#ef4444">Failed to load: ${esc(error.message)}</div>`; return; }
@@ -641,6 +659,15 @@ async function saveMoment() {
   if (!title) { err.textContent = 'Title is required.'; err.style.display = 'block'; return; }
   err.style.display = 'none';
   let link = $('fLink').value.trim(); if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+  if (DEMO_MODE) {
+    const urls = editing.items.map(it => it.url || it.preview);
+    const row = { title, event_date: $('fDate').value || null, description: $('fDesc').value.trim(), link_url: link, link_label: $('fLinkLabel').value.trim(), photos: urls };
+    const wasEdit = !!editing.id;
+    if (wasEdit) moments = moments.map(m => m.id === editing.id ? { ...m, ...row } : m);
+    else moments.unshift({ id: 'demo-' + Date.now(), ...row });
+    moments.sort((a, b) => String(b.event_date || '').localeCompare(String(a.event_date || '')));
+    closeModal('formModal'); toast(wasEdit ? 'Moment updated (demo)' : 'Moment added (demo)'); render(); return;
+  }
   btn.disabled = true;
   try {
     const urls = [], total = editing.items.filter(x => x.file).length; let n = 0;
@@ -664,12 +691,16 @@ async function saveMoment() {
 async function deleteMoment(id) {
   const m = moments.find(x => x.id === id); if (!m) return;
   if (!await askConfirm(`Delete "${m.title}" and all its photos? This cannot be undone.`)) return;
+  if (DEMO_MODE) { moments = moments.filter(x => x.id !== id); render(); toast('Moment deleted (demo)'); return; }
   const { data, error } = await supabaseClient.from('moments').delete().eq('id', id).select();
   if (error || !data || !data.length) { toast('Delete failed', true); return; }
   await removeFiles(m.photos); toast('Moment deleted'); load();
 }
 
-initManage(); load();
+
+if (DEMO_MODE) document.querySelector('.pg-head').insertAdjacentHTML('beforeend',
+  '<p style="margin:14px 0 0;font-size:11px;color:#d97706;letter-spacing:.06em;text-transform:uppercase">Demo mode - sample data, changes are not saved</p>');
+initManage(DEMO_MODE); load();
 </script>
 </body>
 </html>
