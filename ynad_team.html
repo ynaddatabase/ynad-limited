@@ -150,7 +150,7 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 @keyframes lbSpin{to{transform:rotate(360deg)}}
 
 /* ---------- team grid (active members) ---------- */
-.team-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:36px 28px}
+.team-grid{position:relative;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:36px 28px}
 @media(max-width:1000px){.team-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:720px){.team-grid{grid-template-columns:repeat(2,1fr);gap:28px 16px}}
 .card{position:relative;opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .6s cubic-bezier(.22,.61,.36,1)}
@@ -176,7 +176,9 @@ body.theme-effective-dark .tname{color:#fff}
 
 /* drag & drop reorder */
 body.dragging-card{user-select:none;-webkit-user-select:none;cursor:grabbing}
-.drag-ghost{position:fixed;z-index:700;margin:0;pointer-events:none;opacity:.94!important;transition:none!important;transform:scale(1.04) rotate(1.5deg)!important;filter:drop-shadow(0 18px 30px rgba(0,0,0,.35))}
+.drag-ghost{position:fixed;left:0;top:0;z-index:700;margin:0;pointer-events:none;opacity:.94!important;transition:none!important;animation:none!important;will-change:transform;
+  transform:translate3d(var(--gx,0px),var(--gy,0px),0) scale(1.04) rotate(1.5deg)!important;box-shadow:0 18px 34px rgba(0,0,0,.3);border-radius:18px}
+.card.dragging-src .tphoto{animation:none}
 .drag-ghost .tools{display:none!important}
 
 /* ---------- resigned employees (auto-scroll right to left) ---------- */
@@ -726,7 +728,7 @@ function startDrag(e) {
   const r = card.getBoundingClientRect();
   const ghost = card.cloneNode(true);
   ghost.classList.add('drag-ghost', 'revealed'); ghost.removeAttribute('data-id');
-  ghost.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;`;
+  ghost.style.cssText = `width:${r.width}px;--gx:${r.left}px;--gy:${r.top}px;`;
   document.body.appendChild(ghost);
   card.classList.add('dragging-src'); document.body.classList.add('dragging-card');
   dg = { card, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, x: e.clientX, y: e.clientY, raf: 0 };
@@ -739,23 +741,25 @@ function moveCard(card, target, after) {
   const first = new Map(all.map(c => [c, c.getBoundingClientRect()]));
   after ? target.after(card) : target.before(card);
   all.forEach(c => {
-    if (c === card) return;
     const a = first.get(c), b = c.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
     if (!dx && !dy) return;
     c.style.transition = 'none'; c.style.transform = `translate(${dx}px,${dy}px)`; void c.offsetWidth;
-    c.style.transition = 'transform .28s cubic-bezier(.22,.61,.36,1)'; c.style.transform = '';
-    c.addEventListener('transitionend', () => { c.style.transition = ''; }, { once: true });
+    c.style.transition = 'transform .3s cubic-bezier(.22,.61,.36,1)'; c.style.transform = '';
+    clearTimeout(c._ft); c._ft = setTimeout(() => { c.style.transition = ''; }, 340);
   });
 }
 function dragTick() {
   if (!dg) return;
-  dg.ghost.style.left = (dg.x - dg.dx) + 'px'; dg.ghost.style.top = (dg.y - dg.dy) + 'px';
-  if (dg.y < 90) scrollBy(0, -16); else if (dg.y > innerHeight - 90) scrollBy(0, 16);
+  dg.ghost.style.setProperty('--gx', (dg.x - dg.dx) + 'px'); dg.ghost.style.setProperty('--gy', (dg.y - dg.dy) + 'px');
+  if (dg.y < 90) scrollBy(0, -14); else if (dg.y > innerHeight - 90) scrollBy(0, 14);
   const grid = $('grid'), all = [...grid.querySelectorAll('.card')];
+  /* hit-test against the stable LAYOUT position (offset*), which ignores the slide animations of other cards.
+     This stops the card from flipping back and forth while neighbours are still moving. */
+  const gr = grid.getBoundingClientRect(), px = dg.x - gr.left, py = dg.y - gr.top;
   const target = all.find(c => {
     if (c === dg.card) return false;
-    const r = c.getBoundingClientRect();
-    return dg.x >= r.left && dg.x <= r.right && dg.y >= r.top && dg.y <= r.bottom;
+    const w = c.offsetWidth, h = c.offsetHeight, px0 = c.offsetLeft + w * .2, py0 = c.offsetTop + h * .2;
+    return px >= px0 && px <= c.offsetLeft + w * .8 && py >= py0 && py <= c.offsetTop + h * .8;
   });
   if (target) moveCard(dg.card, target, all.indexOf(target) > all.indexOf(dg.card));
   dg.raf = requestAnimationFrame(dragTick);
