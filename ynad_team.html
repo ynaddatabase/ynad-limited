@@ -407,8 +407,8 @@ function setManageUI() {
   document.body.classList.toggle('manage-on', manage);
 }
 function toggleManage() { if (!canManage) return; manage = !manage; setManageUI(); }
-async function initManage() {
-  const apply = s => { canManage = !REQUIRE_LOGIN_TO_MANAGE || !!s; if (!canManage) manage = false; setManageUI(); };
+async function initManage(force) {
+  const apply = s => { canManage = !!force || !REQUIRE_LOGIN_TO_MANAGE || !!s; if (!canManage) manage = false; setManageUI(); };
   try {
     const { data: { session } } = await supabaseClient.auth.getSession(); apply(session);
     supabaseClient.auth.onAuthStateChange((_e, s) => apply(s));
@@ -552,6 +552,25 @@ initAuthState();
 
 </script>
 <script>
+/* ===== DEMO MODE =====
+   true  = sample data below, nothing is saved (to preview the design)
+   false = real data from Supabase. Then delete DEMO_MEMBERS too. */
+const DEMO_MODE = true;
+const face = (s) => `https://picsum.photos/seed/${s}/600/750`;
+const DEMO_MEMBERS = [
+  { id: 'demo-1', name: 'Md. Abdul Karim', designation: 'Managing Director', sort_order: 1, photo_url: face('ynad-t1'),
+    description: 'Leads the company vision and oversees every masjid, madrasa and water project from approval to opening.' },
+  { id: 'demo-2', name: 'Engr. Rahim Uddin', designation: 'Chief Engineer', sort_order: 2, photo_url: face('ynad-t2'),
+    description: 'Responsible for structural design, quality control and the work of all site engineers.' },
+  { id: 'demo-3', name: 'Nasrin Akter', designation: 'Project Coordinator', sort_order: 3, photo_url: face('ynad-t3'),
+    description: 'Coordinates donors, local committees and site teams so every project stays on schedule.' },
+  { id: 'demo-4', name: 'Kamal Hossain', designation: 'Site Engineer', sort_order: 4, photo_url: face('ynad-t4'),
+    description: 'Supervises daily construction work on site and sends regular progress reports.' },
+  { id: 'demo-5', name: 'Sumaiya Islam', designation: 'Accounts Manager', sort_order: 5, photo_url: null,
+    description: 'Manages project budgets, donor funds and payment records with full transparency.' },
+  { id: 'demo-6', name: 'Imran Hasan', designation: 'Media Officer', sort_order: 6, photo_url: face('ynad-t6'),
+    description: 'Documents every project with photos and videos for reports and the website.' }
+];
 let members = [], editing = null;
 
 function cardHtml(m, i) {
@@ -578,6 +597,7 @@ function render() {
   observeCards(g);
 }
 async function load() {
+  if (DEMO_MODE) { members = DEMO_MEMBERS.map(m => ({ ...m })); render(); return; }
   const { data, error } = await supabaseClient.from('team_members').select('*')
     .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
   if (error) { console.error(error); $('grid').innerHTML = `<div class="empty" style="color:#ef4444">Failed to load: ${esc(error.message)}</div>`; return; }
@@ -608,7 +628,17 @@ function clearPhoto() { editing.file = null; editing.preview = null; editing.kee
 async function saveMember() {
   const err = $('fErr'), btn = $('saveBtn'), name = $('fName').value.trim();
   if (!name) { err.textContent = 'Name is required.'; err.style.display = 'block'; return; }
-  err.style.display = 'none'; btn.disabled = true;
+  err.style.display = 'none';
+  if (DEMO_MODE) {
+    const row = { name, designation: $('fDesig').value.trim(), description: $('fDesc').value.trim(),
+                  photo_url: editing.preview || (editing.keep ? editing.photoUrl : null), sort_order: parseInt($('fOrder').value, 10) || members.length + 1 };
+    const wasEdit = !!editing.id;
+    if (wasEdit) members = members.map(m => m.id === editing.id ? { ...m, ...row } : m);
+    else members.push({ id: 'demo-' + Date.now(), ...row });
+    members.sort((a, b) => a.sort_order - b.sort_order);
+    closeModal('formModal'); toast(wasEdit ? 'Member updated (demo)' : 'Member added (demo)'); render(); return;
+  }
+  btn.disabled = true;
   try {
     let url = editing.keep ? editing.photoUrl : null;
     if (editing.file) { btn.textContent = 'Uploading...'; url = await uploadImage(editing.file, 'team'); }
@@ -628,12 +658,16 @@ async function saveMember() {
 async function deleteMember(id) {
   const m = members.find(x => x.id === id); if (!m) return;
   if (!await askConfirm(`Delete "${m.name}" from the team? This cannot be undone.`)) return;
+  if (DEMO_MODE) { members = members.filter(x => x.id !== id); render(); toast('Member deleted (demo)'); return; }
   const { data, error } = await supabaseClient.from('team_members').delete().eq('id', id).select();
   if (error || !data || !data.length) { toast('Delete failed', true); return; }
   await removeFiles([m.photo_url]); toast('Member deleted'); load();
 }
 
-initManage(); load();
+
+if (DEMO_MODE) document.querySelector('.pg-head').insertAdjacentHTML('beforeend',
+  '<p style="margin:14px 0 0;font-size:11px;color:#d97706;letter-spacing:.06em;text-transform:uppercase">Demo mode - sample data, changes are not saved</p>');
+initManage(DEMO_MODE); load();
 </script>
 </body>
 </html>
