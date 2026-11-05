@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YNAD Moments | YNAD Construction</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#d97706}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Poppins',sans-serif;overflow-x:hidden;background:#fff;color:#1e293b}
+
+/* ---------- loading bar + shared header ---------- */
+#pageLoadingBar{position:fixed;top:0;left:0;right:0;height:3px;z-index:99999;pointer-events:none;overflow:hidden}
+#pageLoadingProgress{width:8%;height:100%;background:linear-gradient(90deg,#b45309,#d97706,#f59e0b,#d97706,#b45309);box-shadow:0 0 10px rgba(217,119,6,.7);transition:width .45s ease,opacity .35s ease}
+#mainNav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(0,0,0,.48);border-bottom:1px solid rgba(255,255,255,.1);transition:transform .35s cubic-bezier(.4,0,.2,1),background-color .35s,border-color .35s,box-shadow .35s}
+#mainNav.nav-hidden{transform:translateY(-100%)}
+#mainNav.nav-solid{background:#fff;border-bottom-color:#e5e7eb;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+#mainNav .nav-adaptive{color:#fff;transition:color .35s}
+#mainNav.nav-solid .nav-adaptive{color:#1b1d1d}
+#mainNav .nav-adaptive-muted{color:rgba(255,255,255,.85);transition:color .35s}
+#mainNav.nav-solid .nav-adaptive-muted{color:#3a3c3c}
+#mainNav .nav-icon-btn{background:rgba(255,255,255,.1);border:1px solid transparent;transition:background-color .25s,color .25s,border-color .25s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}
+#mainNav.nav-solid .nav-icon-btn{background:#f1f5f9;border-color:#e2e8f0}
+#mainNav .nav-icon-btn:hover{background:#d97706;border-color:#d97706;color:#fff!important;transform:translateY(-3px) scale(1.08);box-shadow:0 8px 20px rgba(217,119,6,.35)}
+#mainNav #searchIconBtn:hover{transform:scale(1.05)}
+#userProfileBtn{background:#fff;color:#64748b;border-color:#d97706}
+#userProfileBtn.is-authenticated{background:transparent}
+#userProfileBtn img{display:block;width:100%;height:100%;object-fit:cover}
+#userProfileBtn .profile-fallback-icon{font-size:15px;line-height:1}
+#userProfileBtn .profile-fallback-icon[hidden],#userProfileBtn img[hidden]{display:none!important}
+#userDropdownMenu .profile-avatar-large{background:#fff;color:#64748b}
+#userDropdownMenu .profile-user-name{color:#1b1d1d}
+#userDropdownMenu .profile-user-email{color:#64748b}
+#userDropdownMenu .auth-action{background:#fff;color:#55575a;border:1px solid #e2e8f0}
+#userDropdownMenu .auth-action:hover{background:#d97706;color:#fff;border-color:#d97706}
+.hamburger-icon{transition:transform .2s cubic-bezier(.4,0,.2,1);display:inline-block}
+.hamburger-icon.clicked{transform:scale(1.25)}
+#pageContentWrapper{transition:filter .6s ease-in-out}
+#pageContentWrapper.blurred{filter:blur(6px);pointer-events:none}
+#menuOverlay{position:fixed;inset:0;z-index:100;display:flex;justify-content:flex-end;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s;pointer-events:none}
+#menuOverlay.open{opacity:1;visibility:visible;pointer-events:auto}
+#menuBox{transform:translateX(100%);transition:transform .7s cubic-bezier(.16,1,.3,1)}
+#menuOverlay.open #menuBox{transform:translateX(0)}
+#settingsDropdownMenu,#userDropdownMenu{opacity:0;visibility:hidden;transform:translateY(12px) scale(.96);transition:all .25s cubic-bezier(.16,1,.3,1);pointer-events:none}
+#settingsDropdownMenu.open,#userDropdownMenu.open{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+#settingsDropdownMenu a{transition:background-color .22s,color .22s}
+#settingsDropdownMenu a:hover{background:#d97706!important;color:#fff!important}
+#searchBoxWrap{height:40px;padding-right:2px}
+#homeContactLoginGroup{position:relative;z-index:5;will-change:transform;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+#homeContactLoginGroup.icons-pushed{transform:translateX(-270px)}
+#searchDropdownMenu{position:absolute;right:0;top:50%;transform:translateY(-50%) translateX(12px);width:40px;height:40px;border-radius:999px;opacity:0;visibility:hidden;overflow:hidden;transition:width .4s cubic-bezier(.16,1,.3,1),opacity .3s,visibility .4s,transform .4s cubic-bezier(.16,1,.3,1);pointer-events:none;white-space:nowrap}
+#searchDropdownMenu.open{right:0;width:250px;opacity:1;visibility:visible;transform:translateY(-50%);pointer-events:auto}
+@media(min-width:640px){#searchDropdownMenu.open{width:270px}}
+#searchDropdownMenu input{padding-right:38px}
+#searchIconBtn{transition:width .3s cubic-bezier(.34,1.56,.64,1),height .3s cubic-bezier(.34,1.56,.64,1),background-color .25s,color .25s,border-color .25s,transform .3s,box-shadow .3s}
+#searchBoxWrap.search-open #searchIconBtn{width:30px;height:30px;background:#d97706!important;color:#fff!important;border-color:#d97706!important;transform:translateX(-5px)}
+.theme-mode-switch{--theme-index:1;position:relative;display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid transparent;transition:background-color .45s,border-color .45s}
+.theme-mode-switch::before{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:999px;background:#d97706;transform:translateX(calc(var(--theme-index)*30px));transition:transform .45s cubic-bezier(.4,0,.2,1);z-index:0;pointer-events:none}
+#mainNav.nav-solid .theme-mode-switch{background:#f1f5f9;border-color:#e2e8f0}
+.theme-mode-btn{position:relative;z-index:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;border:none;background:transparent;color:inherit;opacity:.7;cursor:pointer;font-size:.72rem;transition:color .35s,opacity .25s,transform .25s}
+.theme-mode-btn:hover{opacity:1;transform:scale(1.08)}
+.theme-mode-btn.active{color:#fff!important;opacity:1}
+body.theme-transition,body.theme-transition *{transition-property:color,background-color,border-color,fill,stroke!important;transition-duration:.45s!important}
+
+/* header dark mode */
+body.theme-effective-dark{background:#131414!important;color:#e2e8f0}
+body.theme-effective-dark #settingsDropdownMenu,body.theme-effective-dark #userDropdownMenu,body.theme-effective-dark #searchDropdownMenu,body.theme-effective-dark #menuBox{background:#232525!important;border-color:#3a3c3c!important}
+body.theme-light #settingsDropdownMenu,body.theme-light #userDropdownMenu,body.theme-light #searchDropdownMenu,body.theme-light #menuBox{background:#fff!important;border-color:#e2e8f0!important}
+body.theme-effective-dark .text-slate-900,body.theme-effective-dark .text-slate-800,body.theme-effective-dark .text-slate-700,body.theme-effective-dark .text-black{color:#fff!important}
+body.theme-effective-dark .text-slate-600,body.theme-effective-dark .text-slate-500,body.theme-effective-dark .text-slate-400{color:#c7c5c2!important}
+body.theme-effective-dark .border-slate-100,body.theme-effective-dark .border-slate-200,body.theme-effective-dark .border-slate-300{border-color:#3a3c3c!important}
+body.theme-effective-dark .bg-slate-50,body.theme-effective-dark .bg-white{background:#232525!important}
+body.theme-effective-dark #searchDropdownMenu input{color:#fff!important}
+body.theme-effective-dark #settingsDropdownMenu a{color:#e2e8f0!important}
+body.theme-effective-dark #mainNav.nav-solid{background:#131414!important;border-bottom-color:#3a3c3c!important}
+body.theme-effective-dark #mainNav.nav-solid .nav-icon-btn,body.theme-effective-dark #mainNav.nav-solid .theme-mode-switch{background:#2a2c2c!important;border-color:#3a3c3c!important}
+body.theme-effective-dark #mainNav.nav-solid .nav-adaptive{color:#fff!important}
+body.theme-effective-dark #userProfileBtn{background:#2a2c2c;border-color:#f59e0b;color:#c7c5c2}
+body.theme-effective-dark #userDropdownMenu .profile-avatar-large{background:#2a2c2c;color:#c7c5c2}
+body.theme-effective-dark #userDropdownMenu .profile-user-name{color:#fff!important}
+body.theme-effective-dark #userDropdownMenu .profile-user-email{color:#a8a6a3!important}
+body.theme-effective-dark #userDropdownMenu .auth-action{background:#2a2c2c;color:#c7c5c2;border-color:#3a3c3c}
+
+/* ---------- page layout ---------- */
+.pg-head{position:relative;padding:112px 24px 44px;text-align:center;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.pg-head h1{margin:0;font-size:24px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.7)}
+.manage-wrap{display:none;position:absolute;top:120px;right:24px;gap:10px;align-items:center}
+.manage-wrap.show{display:flex}
+@media(max-width:767px){.manage-wrap{position:static;justify-content:center;margin-top:18px}}
+.pg-main{padding:48px 24px 72px;min-height:50vh}
+.grid-wrap{max-width:1700px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+@media(max-width:1200px){.grid-wrap{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.grid-wrap{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid-wrap{grid-template-columns:1fr}}
+.empty{grid-column:1/-1;text-align:center;padding:96px 0;color:#94a3b8;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.card{position:relative;display:flex;flex-direction:column;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.1);opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .5s ease,box-shadow .3s}
+.card.revealed{opacity:1;transform:none}
+.card.revealed:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(15,23,42,.14)}
+.noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:48px;background:#e5e7eb}
+.tools{display:none;position:absolute;top:10px;right:10px;z-index:40;gap:6px}
+body.manage-on .tools{display:flex}
+.tools button{width:32px;height:32px;border:0;border-radius:6px;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;font-size:12px}
+.tools button:hover{background:#d97706}
+.tools .del:hover{background:#dc2626}
+body.theme-effective-dark .pg-head{background:#131414;border-color:#2a2c2c}
+body.theme-effective-dark .pg-head h1{color:#fff}
+body.theme-effective-dark .card{background:#232525;box-shadow:inset 0 -1px 0 #3a3c3c,0 6px 18px rgba(0,0,0,.3)}
+
+/* ---------- buttons / modal / toast ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font:700 11px 'Poppins',sans-serif;letter-spacing:.05em;text-transform:uppercase;border:1px solid #d97706;color:#d97706;background:transparent;cursor:pointer;transition:background-color .2s,color .2s}
+.btn:hover,.btn.on,.btn.solid{background:#d97706;color:#fff}
+.btn.solid:hover{background:#b45309;border-color:#b45309}
+.btn.danger{border-color:#dc2626;color:#dc2626}
+.btn.danger:hover{background:#dc2626;color:#fff}
+.btn.icon{width:38px;height:38px;padding:0;justify-content:center;font-size:14px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.md-bg{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.6);backdrop-filter:blur(8px)}
+.md-bg.open{display:flex;animation:mdIn .25s ease}
+@keyframes mdIn{from{opacity:0}}
+.md-box{width:min(640px,100%);max-height:90vh;overflow-y:auto;background:#fff;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.3)}
+.md-box.sm{width:min(400px,100%)}
+.md-head{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;background:inherit;z-index:2}
+.md-head h3{margin:0;font-size:18px;font-weight:600;color:#0f172a}
+.md-x{width:32px;height:32px;border:0;border-radius:50%;background:#f1f5f9;color:#64748b;font-size:18px;cursor:pointer}
+.md-x:hover{background:#d97706;color:#fff}
+.md-body{padding:20px 24px 6px}
+.md-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px}
+.fld{margin-bottom:16px}
+.fld>label{display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#475569}
+.fld em{font-style:normal;color:#d97706}
+.fld small{font-weight:600;text-transform:none;letter-spacing:0;color:#94a3b8}
+.fld input,.fld textarea{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font:14px/1.55 'Poppins',sans-serif;color:#0f172a;background:#fff;outline:0;transition:border-color .2s,box-shadow .2s}
+.fld input:focus,.fld textarea:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15)}
+.fld textarea{resize:vertical;min-height:90px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+.hint{font-size:11px;color:#94a3b8;margin:8px 0 0}
+.err{display:none;color:#dc2626;font-size:12px;font-weight:500;margin:0 0 12px}
+.pick{display:inline-flex;gap:8px;align-items:center;padding:9px 14px;border:1.5px dashed #cbd5e1;border-radius:9px;background:transparent;font:600 12px 'Poppins',sans-serif;color:#64748b;cursor:pointer}
+.pick:hover{border-color:#d97706;color:#d97706}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin-top:10px}
+.th{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#e5e7eb;border:2px solid transparent}
+.th.cover{border-color:#d97706}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th button{position:absolute;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:10px;cursor:pointer}
+.th .rm{top:4px;right:4px}.th .st{top:4px;left:4px}
+.th button:hover{background:#d97706}.th .rm:hover{background:#dc2626}
+.th.cover .st{background:#d97706}
+.toast{position:fixed;right:24px;bottom:24px;z-index:600;padding:11px 16px;border-radius:10px;font:600 13px 'Poppins',sans-serif;color:#fff;background:#16a34a;box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;pointer-events:none}
+.toast.show{opacity:1;transform:none}.toast.bad{background:#dc2626}
+body.theme-effective-dark .md-box{background:#232525}
+body.theme-effective-dark .md-head{border-color:#3a3c3c}
+body.theme-effective-dark .md-head h3{color:#fff}
+body.theme-effective-dark .md-x{background:#131414;color:#c7c5c2}
+body.theme-effective-dark .fld>label{color:#c7c5c2}
+body.theme-effective-dark .fld input,body.theme-effective-dark .fld textarea{background:#131414;border-color:#3a3c3c;color:#fff}
+body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
+
+/* ---------- fullscreen photo viewer ---------- */
+.lightbox{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.82);backdrop-filter:blur(7px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.lightbox.open{opacity:1;visibility:visible}
+.lb-top{position:absolute;top:0;left:0;right:0;height:52px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(0,0,0,.38);color:#fff}
+.lb-count{font-size:13px;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.lb-btn{width:38px;height:38px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s}
+.lb-btn:hover{background:#d97706;border-color:#d97706}
+.lb-top .lb-btn+.lb-btn{margin-left:10px}
+.lb-stage{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden}
+.lb-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .35s;user-select:none;-webkit-user-drag:none}
+.lb-nav{position:absolute;z-index:4;top:calc(50% - 48px);transform:translateY(-50%);width:44px;height:44px;opacity:.6;background:rgba(0,0,0,.35)}
+.lb-nav:hover{opacity:1}
+#lbPrev{left:16px}#lbNext{right:16px}
+.lb-strip{position:absolute;left:0;right:0;bottom:0;z-index:6;height:96px;padding:9px 14px;display:flex;gap:6px;overflow-x:auto;background:rgba(0,0,0,.55);scrollbar-width:none}
+.lb-strip::-webkit-scrollbar{display:none}
+.lb-th{flex:0 0 100px;width:100px;height:76px;padding:0;border:2px solid rgba(255,255,255,.45);border-radius:3px;overflow:hidden;cursor:pointer;opacity:.6;background:#171717;transition:opacity .2s,border-color .2s}
+.lb-th:first-child{margin-left:auto}.lb-th:last-child{margin-right:auto}
+.lb-th img{width:100%;height:100%;object-fit:cover;display:block}
+.lb-th:hover{opacity:1}.lb-th.active{opacity:1;border-color:#d97706}
+@media(max-width:620px){.lb-stage{bottom:80px}.lb-strip{height:80px}.lb-th{flex-basis:76px;width:76px;height:58px}}
+
+</style>
+<style>
+.mcard-img{position:relative;height:299px;flex:0 0 299px}
+.mcard-img .zoom{position:relative;overflow:hidden;width:100%;height:100%;background:#e5e7eb}
+.mcard-img .zoom img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .3s ease-in-out}
+.mcard-img .zoom::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:opacity .3s;pointer-events:none}
+.mcard-img.clickable{cursor:pointer}
+.mcard-img.clickable:hover .zoom img{transform:scale(1.05)}
+.mcard-img.clickable:hover .zoom::after{opacity:1}
+.mcard-img::before,.mcard-img::after{content:"";position:absolute;width:0;height:0;border:2px solid transparent;transition:width .3s,height .3s;pointer-events:none;z-index:30}
+.mcard-img::before{top:8px;left:8px}.mcard-img::after{bottom:8px;right:8px}
+.mcard-img.clickable:hover::before{width:40px;height:40px;border-top-color:#d97706;border-left-color:#d97706}
+.mcard-img.clickable:hover::after{width:40px;height:40px;border-bottom-color:#d97706;border-right-color:#d97706}
+.mcard-count{position:absolute;left:10px;bottom:10px;z-index:20;display:inline-flex;gap:6px;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font-size:11px;font-weight:600}
+.mcard-body{display:flex;flex-direction:column;gap:6px;flex:1;padding:16px 19px 20px}
+.mcard-date{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#d97706}
+.mcard-title{margin:0;font-size:15px;line-height:20px;font-weight:500;letter-spacing:.01em;text-transform:uppercase;color:#232525}
+.mcard-desc{margin:0;font-size:12.5px;line-height:1.75;color:rgba(0,0,0,.65);white-space:pre-line}
+.mcard-link{margin-top:auto;padding-top:8px;display:inline-flex;align-items:center;gap:7px;max-width:100%;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#2563eb;text-decoration:none}
+.mcard-link span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcard-link:hover{color:#d97706}
+body.theme-effective-dark .mcard-title{color:#fff}
+body.theme-effective-dark .mcard-desc{color:#c7c5c2}
+body.theme-effective-dark .mcard-link{color:#60a5fa}
+body.theme-effective-dark .mcard-link:hover{color:#f59e0b}
+</style>
+</head>
+<body class="bg-white text-slate-800">
+<div id="pageLoadingBar" aria-hidden="true"><div id="pageLoadingProgress"></div></div>
+<div id="pageContentWrapper">
+  <div id="indexHeaderContainer" aria-label="Site header"></div>
+
+  <section class="pg-head">
+    <h1>YNAD Moments</h1>
+    <div id="manageWrap" class="manage-wrap">
+      <button id="addBtn" class="btn solid" style="display:none" onclick="openForm()"><i class="fa-solid fa-plus"></i> Add Moment</button>
+      <button id="manageBtn" class="btn icon" onclick="toggleManage()" title="Manage (edit / delete)"><i class="fa-solid fa-pen-to-square"></i></button>
+    </div>
+  </section>
+
+  <main class="pg-main"><div id="grid" class="grid-wrap"><div class="empty">Loading...</div></div></main>
+  <div id="siteFooterContainer"></div>
+</div>
+
+<!-- Add / Edit form -->
+<div id="formModal" class="md-bg"><div class="md-box">
+  <div class="md-head"><h3 id="formTitle">Add Moment</h3><button class="md-x" onclick="closeModal('formModal')">&times;</button></div>
+  <div class="md-body">
+    <div class="fld"><label>Title <em>*</em></label><input id="fTitle" maxlength="120" placeholder="e.g. Foundation stone laying ceremony"></div>
+    <div class="row2">
+      <div class="fld"><label>Date</label><input id="fDate" type="date"></div>
+      <div class="fld"><label>Link button text</label><input id="fLinkLabel" maxlength="40" placeholder="e.g. Watch video"></div>
+    </div>
+    <div class="fld"><label>Link URL</label><input id="fLink" placeholder="https://..."></div>
+    <div class="fld"><label>History / Description</label><textarea id="fDesc" rows="4" placeholder="Write a short history..."></textarea></div>
+    <div class="fld">
+      <label>Photos <small id="photoCount">0 / 20</small></label>
+      <button type="button" class="pick" onclick="$('fFiles').click()"><i class="fa-solid fa-cloud-arrow-up"></i> Choose photos</button>
+      <input id="fFiles" type="file" accept="image/*" multiple hidden onchange="addFiles(this)">
+      <div id="thumbs" class="thumbs"></div>
+      <p class="hint">First photo is the cover. Click the star to make another photo the cover.</p>
+    </div>
+    <p id="fErr" class="err"></p>
+  </div>
+  <div class="md-foot"><button class="btn" onclick="closeModal('formModal')">Cancel</button><button id="saveBtn" class="btn solid" onclick="saveMoment()">Save</button></div>
+</div></div>
+
+<script>
+/* ================= YNAD shared script (Moments + Team pages) ================= */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+const SUPABASE_URL = 'https://zjbvnwawdgdncthktqtx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KLOwVeJVKzC8Lo2slNnH0A_PdhW5BlT';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const MEDIA_BUCKET = 'ynad-media';        // Supabase Storage bucket (see ynad_setup.sql)
+const REQUIRE_LOGIN_TO_MANAGE = true;     // false = show the manage icon to everyone
+let canManage = false, manage = false;
+
+const $ = id => document.getElementById(id);
+function esc(v) {
+  return (v === null || v === undefined ? '' : String(v))
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+const escapeHtml = esc, escapeAttr = esc;
+
+/* ---------- shared header (index.html) + footer (footer.html) ---------- */
+window.__indexHeaderReady = (async () => {
+  const c = $('indexHeaderContainer'); if (!c) return;
+  try {
+    const r = await fetch('index.html', { cache: 'no-store' }); if (!r.ok) throw new Error('index.html');
+    const nav = new DOMParser().parseFromString(await r.text(), 'text/html').querySelector('#mainNav');
+    if (!nav) throw new Error('#mainNav not found');
+    c.replaceChildren(nav.cloneNode(true));
+    const g = c.querySelector('#homeContactLoginGroup');
+    const home = g && g.querySelector('a[title="Home"]'), contact = g && g.querySelector('a[title="Contact"]');
+    if (home) home.href = 'index.html';
+    if (contact) {
+      contact.href = 'index.html#siteFooterContainer';
+      contact.addEventListener('click', e => { const f = $('siteFooterContainer'); if (f) { e.preventDefault(); f.scrollIntoView({ behavior: 'smooth' }); } });
+    }
+  } catch (e) { console.error('Shared header failed to load:', e); }
+})();
+
+(async () => {
+  const c = $('siteFooterContainer'); if (!c) return;
+  try {
+    const r = await fetch('footer.html', { cache: 'no-store' }); if (!r.ok) throw new Error('footer.html');
+    const t = document.createElement('template'); t.innerHTML = await r.text();
+    const scripts = [...t.content.querySelectorAll('script')]; scripts.forEach(s => s.remove());
+    c.replaceChildren(t.content.cloneNode(true));
+    scripts.forEach(o => { const n = document.createElement('script'); for (const a of o.attributes) n.setAttribute(a.name, a.value); n.textContent = o.textContent; document.body.appendChild(n); n.remove(); });
+  } catch (e) { console.error(e); c.innerHTML = '<div style="padding:32px;text-align:center;color:#a8a6a3;background:#1b1d1d;">Footer failed to load.</div>'; }
+})();
+
+/* ---------- injected UI: menu overlay, photo viewer, confirm dialog, toast ---------- */
+document.body.insertAdjacentHTML('beforeend', `
+<div id="menuOverlay" onclick="handleOverlayClick(event)">
+  <div id="menuBox" class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col justify-between p-8 relative overflow-y-auto">
+    <button onclick="closeMenuWithEffect()" class="absolute top-6 right-6 w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div class="mt-20 flex-1 flex flex-col"><iframe id="menuLinksFrame" src="about:blank" title="Menu Links" style="border:none;width:100%;height:260px;"></iframe></div>
+    <div class="pb-10"></div>
+  </div>
+</div>
+<div id="lightbox" class="lightbox" aria-hidden="true">
+  <div class="lb-top"><div id="lbCount" class="lb-count">1 / 1</div>
+    <div style="display:flex"><button class="lb-btn" title="Download image" onclick="lbDownload()"><i class="fa-solid fa-download"></i></button><button class="lb-btn" title="Close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button></div></div>
+  <button id="lbPrev" class="lb-btn lb-nav" aria-label="Previous photo" onclick="lbGo(lbI-1)"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="lb-stage"><img id="lbImg" alt=""></div>
+  <button id="lbNext" class="lb-btn lb-nav" aria-label="Next photo" onclick="lbGo(lbI+1)"><i class="fa-solid fa-chevron-right"></i></button>
+  <div id="lbThumbs" class="lb-strip"></div>
+</div>
+<div id="confirmModal" class="md-bg"><div class="md-box sm">
+  <div class="md-head"><h3>Are you sure?</h3><button class="md-x" onclick="$('confirmNo').click()">&times;</button></div>
+  <div class="md-body"><p id="confirmText" style="margin:0 0 10px;font-size:13px;color:#64748b;line-height:1.7"></p></div>
+  <div class="md-foot"><button class="btn" id="confirmNo">Cancel</button><button class="btn danger" id="confirmYes">Delete</button></div>
+</div></div>
+<div id="toast" class="toast"></div>`);
+
+function toast(msg, bad) { const t = $('toast'); t.textContent = msg; t.classList.toggle('bad', !!bad); t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+function openModal(id) { $(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { $(id).classList.remove('open'); if (!document.querySelector('.md-bg.open')) document.body.style.overflow = ''; }
+function askConfirm(text) {
+  return new Promise(res => {
+    $('confirmText').textContent = text; openModal('confirmModal');
+    const done = v => { closeModal('confirmModal'); res(v); };
+    $('confirmYes').onclick = () => done(true); $('confirmNo').onclick = () => done(false);
+  });
+}
+
+/* ---------- photo viewer (click = enlarge, arrows / keys / swipe = previous / next) ---------- */
+let lbImgs = [], lbI = 0, lbBusy = false;
+function lbUpdate() {
+  $('lbCount').textContent = (lbI + 1) + ' / ' + lbImgs.length;
+  $('lbPrev').style.display = lbI <= 0 ? 'none' : 'flex';
+  $('lbNext').style.display = lbI >= lbImgs.length - 1 ? 'none' : 'flex';
+  const strip = $('lbThumbs');
+  strip.querySelectorAll('.lb-th').forEach((t, i) => t.classList.toggle('active', i === lbI));
+  const a = strip.querySelector('.lb-th.active');
+  if (a) strip.scrollTo({ left: a.offsetLeft - strip.clientWidth / 2 + a.offsetWidth / 2, behavior: 'smooth' });
+}
+function openLightbox(imgs, i) {
+  if (!imgs || !imgs.length) return;
+  lbImgs = imgs.slice(); lbI = Math.min(Math.max(i || 0, 0), lbImgs.length - 1); lbBusy = false;
+  $('lbThumbs').innerHTML = lbImgs.map((u, n) => `<button class="lb-th" aria-label="Photo ${n + 1}" onclick="lbGo(${n})"><img src="${esc(u)}" alt=""></button>`).join('');
+  const im = $('lbImg'); im.style.transition = 'none'; im.style.transform = ''; im.style.opacity = 1; im.src = lbImgs[lbI];
+  lbUpdate(); $('lightbox').classList.add('open'); $('lightbox').setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+  const a = $('lbThumbs').querySelector('.lb-th.active'); if (a) $('lbThumbs').scrollLeft = a.offsetLeft - $('lbThumbs').clientWidth / 2 + a.offsetWidth / 2;
+}
+function closeLightbox() { $('lightbox').classList.remove('open'); $('lightbox').setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+function lbGo(n) {
+  if (n < 0 || n >= lbImgs.length || n === lbI || lbBusy) return;
+  const dir = n > lbI ? 1 : -1, im = $('lbImg'); lbBusy = true;
+  im.style.transition = ''; im.style.transform = `translateX(${-dir * 60}px) scale(.85)`; im.style.opacity = 0;   /* old photo shrinks away */
+  setTimeout(() => {
+    lbI = n; lbUpdate();
+    const enter = () => { im.onload = im.onerror = null; void im.offsetWidth; im.style.transition = ''; im.style.transform = ''; im.style.opacity = 1; setTimeout(() => lbBusy = false, 300); };
+    im.style.transition = 'none'; im.style.transform = `translateX(${dir * 60}px) scale(.85)`;                      /* new photo slides in */
+    im.onload = im.onerror = enter; im.src = lbImgs[n];
+  }, 260);
+}
+async function lbDownload() {
+  const url = lbImgs[lbI]; if (!url) return;
+  try {
+    const b = await (await fetch(url, { mode: 'cors' })).blob(), a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = decodeURIComponent(url.split('/').pop().split('?')[0]) || 'photo.jpg';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  } catch (e) { window.open(url, '_blank', 'noopener'); }
+}
+document.addEventListener('keydown', e => {
+  if (!$('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowRight') { e.preventDefault(); lbGo(lbI + 1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); lbGo(lbI - 1); }
+});
+$('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox' || e.target.classList.contains('lb-stage')) closeLightbox(); });
+(() => { let x = 0, b = $('lightbox');
+  b.addEventListener('touchstart', e => { x = e.changedTouches[0].clientX; }, { passive: true });
+  b.addEventListener('touchend', e => { const d = e.changedTouches[0].clientX - x; if (Math.abs(d) > 50) lbGo(lbI + (d < 0 ? 1 : -1)); }, { passive: true }); })();
+$('lightbox').addEventListener('wheel', e => { e.preventDefault(); if (Math.abs(e.deltaY) > 6 && !lbBusy) lbGo(lbI + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+
+/* ---------- image upload (Supabase Storage) ---------- */
+async function compressImage(file) {
+  const keep = { body: file, type: file.type || 'image/jpeg', ext: ((file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')) || 'jpg' };
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return keep;
+  try {
+    const bmp = await createImageBitmap(file), s = Math.min(1, 1800 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .85));
+    return blob && blob.size < file.size ? { body: blob, type: 'image/jpeg', ext: 'jpg' } : keep;
+  } catch (e) { return keep; }
+}
+async function uploadImage(file, folder) {
+  const c = await compressImage(file);
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${c.ext}`;
+  const { error } = await supabaseClient.storage.from(MEDIA_BUCKET).upload(path, c.body, { contentType: c.type, cacheControl: '31536000' });
+  if (error) throw error;
+  return supabaseClient.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+async function removeFiles(urls) {
+  const k = `/object/public/${MEDIA_BUCKET}/`;
+  const paths = (urls || []).map(u => { const i = String(u || '').indexOf(k); return i < 0 ? null : decodeURIComponent(u.slice(i + k.length).split('?')[0]); }).filter(Boolean);
+  if (paths.length) try { await supabaseClient.storage.from(MEDIA_BUCKET).remove(paths); } catch (e) { console.warn(e); }
+}
+
+/* ---------- manage mode (edit / delete icon) ---------- */
+function setManageUI() {
+  $('manageWrap').classList.toggle('show', canManage);
+  $('addBtn').style.display = manage ? 'inline-flex' : 'none';
+  $('manageBtn').classList.toggle('on', manage);
+  $('manageBtn').title = manage ? 'Done' : 'Manage (edit / delete)';
+  $('manageBtn').innerHTML = `<i class="fa-solid ${manage ? 'fa-check' : 'fa-pen-to-square'}"></i>`;
+  document.body.classList.toggle('manage-on', manage);
+}
+function toggleManage() { if (!canManage) return; manage = !manage; setManageUI(); }
+async function initManage() {
+  const apply = s => { canManage = !REQUIRE_LOGIN_TO_MANAGE || !!s; if (!canManage) manage = false; setManageUI(); };
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession(); apply(session);
+    supabaseClient.auth.onAuthStateChange((_e, s) => apply(s));
+  } catch (e) { apply(null); }
+}
+const revealIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); revealIO.unobserve(e.target); } }), { threshold: .12 });
+function observeCards(root) { root.querySelectorAll('.card').forEach(el => revealIO.observe(el)); }
+
+/* ---------- header: profile, dropdowns, search, theme, menu ---------- */
+function getUserAvatarUrl(u) {
+  if (!u) return ''; const m = u.user_metadata || {}, i = (u.identities && u.identities[0] && u.identities[0].identity_data) || {};
+  return m.avatar_url || m.picture || m.profile_image || m.photo_url || i.avatar_url || i.picture || '';
+}
+function getUserDisplayName(u) {
+  if (!u) return 'Guest User'; const m = u.user_metadata || {};
+  return m.full_name || m.name || m.user_name || m.username || (u.email ? u.email.split('@')[0] : 'User');
+}
+function setProfileImage(img, fb, url) {
+  if (!img || !fb) return;
+  if (!url) { img.hidden = true; img.removeAttribute('src'); fb.hidden = false; return; }
+  img.onload = () => { img.hidden = false; fb.hidden = true; };
+  img.onerror = () => { img.hidden = true; img.removeAttribute('src'); fb.hidden = false; };
+  img.src = url;
+}
+function updateProfileUI(user) {
+  const on = !!user, btn = $('userProfileBtn');
+  if (btn) { btn.classList.toggle('is-authenticated', on); btn.title = on ? 'Profile' : 'Log in'; }
+  const av = getUserAvatarUrl(user);
+  setProfileImage($('userProfileImage'), $('userProfileFallback'), av);
+  setProfileImage($('userDropdownImage'), $('userDropdownFallback'), av);
+  if ($('profileUserName')) $('profileUserName').textContent = on ? getUserDisplayName(user) : 'Guest User';
+  if ($('profileUserEmail')) $('profileUserEmail').textContent = on ? (user.email || 'Signed in') : 'Not logged in';
+  const a = $('profileAuthAction'); if (!a) return;
+  if (on) { a.href = '#'; a.title = 'Log out'; $('profileAuthActionIcon').className = 'fa-solid fa-right-from-bracket'; $('profileAuthActionText').textContent = 'LOG OUT'; a.onclick = handleLogout; }
+  else { a.href = 'login.html'; a.title = 'Log in'; $('profileAuthActionIcon').className = 'fa-solid fa-right-to-bracket'; $('profileAuthActionText').textContent = 'LOG IN'; a.onclick = null; }
+}
+async function handleLogout(e) {
+  if (e) e.preventDefault();
+  try { const { error } = await supabaseClient.auth.signOut(); if (error) throw error; updateProfileUI(null); const d = $('userDropdownMenu'); if (d) d.classList.remove('open'); } catch (err) { console.error(err); }
+}
+async function initAuthState() {
+  try {
+    await window.__indexHeaderReady;
+    const { data: { session } } = await supabaseClient.auth.getSession(); updateProfileUI(session ? session.user : null);
+    supabaseClient.auth.onAuthStateChange((_e, s) => updateProfileUI(s ? s.user : null));
+  } catch (e) { updateProfileUI(null); }
+}
+function closeHeaderPanels(except) {
+  ['settingsDropdownMenu', 'userDropdownMenu', 'searchDropdownMenu'].forEach(id => { if (id !== except && $(id)) $(id).classList.remove('open'); });
+  if (except !== 'searchDropdownMenu') { if ($('searchBoxWrap')) $('searchBoxWrap').classList.remove('search-open'); if ($('homeContactLoginGroup')) $('homeContactLoginGroup').classList.remove('icons-pushed'); }
+}
+function toggleSettingsDropdown(e) { e.stopPropagation(); closeHeaderPanels('settingsDropdownMenu'); $('settingsDropdownMenu').classList.toggle('open'); }
+function toggleUserDropdown(e) { e.stopPropagation(); closeHeaderPanels('userDropdownMenu'); $('userDropdownMenu').classList.toggle('open'); }
+function toggleSearchDropdown(e) {
+  e.stopPropagation(); closeHeaderPanels('searchDropdownMenu');
+  const dd = $('searchDropdownMenu'), wrap = $('searchBoxWrap'), grp = $('homeContactLoginGroup');
+  if (!dd.classList.contains('open')) { dd.classList.add('open'); wrap.classList.add('search-open'); if (grp) grp.classList.add('icons-pushed'); $('projectSearchInput').focus(); }
+  else if ($('projectSearchInput').value.trim()) executeSearch();
+  else { dd.classList.remove('open'); wrap.classList.remove('search-open'); if (grp) grp.classList.remove('icons-pushed'); }
+}
+window.addEventListener('click', e => {
+  [['userDropdownMenu', 'userProfileBtn'], ['settingsDropdownMenu', 'settingsIconBtn']].forEach(([m, b]) => {
+    const menu = $(m), btn = $(b); if (menu && menu.classList.contains('open') && !menu.contains(e.target) && !(btn && btn.contains(e.target))) menu.classList.remove('open');
+  });
+  const wrap = $('searchBoxWrap'), dd = $('searchDropdownMenu');
+  if (dd && dd.classList.contains('open') && wrap && !wrap.contains(e.target)) closeHeaderPanels();
+});
+async function executeSearch() {
+  const input = $('projectSearchInput'), fb = $('searchResultFeedback'), q = input.value.trim().toUpperCase();
+  const show = (txt, cls) => { fb.textContent = txt; fb.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border z-50 ' + cls; };
+  if (!q) return show('Please enter project details.', 'text-red-500');
+  const { data, error } = await supabaseClient.from('projects').select('id,bd_number,ho_number,project_name,local_name,organization,donor_name,donated_country,district');
+  if (error) return show('Search failed. Please try again.', 'text-red-500');
+  const hits = (data || []).filter(p => [p.bd_number, p.ho_number, p.project_name, p.local_name, p.organization, p.donor_name, p.donated_country, p.district].some(v => String(v || '').toUpperCase().includes(q)));
+  if (!hits.length) return show(`No match found for "${input.value.trim()}".`, 'text-red-500 font-semibold');
+  show(hits.length === 1 ? 'Found 1 matching project! Opening...' : `Found ${hits.length} matching projects! Opening the first one...`, 'text-emerald-600 font-semibold');
+  setTimeout(() => { location.href = 'project_view.html?id=' + encodeURIComponent(hits[0].id); }, 700);
+}
+function handleProjectSearch(e) { if (e.key === 'Enter') executeSearch(); }
+
+function setThemeMode(mode) {
+  if (!['light', 'dynamic', 'dark'].includes(mode)) mode = 'dynamic';
+  const sw = $('themeModeSwitch'), idx = { light: 0, dynamic: 1, dark: 2 };
+  document.querySelectorAll('.theme-mode-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === mode));
+  if (sw) sw.style.setProperty('--theme-index', idx[mode]);
+  const body = document.body; body.classList.add('theme-transition');
+  body.classList.remove('theme-light', 'theme-dynamic', 'theme-dark', 'theme-effective-dark'); body.classList.add('theme-' + mode);
+  const dark = mode === 'dark' || (mode === 'dynamic' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (dark) body.classList.add('theme-effective-dark');
+  document.documentElement.classList.toggle('dark', dark);
+  try { const f = $('menuLinksFrame'); if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'ynad-theme', dark }, '*'); } catch (e) {}
+  clearTimeout(window.__ynadThemeTimer); window.__ynadThemeTimer = setTimeout(() => body.classList.remove('theme-transition'), 500);
+  try { localStorage.setItem('ynad-theme-mode', mode); } catch (e) {}
+}
+window.addEventListener('message', e => {
+  if (!e.data || typeof e.data !== 'object' || e.data.type !== 'ynad-request-theme') return;
+  try { const f = $('menuLinksFrame'); if (f && e.source === f.contentWindow) f.contentWindow.postMessage({ type: 'ynad-theme', dark: document.body.classList.contains('theme-effective-dark') }, '*'); } catch (err) {}
+});
+window.addEventListener('storage', e => { if (e.key === 'ynad-theme-mode') try { setThemeMode(localStorage.getItem('ynad-theme-mode') || 'dynamic'); } catch (err) {} });
+(async () => {
+  let saved = 'dynamic'; try { saved = localStorage.getItem('ynad-theme-mode') || 'dynamic'; } catch (e) {}
+  try { await window.__indexHeaderReady; } catch (e) {}
+  setThemeMode(saved);
+  if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (document.body.classList.contains('theme-dynamic')) setThemeMode('dynamic'); });
+})();
+
+function openMenuWithEffect() {
+  const icon = $('hamburgerBtnIcon'), wrap = $('pageContentWrapper'), ov = $('menuOverlay'), fr = $('menuLinksFrame');
+  if (icon) icon.classList.add('clicked');
+  setTimeout(() => {
+    if (icon) icon.classList.remove('clicked'); wrap.classList.add('blurred');
+    setTimeout(() => {
+      fr.src = 'menu.html'; ov.classList.add('open'); document.body.style.overflow = 'hidden';
+      fr.onload = () => { try { fr.contentWindow.postMessage({ type: 'ynad-menu-open' }, '*'); } catch (e) {} };
+    }, 200);
+  }, 200);
+}
+function closeMenuWithEffect() {
+  const ov = $('menuOverlay'), wrap = $('pageContentWrapper'), fr = $('menuLinksFrame');
+  try { if (fr && fr.contentWindow) fr.contentWindow.postMessage({ type: 'ynad-menu-closing' }, '*'); } catch (e) {}
+  setTimeout(() => { ov.classList.remove('open'); setTimeout(() => { wrap.classList.remove('blurred'); document.body.style.overflow = 'auto'; fr.src = 'about:blank'; }, 400); }, 380);
+}
+function handleOverlayClick(e) { if (e.target === $('menuOverlay')) closeMenuWithEffect(); }
+window.addEventListener('pageshow', () => { const w = $('pageContentWrapper'); if (w) w.classList.remove('blurred'); });
+
+/* header: transparent at top, solid after scrolling, hides on scroll-down */
+Promise.resolve(window.__indexHeaderReady).then(() => {
+  const nav = $('mainNav'); if (!nav) return; let last = scrollY;
+  const run = () => { const y = scrollY; nav.classList.toggle('nav-solid', y > 4); if (y <= 4 || y < last) nav.classList.remove('nav-hidden'); else if (y > last) nav.classList.add('nav-hidden'); last = y; };
+  addEventListener('scroll', run, { passive: true }); run();
+});
+
+/* top loading bar */
+(() => {
+  const p = $('pageLoadingProgress'); if (!p) return;
+  requestAnimationFrame(() => { p.style.width = '72%'; });
+  const fin = () => { p.style.width = '100%'; setTimeout(() => { p.style.opacity = '0'; }, 250); setTimeout(() => { const b = $('pageLoadingBar'); if (b) b.style.display = 'none'; }, 650); };
+  document.readyState === 'complete' ? fin() : addEventListener('load', fin, { once: true });
+})();
+initAuthState();
+
+</script>
+<script>
+const MAX_PHOTOS = 20;
+let moments = [], editing = null;
+
+function photosOf(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  try { const p = JSON.parse(raw); if (Array.isArray(p)) return p.filter(Boolean); } catch (e) {}
+  return [String(raw)];
+}
+function fmtDate(d) { try { return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return d; } }
+
+function cardHtml(m, i) {
+  const n = m.photos.length;
+  return `
+  <article class="card reveal" style="transition-delay:${Math.min(i, 3) * .08}s">
+    <div class="mcard-img ${n ? 'clickable' : ''}" ${n ? `onclick="openPhotos('${esc(m.id)}',0)"` : ''}>
+      <div class="zoom">${n ? `<img src="${esc(m.photos[0])}" alt="${esc(m.title)}" loading="lazy">` : '<div class="noimg"><i class="fa-solid fa-image"></i></div>'}</div>
+      ${n > 1 ? `<span class="mcard-count"><i class="fa-solid fa-images"></i> ${n}</span>` : ''}
+      <div class="tools" onclick="event.stopPropagation()">
+        <button title="Edit" onclick="openForm('${esc(m.id)}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="del" title="Delete" onclick="deleteMoment('${esc(m.id)}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="mcard-body">
+      ${m.event_date ? `<div class="mcard-date">${esc(fmtDate(m.event_date))}</div>` : ''}
+      <h3 class="mcard-title">${esc(m.title)}</h3>
+      ${m.description ? `<p class="mcard-desc">${esc(m.description)}</p>` : ''}
+      ${m.link_url ? `<a class="mcard-link" href="${esc(m.link_url)}" target="_blank" rel="noopener"><i class="fa-solid fa-link"></i><span>${esc(m.link_label || 'Visit link')}</span></a>` : ''}
+    </div>
+  </article>`;
+}
+function render() {
+  const g = $('grid');
+  if (!moments.length) { g.innerHTML = '<div class="empty">No moments added yet.</div>'; return; }
+  g.innerHTML = moments.map(cardHtml).join('');
+  observeCards(g);
+}
+async function load() {
+  const { data, error } = await supabaseClient.from('moments').select('*')
+    .order('event_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+  if (error) { console.error(error); $('grid').innerHTML = `<div class="empty" style="color:#ef4444">Failed to load: ${esc(error.message)}</div>`; return; }
+  moments = (data || []).map(m => ({ ...m, photos: photosOf(m.photo_urls) }));
+  render();
+}
+function openPhotos(id, i) { const m = moments.find(x => x.id === id); if (m) openLightbox(m.photos, i); }
+
+/* ---- add / edit ---- */
+function openForm(id) {
+  const m = id ? moments.find(x => x.id === id) : null;
+  editing = { id: m ? m.id : null, orig: m ? m.photos.slice() : [], items: (m ? m.photos : []).map(url => ({ url })) };
+  $('fTitle').value = m ? m.title : ''; $('fDate').value = (m && m.event_date) || '';
+  $('fDesc').value = (m && m.description) || ''; $('fLink').value = (m && m.link_url) || ''; $('fLinkLabel').value = (m && m.link_label) || '';
+  $('formTitle').textContent = m ? 'Edit Moment' : 'Add Moment'; $('fErr').style.display = 'none';
+  renderThumbs(); openModal('formModal');
+}
+function renderThumbs() {
+  $('thumbs').innerHTML = editing.items.map((it, i) => `
+    <div class="th ${i === 0 ? 'cover' : ''}"><img src="${esc(it.url || it.preview)}" alt="">
+      <button type="button" class="st" title="Make cover" onclick="makeCover(${i})"><i class="fa-solid fa-star"></i></button>
+      <button type="button" class="rm" title="Remove" onclick="removeThumb(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+  $('photoCount').textContent = editing.items.length + ' / ' + MAX_PHOTOS;
+}
+function addFiles(input) {
+  const files = [...input.files]; input.value = '';
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    if (editing.items.length >= MAX_PHOTOS) { toast('Maximum ' + MAX_PHOTOS + ' photos per moment', true); break; }
+    editing.items.push({ file: f, preview: URL.createObjectURL(f) });
+  }
+  renderThumbs();
+}
+function makeCover(i) { const [it] = editing.items.splice(i, 1); editing.items.unshift(it); renderThumbs(); }
+function removeThumb(i) { editing.items.splice(i, 1); renderThumbs(); }
+
+async function saveMoment() {
+  const err = $('fErr'), btn = $('saveBtn'), title = $('fTitle').value.trim();
+  if (!title) { err.textContent = 'Title is required.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  let link = $('fLink').value.trim(); if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+  btn.disabled = true;
+  try {
+    const urls = [], total = editing.items.filter(x => x.file).length; let n = 0;
+    for (const it of editing.items) {
+      if (it.file) { btn.textContent = `Uploading ${++n}/${total}...`; urls.push(await uploadImage(it.file, 'moments')); }
+      else urls.push(it.url);
+    }
+    btn.textContent = 'Saving...';
+    const row = { title, event_date: $('fDate').value || null, description: $('fDesc').value.trim() || null,
+                  link_url: link || null, link_label: $('fLinkLabel').value.trim() || null, photo_urls: urls };
+    const wasEdit = !!editing.id;
+    const q = wasEdit ? supabaseClient.from('moments').update(row).eq('id', editing.id) : supabaseClient.from('moments').insert(row);
+    const { data, error } = await q.select();
+    if (error) throw error;
+    if (!data || !data.length) throw new Error('Not allowed - please log in again.');
+    await removeFiles(editing.orig.filter(u => !urls.includes(u)));
+    closeModal('formModal'); toast(wasEdit ? 'Moment updated' : 'Moment added'); await load();
+  } catch (e) { console.error(e); err.textContent = 'Save failed - ' + (e.message || 'please try again.'); err.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Save'; }
+}
+async function deleteMoment(id) {
+  const m = moments.find(x => x.id === id); if (!m) return;
+  if (!await askConfirm(`Delete "${m.title}" and all its photos? This cannot be undone.`)) return;
+  const { data, error } = await supabaseClient.from('moments').delete().eq('id', id).select();
+  if (error || !data || !data.length) { toast('Delete failed', true); return; }
+  await removeFiles(m.photos); toast('Moment deleted'); load();
+}
+
+initManage(); load();
+</script>
+</body>
+</html>
