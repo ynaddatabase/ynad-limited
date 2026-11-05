@@ -192,6 +192,26 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
 .avatar-prev img{width:100%;height:100%;object-fit:cover;object-position:top}
 .avatar-btns{display:flex;gap:8px;flex-wrap:wrap}
 
+/* ---------- photo crop popup ---------- */
+.avatar-note{margin-top:6px;font-size:11px;color:#94a3b8;width:100%}
+.crop-bg{position:fixed;inset:0;z-index:450;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.6);backdrop-filter:blur(8px)}
+.crop-bg.open{display:flex;animation:mdIn .25s ease}
+.crop-card{width:100%;max-width:380px;padding:22px;background:#fff;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.35)}
+.crop-card h3{margin:0;font-size:17px;font-weight:600;color:#0f172a}
+.crop-card>p{margin:4px 0 0;font-size:12px;color:#64748b;line-height:1.5}
+.crop-stage{position:relative;width:320px;height:380px;max-width:100%;margin:16px auto 0;overflow:hidden;border-radius:10px;background:#0b1020;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crop-stage.dragging{cursor:grabbing}
+.crop-stage img{position:absolute;max-width:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.crop-frame{position:absolute;left:40px;top:40px;width:240px;height:300px;border-radius:14px;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 600px rgba(0,0,0,.6);pointer-events:none}
+.crop-zoom{display:flex;align-items:center;gap:10px;margin:16px auto 0;width:320px;max-width:100%}
+.crop-zoom button{width:32px;height:32px;flex-shrink:0;border-radius:50%;border:1.5px solid #e2e8f0;background:#fff;color:#334155;cursor:pointer;font-size:11px}
+.crop-zoom button:hover{border-color:#d97706;color:#d97706}
+.crop-zoom input[type=range]{flex:1;min-width:0;accent-color:#d97706;cursor:pointer}
+.crop-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+body.theme-effective-dark .crop-card{background:#232525}
+body.theme-effective-dark .crop-card h3{color:#fff}
+body.theme-effective-dark .crop-zoom button{background:#131414;border-color:#3a3c3c;color:#c7c5c2}
+
 /* ---------- member viewer (photo 2/3 + info 1/3) ---------- */
 .tv{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s,visibility .35s;overflow:hidden}
 .tv.open{opacity:1;visibility:visible;pointer-events:auto}
@@ -262,13 +282,15 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
     <div class="fld">
       <label>Photo</label>
       <div class="avatar-row">
-        <div id="avatarPrev" class="avatar-prev"></div>
+        <div id="avatarPrev" class="avatar-prev" onclick="$('fFile').click()" style="cursor:pointer"></div>
         <div class="avatar-btns">
-          <button type="button" class="pick" onclick="$('fFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i> Choose photo</button>
+          <button type="button" class="pick" onclick="$('fFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i> <span id="pickLabel">Choose photo</span></button>
+          <button type="button" id="editPhoto" class="pick" style="display:none" onclick="editPhoto()"><i class="fa-solid fa-crop-simple"></i> Edit</button>
           <button type="button" id="rmPhoto" class="pick" style="display:none" onclick="clearPhoto()"><i class="fa-solid fa-xmark"></i> Remove</button>
+          <div class="avatar-note">JPG, PNG or WEBP · Max 2 MB</div>
         </div>
       </div>
-      <input id="fFile" type="file" accept="image/*" hidden onchange="pickPhoto(this)">
+      <input id="fFile" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="pickPhoto(this)">
     </div>
     <div class="fld"><label>Name <em>*</em></label><input id="fName" maxlength="80" placeholder="Full name"></div>
     <div class="fld"><label>Designation</label><input id="fDesig" maxlength="80" placeholder="e.g. Site Engineer"></div>
@@ -282,6 +304,27 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
   </div>
   <div class="md-foot"><button class="btn" onclick="closeModal('formModal')">Cancel</button><button id="saveBtn" class="btn solid" onclick="saveMember()">Save</button></div>
 </div></div>
+
+<!-- Photo crop popup -->
+<div id="cropModal" class="crop-bg">
+  <div class="crop-card">
+    <h3>Adjust Photo</h3>
+    <p>Drag to reposition. Use the slider, +/− buttons or mouse wheel to zoom.</p>
+    <div class="crop-stage" id="cropStage">
+      <img id="cropImg" alt="" draggable="false">
+      <div class="crop-frame"></div>
+    </div>
+    <div class="crop-zoom">
+      <button type="button" onclick="cropZoomBy(-.2)"><i class="fa-solid fa-minus"></i></button>
+      <input type="range" id="cropRange" min="1" max="4" step="0.01" value="1">
+      <button type="button" onclick="cropZoomBy(.2)"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="crop-actions">
+      <button type="button" class="btn" onclick="closeCrop()">Cancel</button>
+      <button type="button" class="btn solid" onclick="saveCrop()">Save</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ================= YNAD shared script ================= */
@@ -682,21 +725,104 @@ function showAvatar() {
   const url = editing.preview || (editing.keep ? editing.photoUrl : '');
   $('avatarPrev').innerHTML = url ? `<img src="${esc(url)}" alt="">` : '<i class="fa-solid fa-user"></i>';
   $('rmPhoto').style.display = url ? 'inline-flex' : 'none';
+  $('editPhoto').style.display = url ? 'inline-flex' : 'none';
+  $('pickLabel').textContent = url ? 'Change photo' : 'Choose photo';
 }
 function openForm(id) {
   const m = id ? members.find(x => x.id === id) : null;
-  editing = { id: m ? m.id : null, photoUrl: m ? m.photo_url : null, keep: !!(m && m.photo_url), file: null, preview: null };
+  editing = { id: m ? m.id : null, photoUrl: m ? m.photo_url : null, keep: !!(m && m.photo_url), file: null, preview: null, orig: null };
   $('fName').value = m ? m.name : ''; $('fDesig').value = (m && m.designation) || ''; $('fDesc').value = (m && m.description) || '';
   $('fStatus').value = m && isResigned(m) ? 'resigned' : 'active';          /* default = Active */
   $('fOrder').value = m ? m.sort_order : members.length + 1;
   $('formTitle').textContent = m ? 'Edit Member' : 'Add Member'; $('fErr').style.display = 'none';
   descCount(); showAvatar(); openModal('formModal');
 }
+
+/* ---------- photo pick + crop ---------- */
+const MAX_PHOTO = 2 * 1024 * 1024, OK_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const CROP = { sw: 320, sh: 380, fw: 240, fh: 300, out: [600, 750] };   /* frame size / saved photo size (4:5) */
+let cr = { nw: 0, nh: 0, base: 1, zoom: 1, ox: 0, oy: 0, url: null, drag: null };
+
 function pickPhoto(input) {
-  const f = input.files[0]; input.value = ''; if (!f || !f.type.startsWith('image/')) return;
-  editing.file = f; editing.preview = URL.createObjectURL(f); showAvatar();
+  const f = input.files[0]; input.value = ''; if (!f) return;
+  if (OK_TYPES.indexOf(f.type) < 0) { toast('Please choose a JPG, PNG or WEBP image.', true); return; }
+  if (f.size > MAX_PHOTO) { toast('Photo is ' + (f.size / 1048576).toFixed(2) + ' MB. Max allowed is 2 MB.', true); return; }
+  openCrop(URL.createObjectURL(f), false);
 }
-function clearPhoto() { editing.file = null; editing.preview = null; editing.keep = false; showAvatar(); }
+function editPhoto() {
+  const src = editing.orig || editing.preview || editing.photoUrl;
+  if (src) openCrop(src, true);
+}
+function clearPhoto() {
+  if (editing.orig && editing.orig.startsWith('blob:')) URL.revokeObjectURL(editing.orig);
+  editing.file = null; editing.preview = null; editing.keep = false; editing.orig = null; showAvatar();
+}
+function cropClamp() {
+  const sc = cr.base * cr.zoom;
+  const mx = Math.max(0, (cr.nw * sc - CROP.fw) / 2), my = Math.max(0, (cr.nh * sc - CROP.fh) / 2);
+  cr.ox = Math.min(mx, Math.max(-mx, cr.ox)); cr.oy = Math.min(my, Math.max(-my, cr.oy));
+}
+function cropRender() {
+  cropClamp();
+  const sc = cr.base * cr.zoom, w = cr.nw * sc, h = cr.nh * sc, im = $('cropImg');
+  im.style.width = w + 'px'; im.style.height = h + 'px';
+  im.style.left = (CROP.sw / 2 - w / 2 + cr.ox) + 'px'; im.style.top = (CROP.sh / 2 - h / 2 + cr.oy) + 'px';
+}
+function cropSetZoom(z) {
+  z = Math.min(4, Math.max(1, z)); const r = z / cr.zoom;
+  cr.ox *= r; cr.oy *= r; cr.zoom = z; $('cropRange').value = z; cropRender();
+}
+function cropZoomBy(d) { cropSetZoom(cr.zoom + d); }
+function openCrop(url, keep) {
+  const im = $('cropImg'); cr.url = url;
+  if (!url.startsWith('blob:')) im.crossOrigin = 'anonymous'; else im.removeAttribute('crossorigin');
+  im.onload = () => {
+    cr.nw = im.naturalWidth; cr.nh = im.naturalHeight; if (!cr.nw) return;
+    cr.base = Math.max(CROP.fw / cr.nw, CROP.fh / cr.nh);
+    if (!keep) { cr.zoom = 1; cr.ox = 0; cr.oy = 0; }
+    $('cropRange').value = cr.zoom; cropRender(); openModal('cropModal');
+  };
+  im.onerror = () => { toast('This image could not be loaded.', true); closeCrop(); };
+  im.src = url;
+}
+function closeCrop() {
+  closeModal('cropModal');
+  if (cr.url && cr.url.startsWith('blob:') && cr.url !== editing.orig) URL.revokeObjectURL(cr.url);
+  cr.url = null;
+}
+function saveCrop() {
+  const sc = cr.base * cr.zoom, w = cr.nw * sc, h = cr.nh * sc;
+  const imgL = CROP.sw / 2 - w / 2 + cr.ox, imgT = CROP.sh / 2 - h / 2 + cr.oy;
+  const fl = (CROP.sw - CROP.fw) / 2, ft = (CROP.sh - CROP.fh) / 2;
+  const c = document.createElement('canvas'); c.width = CROP.out[0]; c.height = CROP.out[1];
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  try {
+    ctx.drawImage($('cropImg'), (fl - imgL) / sc, (ft - imgT) / sc, CROP.fw / sc, CROP.fh / sc, 0, 0, c.width, c.height);
+    c.toBlob(b => {
+      if (!b) { toast('Could not save the photo.', true); return; }
+      if (editing.preview && editing.preview.startsWith('blob:')) URL.revokeObjectURL(editing.preview);
+      if (editing.orig && editing.orig.startsWith('blob:') && editing.orig !== cr.url) URL.revokeObjectURL(editing.orig);
+      editing.orig = cr.url;                         /* keep source so Edit can re-crop */
+      editing.file = new File([b], 'photo.jpg', { type: 'image/jpeg' });
+      editing.preview = URL.createObjectURL(b); editing.keep = false;
+      cr.url = null; closeModal('cropModal'); showAvatar();
+    }, 'image/jpeg', .9);
+  } catch (e) { console.error(e); toast('This photo cannot be edited (CORS). Please upload it again.', true); }
+}
+(() => {
+  const st = $('cropStage'), rg = $('cropRange');
+  st.addEventListener('pointerdown', e => { cr.drag = { x: e.clientX, y: e.clientY, ox: cr.ox, oy: cr.oy }; st.setPointerCapture(e.pointerId); st.classList.add('dragging'); });
+  st.addEventListener('pointermove', e => { if (!cr.drag) return; cr.ox = cr.drag.ox + e.clientX - cr.drag.x; cr.oy = cr.drag.oy + e.clientY - cr.drag.y; cropRender(); });
+  const end = () => { cr.drag = null; st.classList.remove('dragging'); };
+  st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end);
+  st.addEventListener('wheel', e => { e.preventDefault(); cropSetZoom(cr.zoom - e.deltaY * .002); }, { passive: false });
+  rg.addEventListener('input', () => cropSetZoom(parseFloat(rg.value)));
+  $('cropModal').addEventListener('click', e => { if (e.target.id === 'cropModal') closeCrop(); });
+  /* Esc closes the crop popup first (before the form popup) */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('cropModal').classList.contains('open')) { e.stopPropagation(); closeCrop(); }
+  }, true);
+})();
 
 async function saveMember() {
   const err = $('fErr'), btn = $('saveBtn'), name = $('fName').value.trim();
