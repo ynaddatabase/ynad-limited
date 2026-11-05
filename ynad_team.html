@@ -151,7 +151,9 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 @media(max-width:720px){.team-grid{grid-template-columns:repeat(2,1fr);gap:28px 16px}}
 .card{position:relative;opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .6s cubic-bezier(.22,.61,.36,1)}
 .card.revealed{opacity:1;transform:none}
-.tphoto{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#e5e7eb;cursor:pointer}
+.tphoto{position:relative;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#e5e7eb;cursor:pointer;border:1.5px solid #dbe1e8;transition:border-color .3s}
+.tphoto:hover{border-color:#d97706}
+body.theme-effective-dark .tphoto{border-color:#3a3c3c}
 .tphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
 .tphoto::after{content:"";position:absolute;inset:0;background:rgba(217,119,6,.14);opacity:0;transition:opacity .3s;pointer-events:none}
 .tphoto:hover img{transform:scale(1.06)}
@@ -169,13 +171,13 @@ body.theme-effective-dark .tname{color:#fff}
 .rs-head h2{margin:0;font-size:14px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,0,0,.6)}
 body.theme-effective-dark .rs-head::before,body.theme-effective-dark .rs-head::after{background:#3a3c3c}
 body.theme-effective-dark .rs-head h2{color:#c7c5c2}
-.mq{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mq{overflow:hidden;padding:22px 0 14px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .mq-track{display:flex;width:max-content;animation:mqMove var(--dur,30s) linear infinite}
 .mq:hover .mq-track,body.manage-on .mq-track{animation-play-state:paused}
 @keyframes mqMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .mq-group{display:flex;flex:0 0 auto;gap:34px;padding-right:34px}
 .ritem{position:relative;width:118px;text-align:center;cursor:pointer}
-.rphoto{position:relative;width:92px;height:92px;margin:0 auto;border-radius:50%;overflow:hidden;background:#e5e7eb;border:2px solid #e2e8f0;transition:border-color .3s,transform .3s}
+.rphoto{position:relative;width:92px;height:92px;margin:0 auto;border-radius:50%;overflow:hidden;background:#e5e7eb;border:1.5px solid #cbd5e1;transition:border-color .3s,transform .3s}
 .rphoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;filter:grayscale(.35)}
 .rphoto .noimg{font-size:30px}
 .ritem:hover .rphoto{border-color:#d97706;transform:scale(1.06)}
@@ -199,7 +201,7 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
 .tv-btn{width:38px;height:38px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .22s,border-color .22s,transform .22s,opacity .25s}
 .tv-btn:hover{background:#d97706;border-color:#d97706}
 .tv-stage{position:absolute;left:0;top:0;bottom:0;width:66.6667%;padding:76px 70px 36px;display:flex;align-items:center;justify-content:center}
-.tv-img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.tv-img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.18)}
 .tv-no{display:none;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:90px;align-items:center;justify-content:center}
 @keyframes tvIn{from{opacity:0;transform:translateX(var(--x,0)) scale(.82);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
 .tv.open .tv-img.in,.tv.open .tv-no.in{animation:tvIn .85s cubic-bezier(.22,.61,.36,1) both}
@@ -216,7 +218,7 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
 .tv.open .tv-text .t:nth-child(4){animation-delay:.66s}
 .tv.open .tv-text .t:nth-child(5){animation-delay:.78s}
 .tvt-status{display:inline-block;margin-bottom:14px;padding:3px 11px;border-radius:999px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:rgba(34,197,94,.18);color:#4ade80}
-.tvt-status.off{background:rgba(148,163,184,.2);color:#cbd5e1}
+.tvt-status.off{background:rgba(239,68,68,.18);color:#f87171}
 .tvt-name{margin:0;font-size:26px;line-height:1.25;font-weight:500;letter-spacing:.02em;text-transform:uppercase}
 .tvt-desig{margin-top:8px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b}
 .tvt-line{width:44px;height:2px;background:#d97706;margin:20px 0}
@@ -246,7 +248,7 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
   <main class="pg-main"><div id="grid" class="team-grid"><div class="empty">Loading...</div></div></main>
 
   <section id="resignedSec" class="resigned">
-    <div class="rs-head"><h2>Resigned Employees</h2></div>
+    <div class="rs-head"><h2>Ex-Employees</h2></div>
     <div id="resignedMq" class="mq"></div>
   </section>
 
@@ -273,7 +275,7 @@ body.theme-effective-dark .rphoto{border-color:#3a3c3c}
     <div class="fld"><label>Description <small id="descCount">0 / 400</small></label><textarea id="fDesc" rows="4" maxlength="400" oninput="descCount()" placeholder="About this person (shown when the photo is opened)"></textarea></div>
     <div class="row2">
       <div class="fld"><label>Employee status</label>
-        <select id="fStatus"><option value="active">Active</option><option value="resigned">Resigned</option></select></div>
+        <select id="fStatus"><option value="active">Active</option><option value="resigned">Ex-Employee</option></select></div>
       <div class="fld"><label>Display order <small>1 = first</small></label><input id="fOrder" type="number" min="1" placeholder="1"></div>
     </div>
     <p id="fErr" class="err"></p>
@@ -635,7 +637,7 @@ function tvShow(dir) {
   if (m.photo_url) { img.style.display = 'block'; no.style.display = 'none'; img.src = m.photo_url; img.alt = m.name; img.classList.add('in'); }
   else { img.style.display = 'none'; img.removeAttribute('src'); no.style.display = 'flex'; no.classList.add('in'); }
   $('tvText').innerHTML =
-    `<span class="t tvt-status ${isResigned(m) ? 'off' : ''}">${isResigned(m) ? 'Resigned' : 'Active'}</span>` +
+    `<span class="t tvt-status ${isResigned(m) ? 'off' : ''}">${isResigned(m) ? 'Ex-Employee' : 'Active'}</span>` +
     `<h2 class="t tvt-name">${esc(m.name)}</h2>` +
     (m.designation ? `<div class="t tvt-desig">${esc(m.designation)}</div>` : '<div class="t"></div>') +
     `<div class="t tvt-line"></div>` +
