@@ -1084,8 +1084,6 @@ async function deleteMember(id) {
   await removeFiles([m.photo_url, m.photo_orig_url]); toast('Member deleted'); load();
 }
 
-if (DEMO_MODE) document.querySelector('.pg-head').insertAdjacentHTML('beforeend',
-  '<p style="margin:14px 0 0;font-size:11px;color:#d97706;letter-spacing:.06em;text-transform:uppercase">Demo mode - sample data, changes are not saved</p>');
 initManage(DEMO_MODE); load();
 </script>
 </body>
