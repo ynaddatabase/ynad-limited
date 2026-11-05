@@ -267,24 +267,25 @@
       50%{transform:translate(-50%,5px)}
     }
 
-    /* Hero info bar: M / HO codes + FILES + MEDIA over a low-opacity black gradient */
+    /* Hero info bar: M / HO codes + FILES + MEDIA — all grouped on the RIGHT side
+       over a low-opacity black gradient */
     .hero-bar{
       position:absolute;left:0;right:0;bottom:0;z-index:5;
       min-height:60px;padding:0 5.5vw;
-      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      display:flex;align-items:center;justify-content:flex-end;gap:20px;
       background:linear-gradient(to top,rgba(0,0,0,.66),rgba(0,0,0,.34));
       border-top:1px solid rgba(255,255,255,.10);
       backdrop-filter:blur(3px);
       color:#fff;
     }
     .hero-codes{
-      display:flex;align-items:center;gap:10px;
+      display:flex;align-items:center;gap:18px;
       font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.82);white-space:nowrap;
     }
-    .hero-codes .code-divider{width:1px;height:14px;background:rgba(255,255,255,.35)}
-    .hero-actions{display:flex;align-items:center;gap:6px}
+    .hero-bar-sep{width:1px;height:22px;background:rgba(255,255,255,.30);flex:0 0 auto}
+    .hero-actions{display:flex;align-items:center;gap:4px}
     .hero-btn{
-      display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+      display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;
       border:none;border-radius:4px;background:transparent;cursor:pointer;
       font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
       transition:background .2s ease,color .2s ease;
@@ -293,6 +294,34 @@
     .hero-btn.files:hover,.hero-btn.files[aria-expanded="true"]{background:#2563eb;color:#fff}
     .hero-btn.media{color:#fbbf24}
     .hero-btn.media:hover,.hero-btn.media[aria-expanded="true"]{background:#d97706;color:#fff}
+
+    /* Hero intro animation: info appears one by one after the page loads */
+    @keyframes heroTextIn{
+      from{opacity:0;transform:translateY(24px);filter:blur(6px)}
+      to{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
+    @keyframes heroBarIn{
+      from{opacity:0;transform:translateY(100%)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes heroFadeUp{
+      from{opacity:0;transform:translateY(12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes kickerLine{from{width:0}to{width:26px}}
+    .hero-kicker{animation:heroTextIn .9s cubic-bezier(.22,.61,.36,1) .45s backwards}
+    .hero-kicker::before{animation:kickerLine .8s cubic-bezier(.22,.61,.36,1) .8s backwards}
+    .hero-title{animation:heroTextIn 1s cubic-bezier(.22,.61,.36,1) .62s backwards}
+    .hero-content .hero-location{animation:heroTextIn 1s cubic-bezier(.22,.61,.36,1) .8s backwards}
+    .hero-bar{animation:heroBarIn .95s cubic-bezier(.22,.61,.36,1) 1s backwards}
+    .hero-codes{animation:heroFadeUp .8s ease 1.3s backwards}
+    .hero-bar-sep{animation:heroFadeUp .8s ease 1.4s backwards}
+    .hero-actions .hm-wrap:nth-child(1){animation:heroFadeUp .8s ease 1.5s backwards}
+    .hero-actions .hm-wrap:nth-child(2){animation:heroFadeUp .8s ease 1.62s backwards}
+    @media (prefers-reduced-motion:reduce){
+      .hero-kicker,.hero-kicker::before,.hero-title,.hero-content .hero-location,.hero-bar,
+      .hero-codes,.hero-bar-sep,.hero-actions .hm-wrap{animation:none !important}
+    }
 
     /* FILES / MEDIA dropdowns (open upward from the bar, hover-only nested menus) */
     .hm-wrap{position:relative}
@@ -394,120 +423,159 @@
       /* Keep the complete gallery area the same shade as the title area. */
       background:var(--gallery);
     }
+    @keyframes shimmerMove{
+      0%{background-position:200% 0}
+      100%{background-position:-200% 0}
+    }
     .gallery-item{
-      position:relative;min-height:300px;overflow:hidden;background:#222;cursor:pointer;
+      position:relative;min-height:300px;overflow:hidden;cursor:pointer;
+      background:linear-gradient(100deg,#222 30%,#343434 50%,#222 70%);
+      background-size:200% 100%;
+      animation:shimmerMove 1.5s linear infinite;
       opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;
     }
     .gallery-item.visible{opacity:1;transform:translateY(0)}
+    .gallery-item.img-loaded{animation:none;background:#222}
     .gallery-item img{
       width:100%;height:100%;min-height:300px;object-fit:cover;display:block;
-      transition:transform .6s cubic-bezier(.16,1,.3,1),filter .35s ease;
+      opacity:0;filter:blur(16px);transform:scale(1.06);
+      transition:opacity .9s ease,filter 1s ease,transform 1s cubic-bezier(.16,1,.3,1);
     }
+    .gallery-item.img-loaded img{opacity:1;filter:blur(0);transform:scale(1)}
     .gallery-item::after{
       content:"";position:absolute;inset:0;
       background:linear-gradient(to top,rgba(0,0,0,.42),transparent 48%);
       opacity:0;transition:opacity .35s ease;
     }
-    .gallery-item:hover img{transform:scale(1.055);filter:brightness(.92)}
+    .gallery-item.img-loaded:hover img{transform:scale(1.055);filter:brightness(.92)}
     .gallery-item:hover::after{opacity:1}
 
-    /* Fullscreen gallery viewer with a bottom thumbnail filmstrip */
+    /* Fullscreen gallery viewer:
+       big photo fills the screen, translucent top bar + translucent side arrows over it,
+       thumbnail filmstrip at the bottom. */
+    @keyframes lbSpin{to{transform:rotate(360deg)}}
     .lightbox{
-      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.96);
-      display:flex;align-items:center;justify-content:center;
+      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.97);
       opacity:0;visibility:hidden;pointer-events:none;
       transition:opacity .3s ease,visibility .3s ease;
-      padding:58px 28px 112px;overflow:hidden;
+      overflow:hidden;
     }
     .lightbox.open{opacity:1;visibility:visible;pointer-events:auto}
     .lightbox-stage{
-      position:relative;
-      width:min(88vw,1500px);
-      height:calc(100vh - 172px);
-      min-height:280px;
-      display:flex;align-items:center;justify-content:center;
+      position:absolute;left:0;right:0;top:0;bottom:96px;
       overflow:hidden;isolation:isolate;
-      opacity:0;transform:scale(.975);
-      transition:opacity .3s ease,transform .3s ease,height .3s ease;
+      opacity:0;transform:scale(.985);
+      transition:opacity .35s ease,transform .35s ease,bottom .3s ease;
     }
     .lightbox.open .lightbox-stage{opacity:1;transform:scale(1)}
+    .lightbox-stage::after{
+      content:"";position:absolute;left:50%;top:50%;z-index:3;
+      width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;
+      border:3px solid rgba(255,255,255,.18);border-top-color:var(--accent);
+      animation:lbSpin .8s linear infinite;
+      opacity:0;transition:opacity .25s ease;pointer-events:none;
+    }
+    .lightbox-stage.is-busy::after{opacity:1}
+
+    /* Slide animation:
+       - the OLD photo shrinks while sliding out and fading away
+       - the NEW photo slides in from the side and grows to full size */
     .lightbox-stage .lightbox-photo{
       position:absolute;inset:0;
       display:block;width:100%;height:100%;max-width:none;max-height:none;
       object-fit:contain;
-      box-shadow:0 25px 70px rgba(0,0,0,.45);
-      transform:translateX(0);opacity:1;
-      transition:transform .86s cubic-bezier(.4,0,.2,1),opacity .72s ease;
+      transform:translateX(0) scale(1);opacity:1;filter:blur(0);
+      transform-origin:center center;
+      will-change:transform,opacity;
+      transition:transform .8s cubic-bezier(.22,.61,.36,1),opacity .6s ease,filter .6s ease;
       user-select:none;-webkit-user-drag:none;pointer-events:none;
     }
-    .lightbox-stage .lightbox-photo.is-hidden{visibility:hidden;opacity:0;transform:translateX(0)}
-    .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(110%)}
-    .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-110%)}
-    .lightbox-stage .lightbox-photo.is-leaving-left{opacity:0;transform:translateX(-110%)}
-    .lightbox-stage .lightbox-photo.is-leaving-right{opacity:0;transform:translateX(110%)}
-    .lightbox-stage .lightbox-photo.is-active{visibility:visible;opacity:1;transform:translateX(0)}
+    .lightbox-stage .lightbox-photo.is-hidden{visibility:hidden;opacity:0;transform:translateX(0) scale(1)}
+    .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(55%) scale(.8)}
+    .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-55%) scale(.8)}
+    .lightbox-stage .lightbox-photo.is-leaving-left{opacity:0;transform:translateX(-55%) scale(.55)}
+    .lightbox-stage .lightbox-photo.is-leaving-right{opacity:0;transform:translateX(55%) scale(.55)}
+    .lightbox-stage .lightbox-photo.is-active{visibility:visible;opacity:1;transform:translateX(0) scale(1)}
+    .lightbox-stage .lightbox-photo.is-active.is-loading{opacity:0;filter:blur(12px)}
 
     .lightbox-topbar{
-      position:absolute;top:0;left:0;right:0;height:58px;z-index:5;
+      position:absolute;top:0;left:0;right:0;height:52px;z-index:5;
       display:flex;align-items:center;justify-content:space-between;
-      padding:0 22px;color:#fff;pointer-events:none;
+      padding:0 20px;color:#fff;pointer-events:none;
+      background:rgba(0,0,0,.38);
     }
     .lightbox-counter{
       position:static;transform:none;
       font-size:13px;font-weight:500;letter-spacing:.12em;
       color:rgba(255,255,255,.9);font-variant-numeric:tabular-nums;
     }
-    .lightbox-top-actions{display:flex;align-items:center;gap:12px;pointer-events:auto}
+    .lightbox-top-actions{display:flex;align-items:center;gap:10px;pointer-events:auto}
     .lightbox-btn{
       width:38px;height:38px;border-radius:4px;
       background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;
       display:flex;align-items:center;justify-content:center;cursor:pointer;
-      transition:background .22s ease,border-color .22s ease,transform .22s ease;
+      transition:background .22s ease,border-color .22s ease,transform .22s ease,opacity .25s ease;
     }
     .lightbox-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
     .lightbox-download.is-downloading{opacity:.55;pointer-events:none}
-    .lightbox-prev,.lightbox-next{position:absolute;z-index:4;top:50%}
-    .lightbox-prev{left:24px;transform:translateY(-50%)}
-    .lightbox-next{right:24px;transform:translateY(-50%)}
+
+    /* Side arrows sit over the photo at low opacity */
+    .lightbox-prev,.lightbox-next{
+      position:absolute;z-index:4;top:calc(50% - 48px);
+      width:44px;height:44px;opacity:.6;background:rgba(0,0,0,.35);
+    }
+    .lightbox-prev{left:16px;transform:translateY(-50%)}
+    .lightbox-next{right:16px;transform:translateY(-50%)}
+    .lightbox-prev:hover,.lightbox-next:hover{opacity:1}
     .lightbox-prev:hover{transform:translateY(-50%) scale(1.07)}
     .lightbox-next:hover{transform:translateY(-50%) scale(1.07)}
+    .lightbox.thumbnails-hidden .lightbox-prev,
+    .lightbox.thumbnails-hidden .lightbox-next{top:50%}
 
+    /* Thumbnail strip — centered; inactive thumbnails are low opacity */
     .lightbox-thumbnails{
       position:absolute;left:0;right:0;bottom:0;z-index:6;
-      height:94px;padding:10px 18px;
-      display:flex;align-items:center;gap:7px;
+      height:96px;padding:9px 14px;
+      display:flex;align-items:center;justify-content:flex-start;gap:6px;
       overflow-x:auto;overflow-y:hidden;
-      background:rgba(0,0,0,.48);
+      background:rgba(0,0,0,.55);
       opacity:1;transform:translateY(0);
       transition:transform .32s ease,opacity .28s ease;
       scrollbar-width:none;-ms-overflow-style:none;
     }
     .lightbox-thumbnails::-webkit-scrollbar{display:none}
+    .lightbox-thumbnails .lightbox-thumbnail:first-child{margin-left:auto}
+    .lightbox-thumbnails .lightbox-thumbnail:last-child{margin-right:auto}
     .lightbox-thumbnail{
-      position:relative;flex:0 0 86px;width:86px;height:66px;padding:0;
+      position:relative;flex:0 0 100px;width:100px;height:76px;padding:0;
       border:2px solid rgba(255,255,255,.45);border-radius:3px;
-      background:#171717;overflow:hidden;cursor:pointer;opacity:.76;
+      background:linear-gradient(100deg,#171717 30%,#2c2c2c 50%,#171717 70%);
+      background-size:200% 100%;animation:shimmerMove 1.5s linear infinite;
+      overflow:hidden;cursor:pointer;opacity:.6;
       transition:opacity .2s ease,border-color .2s ease,transform .2s ease;
     }
-    .lightbox-thumbnail img{display:block;width:100%;height:100%;object-fit:cover}
+    .lightbox-thumbnail.thumb-loaded{animation:none;background:#171717}
+    .lightbox-thumbnail img{
+      display:block;width:100%;height:100%;object-fit:cover;
+      opacity:0;transition:opacity .6s ease;
+    }
+    .lightbox-thumbnail.thumb-loaded img{opacity:1}
     .lightbox-thumbnail:hover{opacity:1;transform:translateY(-2px)}
     .lightbox-thumbnail.active{opacity:1;border-color:var(--accent)}
     .lightbox-thumbnail:focus-visible{outline:2px solid #fff;outline-offset:2px}
-    .lightbox.thumbnails-hidden{padding-bottom:24px}
-    .lightbox.thumbnails-hidden .lightbox-stage{height:calc(100vh - 90px)}
+    .lightbox.thumbnails-hidden .lightbox-stage{bottom:0}
     .lightbox.thumbnails-hidden .lightbox-thumbnails{
       opacity:0;transform:translateY(110%);pointer-events:none;
     }
 
     @media (max-width:620px){
-      .lightbox{padding:58px 10px 96px}
-      .lightbox-stage{width:100%;height:calc(100vh - 154px)}
+      .lightbox-stage{bottom:80px}
       .lightbox-topbar{padding:0 13px}
-      .lightbox-thumbnails{height:82px;padding:8px 10px;gap:6px}
-      .lightbox-thumbnail{flex-basis:72px;width:72px;height:56px}
+      .lightbox-thumbnails{height:80px;padding:8px 10px;gap:5px}
+      .lightbox-thumbnail{flex-basis:76px;width:76px;height:58px}
       .lightbox-prev{left:8px}.lightbox-next{right:8px}
+      .lightbox-prev,.lightbox-next{top:calc(50% - 40px);width:38px;height:38px}
       .lightbox-btn{width:35px;height:35px}
-      .lightbox.thumbnails-hidden .lightbox-stage{height:calc(100vh - 78px)}
     }
 
     .loading,.error-state{
@@ -585,7 +653,7 @@
       .hero-title{font-size:26px}
       .hero-location{font-size:12px}
       .hero-scroll{display:none}
-      .hero-bar{padding:8px 14px;flex-wrap:wrap}
+      .hero-bar{padding:8px 14px;flex-wrap:wrap;gap:8px 14px;justify-content:flex-end}
       .hero-codes{font-size:11px}
       .section{padding:64px 20px}
       .feature-grid{grid-template-columns:1fr}
@@ -597,8 +665,6 @@
       .gallery-grid{grid-template-columns:1fr;gap:6px;padding:6px}
       .gallery-item{min-height:270px}
       .gallery-item img{min-height:270px}
-      .lightbox-prev{left:10px}
-      .lightbox-next{right:10px}
     }
   </style>
 </head>
@@ -768,6 +834,7 @@
     /* Gallery photos are numbered independently from 1.
        The cover (c_photo_url) is used in both the Hero and Overview sections. */
     const GALLERY_PHOTO_COUNT = 12;
+    const LIGHTBOX_SLIDE_FALLBACK_MS = 1000; /* a bit longer than the .8s CSS transition */
     let lightboxImages = [];
     let lightboxIndex = 0;
     let lightboxCurrentImage = document.getElementById('lightboxImage');
@@ -923,7 +990,7 @@
       );
     }
 
-    /* Hero + FILES / MEDIA bar */
+    /* Hero bar: M / HO codes + FILES + MEDIA, all grouped on the RIGHT side */
     function buildHeroBarHtml(project) {
       const openingReport = getMediaItems(project, 'report_urls', 'opening').slice(-1)[0];
       const ongoingReports = getMediaItems(project, 'report_urls', 'ongoing');
@@ -933,12 +1000,13 @@
 
       const bd = safe(project.bd_number);
       const ho = safe(project.ho_number);
-      const codesHtml = (bd || ho) ? `
+      const hasCodes = !!(bd || ho);
+      const codesHtml = hasCodes ? `
         <div class="hero-codes">
           ${bd ? `<span>${escapeHtml(bd)}</span>` : ''}
-          ${(bd && ho) ? `<span class="code-divider"></span>` : ''}
           ${ho ? `<span>HO-${escapeHtml(String(ho).replace(/^HO-/i,''))}</span>` : ''}
-        </div>` : '<div></div>';
+        </div>
+        <span class="hero-bar-sep" aria-hidden="true"></span>` : '';
 
       return `
         <div class="hero-bar">
@@ -1053,7 +1121,8 @@
       const galleryHtml = galleryPhotos.map((img, i) => `
         <div class="gallery-item reveal" style="transition-delay:${Math.min(i,11)*.035}s"
              onclick="openLightbox(${i})">
-          <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${i+1}" loading="${i<4?'eager':'lazy'}">
+          <img src="${escapeAttr(img)}" alt="${escapeAttr(name)} gallery ${i+1}" loading="${i<4?'eager':'lazy'}" decoding="async"
+               onload="this.parentElement.classList.add('img-loaded')" onerror="this.parentElement.classList.add('img-loaded')">
         </div>`
       ).join('');
 
@@ -1116,6 +1185,17 @@
 
       setupScrollEffects();
       bindHeaderScroll();
+      markLoadedImages();
+    }
+
+    /* Images already in cache may finish loading before the inline onload handler is attached. */
+    function markLoadedImages() {
+      document.querySelectorAll('.gallery-item img').forEach(img => {
+        if (img.complete && img.naturalWidth > 0) img.parentElement.classList.add('img-loaded');
+      });
+      document.querySelectorAll('.lightbox-thumbnail img').forEach(img => {
+        if (img.complete && img.naturalWidth > 0) img.parentElement.classList.add('thumb-loaded');
+      });
     }
 
     async function loadProject() {
@@ -1239,7 +1319,26 @@
 
     /* ================================================================
        LIGHTBOX (arrow buttons, keyboard arrows, swipe)
+       - no looping: first photo has no LEFT arrow, last photo has no RIGHT arrow
+       - old photo shrinks + slides away, new photo slides in smoothly
+       - thumbnails are centered
        ================================================================ */
+    function updateLightboxArrows() {
+      const prev = document.querySelector('.lightbox-prev');
+      const next = document.querySelector('.lightbox-next');
+      const total = lightboxImages.length;
+      if (prev) prev.style.display = (total < 2 || lightboxIndex <= 0) ? 'none' : 'flex';
+      if (next) next.style.display = (total < 2 || lightboxIndex >= total - 1) ? 'none' : 'flex';
+    }
+
+    function centerActiveLightboxThumbnail(thumb) {
+      const strip = document.getElementById('lightboxThumbnails');
+      if (!strip || !thumb) return;
+      const target = thumb.offsetLeft - (strip.clientWidth / 2) + (thumb.offsetWidth / 2);
+      try { strip.scrollTo({ left: Math.max(0, target), behavior: 'smooth' }); }
+      catch (_) { strip.scrollLeft = Math.max(0, target); }
+    }
+
     function updateLightboxCounter() {
       const counter = document.getElementById('lightboxCounter');
       if (counter) counter.textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
@@ -1247,9 +1346,15 @@
       document.querySelectorAll('.lightbox-thumbnail').forEach((thumb, index) => {
         const active = index === lightboxIndex;
         thumb.classList.toggle('active', active);
-        if (active) thumb.setAttribute('aria-current', 'true');
-        else thumb.removeAttribute('aria-current');
+        if (active) {
+          thumb.setAttribute('aria-current', 'true');
+          centerActiveLightboxThumbnail(thumb);
+        } else {
+          thumb.removeAttribute('aria-current');
+        }
       });
+
+      updateLightboxArrows();
     }
 
     function buildLightboxThumbnails() {
@@ -1259,19 +1364,38 @@
         <button class="lightbox-thumbnail${index === lightboxIndex ? ' active' : ''}"
                 type="button" aria-label="View image ${index + 1}"
                 title="Image ${index + 1}" onclick="selectLightboxImage(${index})">
-          <img src="${escapeAttr(url)}" alt="" loading="lazy">
+          <img src="${escapeAttr(url)}" alt="" decoding="async"
+               onload="this.parentElement.classList.add('thumb-loaded')" onerror="this.parentElement.classList.add('thumb-loaded')">
         </button>
       `).join('');
+      markLoadedImages();
     }
 
-    function selectLightboxImage(index) {
-      if (!lightboxImages.length) return;
+    function setLightboxBusy(busy) {
+      const stage = document.querySelector('.lightbox-stage');
+      if (stage) stage.classList.toggle('is-busy', !!busy);
+    }
+
+    function cancelLightboxTransition() {
       lightboxTransitionToken++;
       if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
       lightboxTransitionTimer = null;
       lightboxAnimating = false;
       lightboxPendingDirection = 0;
-      showLightbox(index);
+      setLightboxBusy(false);
+    }
+
+    function selectLightboxImage(index) {
+      if (!lightboxImages.length) return;
+      if (index < 0 || index >= lightboxImages.length) return;
+
+      if (lightboxAnimating) {
+        /* Stop the running slide and settle on the current photo before animating again. */
+        cancelLightboxTransition();
+        resetLightboxLayers();
+      }
+      if (index === lightboxIndex) return;
+      animateLightboxTo(index, index > lightboxIndex ? 1 : -1);
     }
 
     async function downloadLightboxImage() {
@@ -1331,23 +1455,30 @@
     function showLightbox(index) {
       if (!lightboxImages.length) return;
       const total = lightboxImages.length;
-      lightboxIndex = ((index % total) + total) % total;
+      lightboxIndex = Math.min(Math.max(index, 0), total - 1);
 
       resetLightboxLayers();
-      lightboxCurrentImage.src = lightboxImages[lightboxIndex];
-      updateLightboxCounter();
 
-      const hideArrows = total < 2;
-      document.querySelector('.lightbox-prev').style.display = hideArrows ? 'none' : 'flex';
-      document.querySelector('.lightbox-next').style.display = hideArrows ? 'none' : 'flex';
+      /* Fade (and blur) the photo in once it has loaded, with a spinner while waiting. */
+      const img = lightboxCurrentImage;
+      img.classList.add('is-loading');
+      setLightboxBusy(true);
+      const done = () => {
+        img.onload = null;
+        img.onerror = null;
+        img.classList.remove('is-loading');
+        setLightboxBusy(false);
+      };
+      img.onload = done;
+      img.onerror = done;
+      img.src = lightboxImages[lightboxIndex];
+      if (img.complete && img.naturalWidth > 0) done();
+      updateLightboxCounter();
     }
 
     function openLightbox(index) {
       if (!lightboxImages.length) return;
-      lightboxTransitionToken++;
-      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
-      lightboxAnimating = false;
-      lightboxPendingDirection = 0;
+      cancelLightboxTransition();
 
       const box = document.getElementById('lightbox');
       showLightbox(index);
@@ -1355,6 +1486,18 @@
       box.classList.add('open');
       box.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
+
+      /* Place the active thumbnail in the middle right away (no scroll animation on open). */
+      const strip = document.getElementById('lightboxThumbnails');
+      const active = strip && strip.querySelector('.lightbox-thumbnail.active');
+      if (active) strip.scrollLeft = Math.max(0, active.offsetLeft - strip.clientWidth / 2 + active.offsetWidth / 2);
+    }
+
+    function runQueuedLightboxStep() {
+      if (lightboxPendingDirection === 0) return;
+      const queuedDirection = Math.sign(lightboxPendingDirection);
+      lightboxPendingDirection -= queuedDirection;
+      window.setTimeout(() => animateLightboxTo(lightboxIndex + queuedDirection, queuedDirection), 35);
     }
 
     function finishLightboxStep(nextIndex, token, current, incoming, finishHandler) {
@@ -1379,17 +1522,16 @@
       updateLightboxCounter();
       lightboxAnimating = false;
 
-      if (lightboxPendingDirection !== 0) {
-        const queuedDirection = Math.sign(lightboxPendingDirection);
-        lightboxPendingDirection -= queuedDirection;
-        window.setTimeout(() => animateLightboxStep(queuedDirection), 35);
-      }
+      runQueuedLightboxStep();
     }
 
-    function animateLightboxStep(direction) {
-      if (!lightboxImages.length || lightboxImages.length < 2) return;
+    /* Slide to a specific photo. direction: 1 = going forward (new photo enters from the right),
+       -1 = going back (new photo enters from the left). The outgoing photo shrinks while it slides away. */
+    function animateLightboxTo(nextIndex, direction) {
       const total = lightboxImages.length;
-      const nextIndex = ((lightboxIndex + direction) % total + total) % total;
+      if (total < 2) return;
+      if (nextIndex < 0 || nextIndex >= total || nextIndex === lightboxIndex) return;
+
       const current = lightboxCurrentImage;
       const incoming = lightboxIncomingImage;
       const token = ++lightboxTransitionToken;
@@ -1397,6 +1539,7 @@
       let finished = false;
 
       lightboxAnimating = true;
+      setLightboxBusy(true);
       incoming.className = 'lightbox-photo ' + (direction > 0 ? 'is-entering-right' : 'is-entering-left');
       incoming.onload = null;
       incoming.onerror = null;
@@ -1411,6 +1554,7 @@
       const startTransition = () => {
         if (started || token !== lightboxTransitionToken) return;
         started = true;
+        setLightboxBusy(false);
         incoming.onload = null;
         incoming.onerror = null;
 
@@ -1429,7 +1573,7 @@
         };
         incoming.addEventListener('transitionend', onSlideEnd);
         // Fallback for reduced-motion settings or browsers without transition events.
-        lightboxTransitionTimer = window.setTimeout(finish, 960);
+        lightboxTransitionTimer = window.setTimeout(finish, LIGHTBOX_SLIDE_FALLBACK_MS);
       };
 
       incoming.onerror = () => {
@@ -1437,12 +1581,9 @@
         incoming.onload = null;
         incoming.onerror = null;
         lightboxAnimating = false;
+        setLightboxBusy(false);
         showLightbox(nextIndex);
-        if (lightboxPendingDirection !== 0) {
-          const queuedDirection = Math.sign(lightboxPendingDirection);
-          lightboxPendingDirection -= queuedDirection;
-          window.setTimeout(() => animateLightboxStep(queuedDirection), 35);
-        }
+        runQueuedLightboxStep();
       };
       incoming.onload = startTransition;
       incoming.src = lightboxImages[nextIndex];
@@ -1453,20 +1594,22 @@
     function lightboxStep(direction) {
       if (!lightboxImages.length || !direction) return;
       const step = direction > 0 ? 1 : -1;
+      const total = lightboxImages.length;
+
+      /* Never go past the first / last photo (no looping). */
+      const target = lightboxIndex + lightboxPendingDirection + step;
+      if (target < 0 || target >= total) return;
+
       if (lightboxAnimating) {
         lightboxPendingDirection += step;
         return;
       }
-      animateLightboxStep(step);
+      animateLightboxTo(lightboxIndex + step, step);
     }
 
     function closeLightbox() {
       const box = document.getElementById('lightbox');
-      lightboxTransitionToken++;
-      if (lightboxTransitionTimer) clearTimeout(lightboxTransitionTimer);
-      lightboxTransitionTimer = null;
-      lightboxAnimating = false;
-      lightboxPendingDirection = 0;
+      cancelLightboxTransition();
       resetLightboxLayers();
       box.classList.remove('open', 'thumbnails-hidden');
       box.setAttribute('aria-hidden','true');
