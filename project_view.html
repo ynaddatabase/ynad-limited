@@ -455,7 +455,9 @@
        thumbnail filmstrip at the bottom. */
     @keyframes lbSpin{to{transform:rotate(360deg)}}
     .lightbox{
-      position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.97);
+      position:fixed;inset:0;z-index:300;
+      background:rgba(0,0,0,.78);
+      -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
       opacity:0;visibility:hidden;pointer-events:none;
       transition:opacity .3s ease,visibility .3s ease;
       overflow:hidden;
@@ -491,12 +493,13 @@
       user-select:none;-webkit-user-drag:none;pointer-events:none;
     }
     .lightbox-stage .lightbox-photo.is-hidden{visibility:hidden;opacity:0;transform:translateX(0) scale(1)}
-    .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(55%) scale(.8)}
-    .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-55%) scale(.8)}
+    .lightbox-stage .lightbox-photo.is-entering-right{opacity:0;transform:translateX(70%) scale(.85)}
+    .lightbox-stage .lightbox-photo.is-entering-left{opacity:0;transform:translateX(-70%) scale(.85)}
     .lightbox-stage .lightbox-photo.is-leaving-left{opacity:0;transform:translateX(-55%) scale(.55)}
     .lightbox-stage .lightbox-photo.is-leaving-right{opacity:0;transform:translateX(55%) scale(.55)}
     .lightbox-stage .lightbox-photo.is-active{visibility:visible;opacity:1;transform:translateX(0) scale(1)}
     .lightbox-stage .lightbox-photo.is-active.is-loading{opacity:0;filter:blur(12px)}
+    .lightbox-stage .lightbox-photo.no-anim{transition:none !important}
 
     .lightbox-topbar{
       position:absolute;top:0;left:0;right:0;height:52px;z-index:5;
@@ -843,6 +846,10 @@
     let lightboxPendingDirection = 0;
     let lightboxTransitionToken = 0;
     let lightboxTransitionTimer = null;
+    let lightboxTargetIndex = 0;      /* photo currently sliding in (or the shown one) */
+    let lightboxWheelLocked = false;
+    let lightboxPreloaded = [];
+    let stripScrollRaf = 0;
 
     /* ================================================================
        HELPERS
@@ -1323,28 +1330,60 @@
        - old photo shrinks + slides away, new photo slides in smoothly
        - thumbnails are centered
        ================================================================ */
-    function updateLightboxArrows() {
+    function updateLightboxArrows(idx) {
+      const i = (typeof idx === 'number') ? idx : lightboxIndex;
       const prev = document.querySelector('.lightbox-prev');
       const next = document.querySelector('.lightbox-next');
       const total = lightboxImages.length;
-      if (prev) prev.style.display = (total < 2 || lightboxIndex <= 0) ? 'none' : 'flex';
-      if (next) next.style.display = (total < 2 || lightboxIndex >= total - 1) ? 'none' : 'flex';
+      if (prev) prev.style.display = (total < 2 || i <= 0) ? 'none' : 'flex';
+      if (next) next.style.display = (total < 2 || i >= total - 1) ? 'none' : 'flex';
+    }
+
+    /* Short, snappy scroll so the strip keeps up with the main photo. */
+    function animateStripScroll(strip, to, duration) {
+      cancelAnimationFrame(stripScrollRaf);
+      const from = strip.scrollLeft;
+      const dist = to - from;
+      if (Math.abs(dist) < 1) return;
+      const t0 = performance.now();
+      const step = function (now) {
+        const p = Math.min(1, (now - t0) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        strip.scrollLeft = from + dist * eased;
+        if (p < 1) stripScrollRaf = requestAnimationFrame(step);
+      };
+      stripScrollRaf = requestAnimationFrame(step);
     }
 
     function centerActiveLightboxThumbnail(thumb) {
       const strip = document.getElementById('lightboxThumbnails');
       if (!strip || !thumb) return;
       const target = thumb.offsetLeft - (strip.clientWidth / 2) + (thumb.offsetWidth / 2);
-      try { strip.scrollTo({ left: Math.max(0, target), behavior: 'smooth' }); }
-      catch (_) { strip.scrollLeft = Math.max(0, target); }
+      animateStripScroll(strip, Math.max(0, target), 340);
     }
 
-    function updateLightboxCounter() {
+    /* Download every gallery photo in the background so next / previous appears instantly. */
+    function preloadLightboxImages() {
+      if (!lightboxImages.length) return;
+      if (lightboxPreloaded.length === lightboxImages.length) return;
+      lightboxPreloaded = lightboxImages.map(function (url) {
+        const im = new Image();
+        im.decoding = 'async';
+        im.src = url;
+        return im;
+      });
+    }
+
+    /* idx = the photo that should be shown as "current" (defaults to lightboxIndex).
+       Called at the START of a slide so counter + thumbnail + arrows change together with the photo. */
+    function updateLightboxCounter(idx) {
+      const total = lightboxImages.length;
+      const shown = (typeof idx === 'number') ? Math.min(Math.max(idx, 0), Math.max(total - 1, 0)) : lightboxIndex;
       const counter = document.getElementById('lightboxCounter');
-      if (counter) counter.textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+      if (counter) counter.textContent = (shown + 1) + ' / ' + total;
 
       document.querySelectorAll('.lightbox-thumbnail').forEach((thumb, index) => {
-        const active = index === lightboxIndex;
+        const active = index === shown;
         thumb.classList.toggle('active', active);
         if (active) {
           thumb.setAttribute('aria-current', 'true');
@@ -1354,7 +1393,7 @@
         }
       });
 
-      updateLightboxArrows();
+      updateLightboxArrows(shown);
     }
 
     function buildLightboxThumbnails() {
@@ -1456,6 +1495,7 @@
       if (!lightboxImages.length) return;
       const total = lightboxImages.length;
       lightboxIndex = Math.min(Math.max(index, 0), total - 1);
+      lightboxTargetIndex = lightboxIndex;
 
       resetLightboxLayers();
 
@@ -1481,6 +1521,7 @@
       cancelLightboxTransition();
 
       const box = document.getElementById('lightbox');
+      preloadLightboxImages();
       showLightbox(index);
       setLightboxThumbnailsVisible(true);
       box.classList.add('open');
@@ -1539,8 +1580,11 @@
       let finished = false;
 
       lightboxAnimating = true;
+      lightboxTargetIndex = nextIndex;
       setLightboxBusy(true);
-      incoming.className = 'lightbox-photo ' + (direction > 0 ? 'is-entering-right' : 'is-entering-left');
+      /* 'no-anim' puts the new photo at its start position instantly (no sliding to it),
+         so it really enters from the side instead of from the previous photo's spot. */
+      incoming.className = 'lightbox-photo no-anim ' + (direction > 0 ? 'is-entering-right' : 'is-entering-left');
       incoming.onload = null;
       incoming.onerror = null;
 
@@ -1558,8 +1602,14 @@
         incoming.onload = null;
         incoming.onerror = null;
 
-        // Force the starting position to be painted before moving the new image.
+        // Paint the start position first, then switch the transition back on.
         void incoming.offsetWidth;
+        incoming.classList.remove('no-anim');
+        void incoming.offsetWidth;
+
+        // Counter, thumbnail highlight + strip scroll move at the same moment as the photo.
+        updateLightboxCounter(nextIndex);
+
         requestAnimationFrame(() => {
           if (token !== lightboxTransitionToken) return;
           current.classList.remove('is-active');
@@ -1597,11 +1647,13 @@
       const total = lightboxImages.length;
 
       /* Never go past the first / last photo (no looping). */
-      const target = lightboxIndex + lightboxPendingDirection + step;
+      const base = lightboxAnimating ? lightboxTargetIndex : lightboxIndex;
+      const target = base + lightboxPendingDirection + step;
       if (target < 0 || target >= total) return;
 
       if (lightboxAnimating) {
         lightboxPendingDirection += step;
+        updateLightboxCounter(target);
         return;
       }
       animateLightboxTo(lightboxIndex + step, step);
@@ -1629,6 +1681,20 @@
         if (Math.abs(dx) > 50) lightboxStep(dx < 0 ? 1 : -1);
       }, { passive: true });
     })();
+
+    /* Mouse wheel / trackpad scroll changes the photo (one photo per scroll "tick" burst). */
+    document.getElementById('lightbox').addEventListener('wheel', function (e) {
+      const box = document.getElementById('lightbox');
+      if (!box.classList.contains('open')) return;
+      e.preventDefault();
+
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(delta) < 6 || lightboxWheelLocked) return;
+
+      lightboxWheelLocked = true;
+      window.setTimeout(function () { lightboxWheelLocked = false; }, 520);
+      lightboxStep(delta > 0 ? 1 : -1);
+    }, { passive: false });
 
     document.addEventListener('keydown', (e) => {
       const box = document.getElementById('lightbox');
