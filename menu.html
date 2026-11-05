@@ -42,8 +42,6 @@ body.edit-mode .edit-icon{display:inline-block}
 .menu-list.menu-open .menu-item:nth-child(1) .menu-link{ animation-delay:0s; }
 .menu-list.menu-open .menu-item:nth-child(2) .menu-link{ animation-delay:.16s; }
 .menu-list.menu-open .menu-item:nth-child(3) .menu-link{ animation-delay:.32s; }
-.menu-list.menu-open .menu-item:nth-child(4) .menu-link{ animation-delay:.48s; }
-.menu-list.menu-open .menu-item:nth-child(5) .menu-link{ animation-delay:.64s; }
 
 @keyframes menuFloatIn{
     0%{
@@ -64,8 +62,6 @@ body.edit-mode .edit-icon{display:inline-block}
 .menu-list.menu-closing .menu-item:nth-child(1) .menu-link{ animation-delay:0s !important; }
 .menu-list.menu-closing .menu-item:nth-child(2) .menu-link{ animation-delay:.04s !important; }
 .menu-list.menu-closing .menu-item:nth-child(3) .menu-link{ animation-delay:.08s !important; }
-.menu-list.menu-closing .menu-item:nth-child(4) .menu-link{ animation-delay:.12s !important; }
-.menu-list.menu-closing .menu-item:nth-child(5) .menu-link{ animation-delay:.16s !important; }
 
 @keyframes menuFloatOut{
     0%{
@@ -85,14 +81,8 @@ body.edit-mode .edit-icon{display:inline-block}
 
 <div class="menu-list">
     <div class="menu-item">
-        <a class="menu-link" onclick="goTo('financial-overview')">Financial Overview</a>
-    </div>
-    <div class="menu-item">
         <a class="menu-link" onclick="goTo('about')">About</a>
         <a class="edit-icon" href="#" onclick="openEditor(event)">&#9998;</a>
-    </div>
-    <div class="menu-item">
-        <a class="menu-link" onclick="goTo('blog')">Blog</a>
     </div>
     <div class="menu-item">
         <a class="menu-link" onclick="goTo('ynad-moments')">YNAD Moments</a>
@@ -649,10 +639,26 @@ function openEditor(e){
     };
 }
 
-/* Navigation */
+/* Navigation
+   - YNAD Moments / YNAD Team open their own pages.
+   - Everything else scrolls to a section of the homepage. */
+const PAGE_LINKS = {
+    'ynad-moments': 'ynad_moments.html',
+    'ynad-team': 'ynad_team.html'
+};
+
 function goTo(id){
     if(parent&&typeof parent.closeMenuWithEffect==='function') parent.closeMenuWithEffect();
     setTimeout(()=>{
+        if(PAGE_LINKS[id]){
+            try{
+                parent.location.href = PAGE_LINKS[id];
+            }catch(e){
+                window.location.href = PAGE_LINKS[id];
+            }
+            return;
+        }
+
         try{
             const el = parent.document.getElementById(id);
             if(el){
