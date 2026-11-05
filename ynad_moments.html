@@ -180,8 +180,8 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 .lightbox.video-on .lb-count{opacity:0}
 
 /* photo stage = left 2/3 ; widens to full width in video mode */
-.lb-stage{position:absolute;left:0;top:0;bottom:var(--th);width:66.6667%;overflow:hidden;isolation:isolate;transition:width .85s cubic-bezier(.22,.61,.36,1),bottom .85s cubic-bezier(.22,.61,.36,1)}
-.lightbox.video-mode .lb-stage{width:100%}
+.lb-stage{position:absolute;left:0;top:0;bottom:var(--th);width:66.6667%;overflow:hidden;isolation:isolate;z-index:2;transition:width .85s cubic-bezier(.22,.61,.36,1),bottom .85s cubic-bezier(.22,.61,.36,1)}
+.lightbox.video-mode .lb-stage,.lightbox.info-hidden .lb-stage{width:100%}
 .lb-stage::after{content:"";position:absolute;left:50%;top:50%;z-index:3;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;border:3px solid rgba(255,255,255,.18);border-top-color:#d97706;animation:lbSpin .8s linear infinite;opacity:0;transition:opacity .25s;pointer-events:none}
 .lb-stage.is-busy::after{opacity:1}
 
@@ -211,9 +211,9 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 .lb-vopen:hover{color:#f59e0b}
 
 /* text panel = right 1/3 */
-.lb-text{position:absolute;top:0;right:0;bottom:var(--th);width:33.3333%;padding:84px 36px 28px 34px;overflow-y:auto;color:#fff;background:rgba(0,0,0,.28);border-left:1px solid rgba(255,255,255,.1);opacity:0;transform:translateX(24px);transition:opacity .6s ease .15s,transform .8s cubic-bezier(.22,.61,.36,1) .15s,bottom .85s;scrollbar-width:thin}
+.lb-text{position:absolute;z-index:1;top:0;right:0;bottom:var(--th);width:33.3333%;padding:84px 36px 28px 34px;overflow-y:auto;color:#fff;background:rgba(0,0,0,.28);border-left:1px solid rgba(255,255,255,.1);opacity:0;transform:translateX(24px);transition:opacity .6s ease .15s,transform .8s cubic-bezier(.22,.61,.36,1) .15s,bottom .85s;scrollbar-width:thin}
 .lightbox.open .lb-text{opacity:1;transform:none}
-.lightbox.video-mode .lb-text{opacity:0;transform:translateX(50px);pointer-events:none;transition-delay:0s}
+.lightbox.video-mode .lb-text,.lightbox.info-hidden .lb-text{opacity:0;transform:translateX(50px);pointer-events:none;transition-delay:0s}
 .lb-text .t{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,.61,.36,1)}
 .lightbox.open .lb-text .t{opacity:1;transform:none}
 .lightbox.open .lb-text .t:nth-child(1){transition-delay:.35s}
@@ -226,13 +226,29 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
 .lbt-desc{margin:0;font-size:14px;line-height:1.9;color:rgba(255,255,255,.82);white-space:pre-line}
 
 /* thumbnails */
-.lb-strip{position:absolute;left:0;right:0;bottom:0;z-index:6;height:var(--th);padding:9px 14px;display:flex;align-items:center;justify-content:flex-start;gap:6px;overflow-x:auto;overflow-y:hidden;background:rgba(0,0,0,.55);scrollbar-width:none}
+.lb-strip{position:absolute;left:0;width:66.6667%;bottom:0;z-index:6;height:var(--th);padding:9px 14px;display:flex;align-items:center;justify-content:flex-start;gap:6px;overflow-x:auto;overflow-y:hidden;background:rgba(0,0,0,.55);scrollbar-width:none;transition:width .85s cubic-bezier(.22,.61,.36,1),transform .5s ease,opacity .4s ease}
 .lb-strip::-webkit-scrollbar{display:none}
 .lightbox.no-photos .lb-strip{display:none}
 .lb-th{flex:0 0 100px;width:100px;height:76px;padding:0;border:2px solid rgba(255,255,255,.45);border-radius:3px;overflow:hidden;cursor:pointer;opacity:.6;background:#171717;transition:opacity .2s,border-color .2s,transform .2s}
 .lb-th:first-child{margin-left:auto}.lb-th:last-child{margin-right:auto}
 .lb-th img{width:100%;height:100%;object-fit:cover;display:block}
 .lb-th:hover{opacity:1;transform:translateY(-2px)}.lb-th.active{opacity:1;border-color:#d97706}
+
+.lightbox:focus{outline:none}
+/* thumbnails follow the photo area: 2/3 width normally, full width when the photo is centered */
+.lightbox.video-mode .lb-strip,.lightbox.info-hidden .lb-strip{width:100%}
+/* first Esc hides the thumbnails */
+.lightbox.thumbs-hidden{--th:0px}
+.lightbox.thumbs-hidden .lb-strip{opacity:0;transform:translateY(110%);pointer-events:none}
+/* arrow on the line between photo and text */
+.lb-nav{transition:background .22s,border-color .22s,transform .22s,opacity .25s,right .85s cubic-bezier(.22,.61,.36,1)}
+.lightbox.info-hidden #lbNext{right:40px}
+.lb-tog{position:absolute;z-index:7;top:calc((100% - var(--th))/2);right:33.3333%;transform:translate(50%,-50%);width:26px;height:64px;border-radius:6px;background:rgba(0,0,0,.55);transition:right .85s cubic-bezier(.22,.61,.36,1),top .85s cubic-bezier(.22,.61,.36,1),background .22s,border-color .22s,opacity .3s}
+.lb-tog:hover{transform:translate(50%,-50%)}
+.lb-tog i{font-size:12px;transition:transform .5s ease}
+.lightbox.info-hidden .lb-tog,.lightbox.info-hidden .lb-tog:hover{right:0;transform:translate(0,-50%)}
+.lightbox.info-hidden .lb-tog i{transform:rotate(180deg)}
+.lightbox.video-on .lb-tog,.lightbox.no-photos .lb-tog{opacity:0;pointer-events:none}
 
 @media(max-width:820px){
   .lightbox{--th:80px}
@@ -243,6 +259,14 @@ body.theme-effective-dark .pick{border-color:#3a3c3c;color:#c7c5c2}
   .lb-nav{width:38px;height:38px}
   #lbPrev{left:8px}#lbNext{right:8px}
   .lb-top{padding:0 13px}
+  .lb-strip{width:100%}
+  .lightbox.info-hidden .lb-stage{bottom:var(--th)}
+  .lightbox.info-hidden .lb-text{transform:translateY(40px)}
+  .lightbox.info-hidden #lbNext{right:8px}
+  .lb-tog,.lb-tog:hover{top:auto;right:50%;bottom:calc(var(--th) + 38%);transform:translate(50%,50%);width:64px;height:26px;transition:bottom .85s cubic-bezier(.22,.61,.36,1),background .22s,opacity .3s}
+  .lb-tog i{transform:rotate(90deg)}
+  .lightbox.info-hidden .lb-tog,.lightbox.info-hidden .lb-tog:hover{right:50%;bottom:var(--th);transform:translate(50%,0)}
+  .lightbox.info-hidden .lb-tog i{transform:rotate(-90deg)}
 }
 </style>
 <style>
@@ -303,7 +327,7 @@ body.theme-effective-dark .mcard-desc{color:#c7c5c2}
       <p class="hint">YouTube, Vimeo, Facebook, Google Drive or a direct .mp4 link. Opens inside the photo viewer.</p>
     </div>
     <div class="fld">
-      <label>Photos <small id="photoCount">0 / 20</small></label>
+      <label>Photos <small id="photoCount">0 / 10</small></label>
       <button type="button" class="pick" onclick="$('fFiles').click()"><i class="fa-solid fa-cloud-arrow-up"></i> Choose photos</button>
       <input id="fFiles" type="file" accept="image/*" multiple hidden onchange="addFiles(this)">
       <div id="thumbs" class="thumbs"></div>
@@ -371,7 +395,7 @@ document.body.insertAdjacentHTML('beforeend', `
     <div class="pb-10"></div>
   </div>
 </div>
-<div id="lightbox" class="lightbox" aria-hidden="true">
+<div id="lightbox" class="lightbox" aria-hidden="true" tabindex="-1">
   <div class="lb-top">
     <div id="lbCount" class="lb-count">1 / 1</div>
     <div class="lb-actions">
@@ -388,6 +412,7 @@ document.body.insertAdjacentHTML('beforeend', `
     <button id="lbNext" class="lb-btn lb-nav" type="button" aria-label="Next photo" onclick="lbStep(1)"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
   <aside id="lbText" class="lb-text"></aside>
+  <button id="lbTog" class="lb-btn lb-tog" type="button" title="Hide details" aria-label="Hide details" onclick="lbToggleInfo()"><i class="fa-solid fa-chevron-right"></i></button>
   <div id="lbThumbs" class="lb-strip" aria-label="Photo thumbnails"></div>
 </div>
 <div id="confirmModal" class="md-bg"><div class="md-box sm">
@@ -588,7 +613,7 @@ initAuthState();
 
 </script>
 <script>
-const MAX_PHOTOS = 20;
+const MAX_PHOTOS = 10;
 /* ===== DEMO MODE =====
    true  = sample data below, nothing is saved (to preview the design)
    false = real data from Supabase. Then delete DEMO_MOMENTS too. */
@@ -803,6 +828,15 @@ function videoHtml(url) {
   return `<div class="lb-vframe"><iframe src="${esc(src)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
           <a class="lb-vopen" href="${esc(u)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open in new tab</a>`;
 }
+function lbFocusBox() { try { $('lightbox').focus({ preventScroll: true }); } catch (e) {} }
+window.addEventListener('blur', () => setTimeout(() => {      /* video iframe grabbed focus -> take it back so Esc works */
+  const b = $('lightbox'), a = document.activeElement;
+  if (b && b.classList.contains('open') && a && a.tagName === 'IFRAME' && b.contains(a)) lbFocusBox();
+}, 0));
+function lbToggleInfo() {
+  const hidden = $('lightbox').classList.toggle('info-hidden'), b = $('lbTog');
+  b.title = hidden ? 'Show details' : 'Hide details'; b.setAttribute('aria-label', b.title);
+}
 function lbSetVideoBtn(on) {
   const b = $('lbVideoBtn');
   b.innerHTML = `<i class="fa-solid ${on ? 'fa-image' : 'fa-video'}"></i>`;
@@ -815,6 +849,9 @@ function lbToggleVideo() {
     lbVMode = true;
     if (lbAnim) { lbCancel(); lbReset(); lbCounter(); }
     $('lbVideoLayer').innerHTML = videoHtml(lbVideo);
+    const ifr = $('lbVideoLayer').querySelector('iframe');
+    if (ifr) ifr.addEventListener('load', () => setTimeout(lbFocusBox, 60));   /* keep keyboard focus so Esc works */
+    lbFocusBox();
     box.classList.add('video-on');                                   /* video appears where the photo was */
     lbVT = setTimeout(() => box.classList.add('video-mode'), 450);   /* then slides to the center, text fades out */
     lbSetVideoBtn(true);
@@ -839,7 +876,8 @@ function openMoment(id, i) {
   const box = $('lightbox');
   clearTimeout(lbVT); lbCancel();
   lbImgs = m.photos.slice(); lbPre = []; lbVideo = m.link_url || ''; lbVMode = false;
-  box.classList.remove('video-on', 'video-mode'); box.classList.toggle('no-photos', none);
+  box.classList.remove('video-on', 'video-mode', 'thumbs-hidden', 'info-hidden'); box.classList.toggle('no-photos', none);
+  $('lbTog').title = 'Hide details'; $('lbTog').setAttribute('aria-label', 'Hide details');
   $('lbVideoLayer').innerHTML = '';
   $('lbVideoBtn').style.display = (lbVideo && !none) ? 'flex' : 'none'; lbSetVideoBtn(false);
   $('lbDlBtn').style.display = none ? 'none' : 'flex';
@@ -855,11 +893,10 @@ function openMoment(id, i) {
 function closeLightbox() {
   const box = $('lightbox');
   clearTimeout(lbVT); lbCancel(); lbReset(); lbVMode = false;
-  box.classList.remove('open', 'video-on', 'video-mode'); box.setAttribute('aria-hidden', 'true');
+  box.classList.remove('open', 'video-on', 'video-mode', 'thumbs-hidden', 'info-hidden'); box.setAttribute('aria-hidden', 'true');
   $('lbVideoLayer').innerHTML = '';                      /* stops the video */
   document.body.style.overflow = '';
 }
-$('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox' || e.target.id === 'lbStage') closeLightbox(); });
 (() => { let x = 0, skip = false, b = $('lightbox');
   b.addEventListener('touchstart', e => { x = e.changedTouches[0].clientX; skip = !!e.target.closest('.lb-text'); }, { passive: true });
   b.addEventListener('touchend', e => { if (skip || lbVMode) return; const d = e.changedTouches[0].clientX - x; if (Math.abs(d) > 50) lbStep(d < 0 ? 1 : -1); }, { passive: true }); })();
@@ -875,7 +912,13 @@ $('lightbox').addEventListener('wheel', e => {
 }, { passive: false });
 document.addEventListener('keydown', e => {
   if (!$('lightbox').classList.contains('open')) return;
-  if (e.key === 'Escape') { closeLightbox(); return; }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    const bx = $('lightbox'), hasPh = !bx.classList.contains('no-photos');
+    if (hasPh && lbVMode) { lbToggleVideo(); return; }                              /* 1) video -> photo */
+    if (hasPh && !bx.classList.contains('thumbs-hidden')) { bx.classList.add('thumbs-hidden'); return; }  /* 2) hide thumbnails */
+    closeLightbox(); return;                                                        /* 3) close */
+  }
   if (lbVMode) return;
   if (e.key === 'ArrowRight') { e.preventDefault(); lbStep(1); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); lbStep(-1); }
