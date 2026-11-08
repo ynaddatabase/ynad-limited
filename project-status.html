@@ -2951,11 +2951,18 @@ html body #allProjectsGrid .recent-project-card.search-hit{
                     if (!isNaN(costMax) && (getCost(p) == null || Number(getCost(p)) > costMax)) return false;
                 }
 
-                if (dateMode === 'exact') {
+                                if (dateMode === 'exact') {
                     if (dateExact && p.opening_date !== dateExact) return false;
                 } else {
                     if (dateMin && (!p.opening_date || p.opening_date < dateMin)) return false;
                     if (dateMax && (!p.opening_date || p.opening_date > dateMax)) return false;
+                }
+
+                // Search: shudhu TABLE mode-e row filter kore
+                if (currentView === 'table' && searchQuery) {
+                    const tokens = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+                    const text = buildProjectSearchText(p);
+                    if (!tokens.every(t => text.includes(t))) return false;
                 }
 
                 return true;
