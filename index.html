@@ -2083,6 +2083,21 @@ body.theme-effective-dark .files-menu-link:hover > i{
 .files-menu .files-menu-item.open{
     background:transparent !important;
 }
+        /* ===== SEARCH HIT HIGHLIGHT ===== */
+/* scale korle slider-er top/side clip na hoy, tai ektu padding */
+#mainProjectSlider{
+    padding: 14px 12px 24px;
+    margin: -14px -12px 0;
+}
+html body #projects .recent-project-card.search-hit{
+    transform: scale(1.07) !important;
+    z-index: 150 !important;
+    transition-delay: 0s !important;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), opacity .7s ease, box-shadow .3s ease !important;
+    outline: 2px solid rgba(217,119,6,.55);
+    outline-offset: 0;
+    box-shadow: 0 22px 48px rgba(15,23,42,.28) !important;
+}
 </style>
 </head>
 
