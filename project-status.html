@@ -3146,17 +3146,27 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             }
         }
 
+                let lastTableSig = null;
+
         function renderProjectTable(projects) {
             const thead = document.querySelector('#projectsTable thead');
             const tbody = document.querySelector('#projectsTable tbody');
             thead.innerHTML = '<tr>' + TABLE_COLUMNS.map(c => `<th>${headHtml(c)}</th>`).join('') + '</tr>';
 
+            // Row-er list bodlale (search dile / muchle / tab bodlale) animation cholbe.
+            // List ek thakle (jemon extra letter dilew same result) abar animate hobe na.
+            const sig = projects.map(p => p.id).join(',');
+            const animate = sig !== lastTableSig;
+            lastTableSig = sig;
+            tbody.classList.toggle('row-anim', animate);
+
             if (!projects.length) {
-                tbody.innerHTML = `<tr><td colspan="${TABLE_COLUMNS.length}" style="text-align:center;padding:40px;">No projects match the selected filters.</td></tr>`;
+                tbody.innerHTML = `<tr style="--d:0s"><td colspan="${TABLE_COLUMNS.length}" style="text-align:center;padding:40px;">No projects match the selected filters.</td></tr>`;
                 return;
             }
             tbody.innerHTML = tableRowsData(projects)
-                .map(row => '<tr>' + row.map(lines => `<td>${cellHtml(lines)}</td>`).join('') + '</tr>')
+                .map((row, i) => `<tr style="--d:${Math.min(i * 0.04, 0.9).toFixed(2)}s">` +
+                    row.map(lines => `<td>${cellHtml(lines)}</td>`).join('') + '</tr>')
                 .join('');
         }
 
