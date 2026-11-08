@@ -3163,9 +3163,12 @@ function buildProjectSearchText(p) {
     return parts.join(' | ');
 }
 
+let searchRingTimer = null;
+
 function clearSearchHighlights() {
-    document.querySelectorAll('#mainProjectSlider .search-hit')
-        .forEach(c => c.classList.remove('search-hit'));
+    clearTimeout(searchRingTimer);
+    document.querySelectorAll('#mainProjectSlider .search-hit, #mainProjectSlider .search-pop')
+        .forEach(c => c.classList.remove('search-hit', 'search-pop'));
     const fb = document.getElementById('searchResultFeedback');
     if (fb) fb.classList.add('hidden');
 }
