@@ -3123,8 +3123,11 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             if (currentView === 'table') playTableAnimation();
         }
 
-        function playTableAnimation() {
+                function playTableAnimation() {
             const t = document.getElementById('projectsTable');
+            // Card -> Table switch e agei puro table-er animation ache, tai row animation bondho
+            const tb = t.querySelector('tbody');
+            if (tb) tb.classList.remove('row-anim');
             t.classList.remove('table-anim');
             void t.offsetWidth;
             t.classList.add('table-anim');
