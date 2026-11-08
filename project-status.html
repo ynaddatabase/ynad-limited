@@ -1409,6 +1409,32 @@
         .files-menu .files-menu-item.open{
             background:transparent !important;
         }
+    /* ===== TABLE ROW ANIMATION on search / filter ===== */
+.projects-table tbody.row-anim td{
+    animation: pmRowIn .45s cubic-bezier(.22,1,.36,1) both;
+    animation-delay: var(--d, 0s);
+}
+@keyframes pmRowIn{
+    from{ opacity:0; transform:translateY(-12px); }
+    to{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){
+    .projects-table tbody.row-anim td{ animation:none; }
+}
+
+/* ===== SEARCH HIT HIGHLIGHT (card mode) ===== */
+html body #allProjectsGrid .recent-project-card.search-pop{
+    transform: scale(1.07) !important;
+    z-index: 150 !important;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .3s ease !important;
+    box-shadow: 0 22px 48px rgba(15,23,42,.28) !important;
+}
+html body #allProjectsGrid .recent-project-card.search-hit{
+    transform: none !important;
+    z-index: 150 !important;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .3s ease !important;
+    box-shadow: 0 0 0 2px #d97706, 0 14px 30px rgba(15,23,42,.18) !important;
+}
     </style>
 </head>
 
