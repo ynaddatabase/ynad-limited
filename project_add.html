@@ -76,8 +76,23 @@ tailwind.config = {
   html.light .orgbox { background:#fff; }
   .mm-track { position:relative; width:48px; height:24px; border-radius:999px; background:rgba(255,140,0,.3); border:1px solid rgba(255,140,0,.5); }
   .mm-knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#ff8c00; transition: transform .25s ease; }
-  #mediaModeToggle[aria-checked="true"] .mm-knob, #contactRoleToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
+  .mtoggle[aria-checked="true"] .mm-knob, #contactRoleToggle[aria-checked="true"] .mm-knob { transform: translateX(24px); }
   textarea.tabbed { tab-size: 4; white-space: pre; overflow-x: auto; }
+
+  /* ---- Photo grid (cover star + drag order) ---- */
+  .thumbs { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:10px; margin-top:12px; }
+  .th { position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:rgba(255,255,255,.08); border:2px solid transparent; cursor:grab; transition:opacity .2s, transform .2s, border-color .2s; }
+  .th.cover { border-color:#ff8c00; box-shadow:0 0 14px rgba(255,140,0,.35); }
+  .th.dragging { opacity:.35; transform:scale(.94); }
+  .th.over { border-color:#38bdf8; }
+  .th img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+  .th button { position:absolute; width:24px; height:24px; border:0; border-radius:50%; background:rgba(0,0,0,.65); color:#fff; font-size:10px; cursor:pointer; }
+  .th .rm { top:4px; right:4px; } .th .st { top:4px; left:4px; }
+  .th button:hover { background:#ea580c; } .th .rm:hover { background:#dc2626; }
+  .th.cover .st { background:#ff8c00; color:#000; }
+  .th .no { position:absolute; left:4px; bottom:4px; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:rgba(0,0,0,.7); color:#fff; font:700 10px/20px sans-serif; text-align:center; pointer-events:none; }
+  .th .cvtag { position:absolute; right:4px; bottom:4px; height:20px; padding:0 7px; border-radius:10px; background:#ff8c00; color:#000; font:800 9px/20px sans-serif; letter-spacing:.05em; pointer-events:none; }
+
   /* ---- LIGHT MODE ---- */
   html.light body { background-color:#fff7ed; color:#1c1917;
     background-image: radial-gradient(at 0% 0%, rgba(234,88,12,0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255,140,0,0.10) 0px, transparent 50%); }
@@ -91,7 +106,8 @@ tailwind.config = {
   html.light #formProgressTrack { background:rgba(0,0,0,0.08); }
   html.light #formProgressLabel { color:#1c1917; text-shadow:none; }
   html.light .hint { color:#57534e !important; }
-  html.light #mediaModeToggle, html.light #contactRoleToggle { color:#1c1917; }
+  html.light .mtoggle, html.light #contactRoleToggle { color:#1c1917; }
+  html.light .th { background:rgba(0,0,0,.06); }
   /* Edit-mode / existing-project banner: black text in light mode */
   html.light #existingBanner { color:#000000 !important; background:rgba(245,158,11,0.15); border-color:rgba(180,83,9,0.5); }
   html.light #existingBanner i,
@@ -305,44 +321,52 @@ tailwind.config = {
 
       <!-- 06 Media -->
       <section class="glass-panel rounded-3xl p-6 sm:p-8">
-        <div class="flex items-center justify-between gap-3 mb-4 pb-2 border-b border-orange-500/20">
-          <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500">06. Media, Photos & Documents</h3>
-          <button type="button" id="mediaModeToggle" role="switch" aria-checked="false" title="Switch between file upload and link paste" class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer">
-            <span id="mmUp" class="text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span>
-            <span class="mm-track"><span class="mm-knob"></span></span>
-            <span id="mmLink"><i class="fa-solid fa-link mr-1"></i>Link</span>
-          </button>
-        </div>
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">06. Media, Photos & Documents</h3>
         <div class="grid sm:grid-cols-2 gap-5">
           <div class="sm:col-span-2 flex items-center gap-2">
             <span class="label mb-0">Media Category</span>
             <span id="mediaCatChip" class="text-[11px] font-extrabold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-0.5 rounded-full">—</span>
           </div>
-          <div class="sm:col-span-2">
-            <label class="label mlabel" data-up="Documents (PDF / JPG / PNG)" data-link="Documents Link">Documents (PDF / JPG / PNG)</label>
+
+          <!-- Documents -->
+          <div class="sm:col-span-2 mfield" data-key="docs">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label class="label mb-0">Documents (PDF / JPG / PNG)</label>
+              <button type="button" class="mtoggle flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer" role="switch" aria-checked="false" title="Switch between file upload and link paste"><span class="mt-up text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span><span class="mm-track"><span class="mm-knob"></span></span><span class="mt-link"><i class="fa-solid fa-link mr-1"></i>Link</span></button>
+            </div>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pDocs" type="file" accept=".pdf,image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pDocsLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE DOCUMENT LINK"></div>
           </div>
-          <div id="fieldReport" class="sm:col-span-2 hidden">
-            <label class="label mlabel" data-up="Report (PDF Only)" data-link="Report Link">Report (PDF Only)</label>
+
+          <!-- Report -->
+          <div id="fieldReport" class="sm:col-span-2 hidden mfield" data-key="report">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label class="label mb-0">Report (PDF Only)</label>
+              <button type="button" class="mtoggle flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer" role="switch" aria-checked="false" title="Switch between file upload and link paste"><span class="mt-up text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span><span class="mm-track"><span class="mm-knob"></span></span><span class="mt-link"><i class="fa-solid fa-link mr-1"></i>Link</span></button>
+            </div>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pReport" type="file" accept=".pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pReportLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE REPORT LINK"></div>
           </div>
-          <div id="fieldCPhoto" class="sm:col-span-2 hidden">
-            <label class="label mlabel" data-up="C-Photo (Single Photo)" data-link="C-Photo Link">C-Photo (Single Photo)</label>
-            <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose File</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pCPhoto" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
-            <div data-mode="link" class="hidden"><input id="pCPhotoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE C-PHOTO LINK"></div>
-          </div>
-          <div class="sm:col-span-2">
-            <label class="label mlabel" data-up="Photos (Max 15 Qty)" data-link="Photos Link">Photos (Max 15 Qty)</label>
+
+          <!-- Photos (cover star + drag order) -->
+          <div class="sm:col-span-2 mfield" data-key="photos">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label class="label mb-0">Photos (Max 12 Qty) <span id="photoCount" class="hint text-zinc-400 normal-case font-bold ml-1">0 / 12</span></label>
+              <button type="button" class="mtoggle flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer" role="switch" aria-checked="false" title="Switch between file upload and link paste"><span class="mt-up text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span><span class="mm-track"><span class="mm-knob"></span></span><span class="mt-link"><i class="fa-solid fa-link mr-1"></i>Link</span></button>
+            </div>
             <div data-mode="upload">
-              <label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label>
-              <p class="hint text-[10px] text-zinc-400 mt-1">YOU CAN SELECT UP TO 15 IMAGES SIMULTANEOUSLY.</p>
+              <label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden"><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Choose Photos</span><span class="text-xs opacity-70">UP TO 12 IMAGES</span><input id="pPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label>
             </div>
             <div data-mode="link" class="hidden">
-              <input id="pPhotosLink" type="text" class="no-upper mf field w-full rounded-xl" placeholder="PASTE PHOTO LINKS — SEPARATE WITH COMMA OR SPACE">
+              <div class="flex gap-2">
+                <input id="pPhotosLink" type="text" class="no-upper mf field w-full rounded-xl" placeholder="PASTE PHOTO LINKS — SEPARATE WITH COMMA OR SPACE, THEN PRESS ADD">
+                <button type="button" id="photoLinkAdd" class="px-5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 text-black font-black text-xs uppercase tracking-widest cursor-pointer whitespace-nowrap">Add</button>
+              </div>
             </div>
+            <div id="photoThumbs" class="thumbs hidden"></div>
+            <p class="hint text-[10px] text-zinc-400 mt-2">DRAG PHOTOS TO CHANGE THE ORDER. PHOTOS SHOW IN THIS SERIAL ORDER. FIRST PHOTO IS THE COVER (★ = MAKE COVER).</p>
           </div>
+
           <div class="sm:col-span-2">
             <label class="label">Video (YouTube Embed Link)</label>
             <input id="pVideo" type="url" class="mf field w-full rounded-xl" placeholder="HTTPS://WWW.YOUTUBE.COM/WATCH?V=...">
@@ -354,13 +378,19 @@ tailwind.config = {
       <section id="section5RawMedia" class="glass-panel rounded-3xl p-6 sm:p-8 hidden">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-orange-500 mb-4 pb-2 border-b border-orange-500/20">07. Raw Media (Photos & Videos)</h3>
         <div class="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label class="label mlabel" data-up="Raw Photos" data-link="Raw Photos Link">Raw Photos</label>
+          <div class="mfield" data-key="rawPhotos">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label class="label mb-0">Raw Photos</label>
+              <button type="button" class="mtoggle flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer" role="switch" aria-checked="false" title="Switch between file upload and link paste"><span class="mt-up text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span><span class="mm-track"><span class="mm-knob"></span></span><span class="mt-link"><i class="fa-solid fa-link mr-1"></i>Link</span></button>
+            </div>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawPhotos" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pRawPhotosLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW PHOTOS FOLDER/DRIVE LINK"></div>
           </div>
-          <div>
-            <label class="label mlabel" data-up="Raw Videos" data-link="Raw Videos Link">Raw Videos</label>
+          <div class="mfield" data-key="rawVideos">
+            <div class="flex items-center justify-between gap-3 mb-1.5">
+              <label class="label mb-0">Raw Videos</label>
+              <button type="button" class="mtoggle flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-zinc-200 cursor-pointer" role="switch" aria-checked="false" title="Switch between file upload and link paste"><span class="mt-up text-orange-400"><i class="fa-solid fa-upload mr-1"></i>Upload</span><span class="mm-track"><span class="mm-knob"></span></span><span class="mt-link"><i class="fa-solid fa-link mr-1"></i>Link</span></button>
+            </div>
             <div data-mode="upload"><label class="mf field w-full rounded-xl flex items-center gap-3 relative cursor-pointer overflow-hidden" data-file><span class="bg-orange-500/20 text-orange-400 font-bold text-[11px] rounded-lg px-3 py-1.5 whitespace-nowrap">Choose Files</span><span class="fname truncate text-xs">NO FILE CHOSEN</span><input id="pRawVideos" type="file" accept="video/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></label></div>
             <div data-mode="link" class="hidden"><input id="pRawVideoLink" type="url" class="mf field w-full rounded-xl" placeholder="PASTE RAW VIDEOS LINK"></div>
           </div>
@@ -389,6 +419,12 @@ tailwind.config = {
 
 <script>
 const $ = id => document.getElementById(id);
+
+/* ---- Shared state: photos + per-field upload/link modes ---- */
+const MAX_PHOTOS = 12;
+let photoItems = [];            /* [{url, old?} | {file, preview}]  — order = serial order, first = cover */
+let photosLoadedFor = null;     /* id of the existing project whose old photos are loaded in the grid */
+const modes = { docs: 'upload', report: 'upload', photos: 'upload', rawPhotos: 'upload', rawVideos: 'upload' };
 
 /* ---- Tell the parent page (index popup) what happened ----
    The parent must refresh ONLY when it receives type "saved".
@@ -497,8 +533,8 @@ function showExisting() {
   if (existing) {
     const by = existingMatchedBy ? ` [MATCHED BY ${existingMatchedBy}]` : '';
     $('existingText').textContent = editRecord
-      ? `EDIT MODE: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). EMPTY TEXT FIELDS WILL BE CLEARED. NEW PHOTOS, REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`
-      : `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()})${by}. SAVE WILL UPDATE IT — NEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
+      ? `EDIT MODE: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()}). EMPTY TEXT FIELDS WILL BE CLEARED. OLD PHOTOS ARE IN THE PHOTO GRID (REORDER / REMOVE / CHANGE COVER). NEW REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`
+      : `EXISTING PROJECT FOUND: ${existing.project_name || existing.bd_number} (${(existing.status || '').toUpperCase()})${by}. SAVE WILL UPDATE IT — OLD PHOTOS ARE IN THE PHOTO GRID, NEW REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES. EMPTY FIELDS KEEP OLD VALUES.`;
   }
 }
 function scheduleExistingCheck() {
@@ -562,7 +598,7 @@ function applyAutoFill(f, by) {
 async function checkExisting() {
   if (editRecord) { existing = editRecord; showExisting(); return; }
   const bd = bdHiddenInput.value, ho = hoHiddenInput.value;
-  if (!bd && !ho) { clearAutoFill(); existing = null; existingMatchedBy = ''; showExisting(); return; }
+  if (!bd && !ho) { clearAutoFill(); existing = null; existingMatchedBy = ''; syncOldPhotos(null); showExisting(); return; }
   let found = null, by = '';
   try {
     /* Search the field the user edited last first, then the other one */
@@ -577,6 +613,7 @@ async function checkExisting() {
   } catch (e) { found = null; by = ''; }
   existing = found; existingMatchedBy = by;
   if (found) applyAutoFill(found, by); else clearAutoFill();
+  syncOldPhotos(found);
   showExisting();
 }
 
@@ -601,40 +638,138 @@ function updateTimelineFieldsVisibility() {
 statusSelect.addEventListener('change', () => { updateTimelineFieldsVisibility(); updateMediaUI(); });
 updateTimelineFieldsVisibility();
 
-/* ---- Media category (from Status); C-Photo only for Opening; Report for Ongoing/Opening ---- */
+/* ---- Media category (from Status); Report for Ongoing/Opening ---- */
 const MEDIA_MAP = { Ongoing: 'Ongoing', Completed: 'Opening', Upcoming: 'Proposal' };
 const mediaTypeSelect = { get value() { return MEDIA_MAP[statusSelect.value] || ''; } };
-let mediaMode = 'upload';
-const fieldCPhoto = $('fieldCPhoto'), modeToggle = $('mediaModeToggle');
 
 function updateMediaUI() {
-  const showC = mediaTypeSelect.value === 'Opening';
-  fieldCPhoto.classList.toggle('hidden', !showC);
-  if (!showC) { $('pCPhoto').value = ''; $('pCPhotoLink').value = ''; }
   const showReport = ['Ongoing', 'Opening'].includes(mediaTypeSelect.value);
   $('fieldReport').classList.toggle('hidden', !showReport);
   if (!showReport) { $('pReport').value = ''; $('pReportLink').value = ''; }
   $('mediaCatChip').textContent = (mediaTypeSelect.value || '—').toUpperCase();
-  document.querySelectorAll('[data-mode]').forEach(el => {
-    const on = el.dataset.mode === mediaMode;
-    el.classList.toggle('hidden', !on);
-    if (!on) el.querySelectorAll('input, textarea').forEach(i => i.value = '');
-  });
-  modeToggle.setAttribute('aria-checked', mediaMode === 'link');
-  $('mmUp').classList.toggle('text-orange-400', mediaMode === 'upload');
-  $('mmLink').classList.toggle('text-orange-400', mediaMode === 'link');
-  document.querySelectorAll('.mlabel').forEach(l => l.textContent = mediaMode === 'link' ? l.dataset.link : l.dataset.up);
   refreshFileLabels();
   updateFormProgress();
 }
 function refreshFileLabels() {
   document.querySelectorAll('[data-file]').forEach(l => {
-    const f = l.querySelector('input').files;
-    l.querySelector('.fname').textContent = !f.length ? 'NO FILE CHOSEN' : f.length > 1 ? `${f.length} FILES` : f[0].name;
+    const f = l.querySelector('input').files, n = l.querySelector('.fname');
+    if (!n) return;
+    n.textContent = !f.length ? 'NO FILE CHOSEN' : f.length > 1 ? `${f.length} FILES` : f[0].name;
   });
 }
 document.addEventListener('change', e => { if (e.target.type === 'file') refreshFileLabels(); });
-modeToggle.addEventListener('click', () => { mediaMode = mediaMode === 'upload' ? 'link' : 'upload'; updateMediaUI(); });
+
+/* ---- Per-field Upload / Link switch ---- */
+function setMode(key, mode) {
+  modes[key] = mode;
+  const f = document.querySelector(`.mfield[data-key="${key}"]`); if (!f) return;
+  f.querySelectorAll('[data-mode]').forEach(el => {
+    const on = el.dataset.mode === mode;
+    el.classList.toggle('hidden', !on);
+    if (!on) el.querySelectorAll('input').forEach(i => i.value = '');
+  });
+  const t = f.querySelector('.mtoggle');
+  t.setAttribute('aria-checked', mode === 'link');
+  t.querySelector('.mt-up').classList.toggle('text-orange-400', mode === 'upload');
+  t.querySelector('.mt-link').classList.toggle('text-orange-400', mode === 'link');
+  refreshFileLabels();
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('.mtoggle'); if (!t) return;
+  const key = t.closest('.mfield').dataset.key;
+  setMode(key, modes[key] === 'upload' ? 'link' : 'upload');
+  updateFormProgress();
+  if (typeof updateSaveState === 'function') updateSaveState();
+});
+
+/* ---- Photos grid: add / cover star / remove / drag order ---- */
+function renderThumbs() {
+  const box = $('photoThumbs');
+  box.classList.toggle('hidden', !photoItems.length);
+  box.innerHTML = photoItems.map((it, i) => `
+    <div class="th ${i === 0 ? 'cover' : ''}" draggable="true" data-i="${i}"><img src="${escHtml(it.url || it.preview)}" alt="" draggable="false">
+      <span class="no">${i + 1}</span>${i === 0 ? '<span class="cvtag">COVER</span>' : ''}
+      <button type="button" class="st" title="Make cover" onclick="makeCover(${i})"><i class="fa-solid fa-star"></i></button>
+      <button type="button" class="rm" title="Remove" onclick="removeThumb(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+  const c = $('photoCount');
+  c.textContent = photoItems.length + ' / ' + MAX_PHOTOS;
+  c.style.color = photoItems.length > MAX_PHOTOS ? '#ef4444' : '';
+  updateFormProgress();
+  if (typeof updateSaveState === 'function') updateSaveState();
+}
+function makeCover(i) { const [it] = photoItems.splice(i, 1); photoItems.unshift(it); renderThumbs(); }
+function removeThumb(i) {
+  const [it] = photoItems.splice(i, 1);
+  if (it && it.preview) try { URL.revokeObjectURL(it.preview); } catch (e) {}
+  renderThumbs();
+}
+$('pPhotos').addEventListener('change', function () {
+  const files = [...this.files]; this.value = '';
+  let over = false;
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    if (photoItems.length >= MAX_PHOTOS) { over = true; break; }
+    photoItems.push({ file: f, preview: URL.createObjectURL(f) });
+  }
+  renderThumbs();
+  if (over) alert('MAXIMUM ' + MAX_PHOTOS + ' PHOTOS ALLOWED!');
+});
+function addPhotoLinks() {
+  const inp = $('pPhotosLink');
+  const links = inp.value.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+  if (!links.length) return;
+  let bad = 0, over = false;
+  for (const u of links) {
+    if (!/^https?:\/\//i.test(u)) { bad++; continue; }
+    if (photoItems.some(i => i.url === u)) continue;
+    if (photoItems.length >= MAX_PHOTOS) { over = true; break; }
+    photoItems.push({ url: u });
+  }
+  inp.value = '';
+  renderThumbs();
+  if (over) alert('MAXIMUM ' + MAX_PHOTOS + ' PHOTOS ALLOWED!');
+  if (bad) alert('SOME LINKS WERE SKIPPED — THEY MUST START WITH HTTP:// OR HTTPS://');
+}
+$('photoLinkAdd').addEventListener('click', addPhotoLinks);
+$('pPhotosLink').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPhotoLinks(); } });
+
+/* drag & drop to reorder */
+(() => {
+  const box = $('photoThumbs'); let from = null;
+  const clearCls = () => box.querySelectorAll('.th').forEach(t => t.classList.remove('dragging', 'over'));
+  box.addEventListener('dragstart', e => {
+    const t = e.target.closest('.th'); if (!t) return;
+    from = +t.dataset.i; t.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(from)); } catch (err) {}
+  });
+  box.addEventListener('dragover', e => {
+    if (from === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    const t = e.target.closest('.th');
+    box.querySelectorAll('.th.over').forEach(x => { if (x !== t) x.classList.remove('over'); });
+    if (t && +t.dataset.i !== from) t.classList.add('over');
+  });
+  box.addEventListener('drop', e => {
+    if (from === null) return; e.preventDefault();
+    const t = e.target.closest('.th'), to = t ? +t.dataset.i : null;
+    if (to !== null && to !== from) { const [it] = photoItems.splice(from, 1); photoItems.splice(to, 0, it); }
+    from = null; renderThumbs();
+  });
+  box.addEventListener('dragend', () => { from = null; clearCls(); });
+})();
+
+/* Old photos of an existing project go into the grid (so they can be reordered / removed) */
+function syncOldPhotos(rec) {
+  const id = rec ? rec.id : null;
+  if (id === photosLoadedFor) return;
+  photoItems = photoItems.filter(i => !i.old);
+  if (rec) {
+    const have = new Set(photoItems.map(i => i.url).filter(Boolean));
+    const olds = (rec.photo_urls || []).filter(u => u && !have.has(u)).map(url => ({ url, old: true }));
+    photoItems = [...olds, ...photoItems];
+  }
+  photosLoadedFor = id;
+  renderThumbs();
+}
 
 /* ---- Single Lat,Lng box -> auto address ---- */
 let geoTimer = null, geoSeq = 0;
@@ -747,14 +882,17 @@ $('orgSave').addEventListener('click', () => {
 /* ---- Progress bar ---- */
 const formProgressFill = $('formProgressFill'), formProgressLabel = $('formProgressLabel'), projectFormEl = $('projectForm');
 function updateFormProgress() {
+  const skip = ['pPhotos', 'pPhotosLink'];   /* photos are counted once, through the grid */
   const tracked = Array.from(projectFormEl.querySelectorAll('input, select, textarea'))
-    .filter(el => el.type !== 'hidden' && !el.disabled && !el.closest('.hidden'));
+    .filter(el => el.type !== 'hidden' && !el.disabled && !el.closest('.hidden') && !skip.includes(el.id));
   let filled = 0;
   tracked.forEach(el => {
     if (el.type === 'file') { if (el.files && el.files.length) filled++; }
     else if (el.value && el.value.trim() !== '') filled++;
   });
-  const p = tracked.length ? Math.round(filled / tracked.length * 100) : 0;
+  const total = tracked.length + 1;
+  if (photoItems.length) filled++;
+  const p = Math.round(filled / total * 100);
   formProgressFill.style.width = p + '%';
   formProgressLabel.textContent = p + '%';
 }
@@ -779,10 +917,14 @@ function resetUI() {
   baseSnap = null; saveBtn.disabled = false;
   delayReasonContainer.classList.add('hidden');
   geoStatus.textContent = 'PASTE LATITUDE & LONGITUDE — ADDRESS FIELDS WILL FILL AUTOMATICALLY (YOU CAN EDIT THEM).';
+  photoItems.forEach(i => { if (i.preview) try { URL.revokeObjectURL(i.preview); } catch (e) {} });
+  photoItems = []; photosLoadedFor = null;
+  Object.keys(modes).forEach(k => setMode(k, 'upload'));
   updateTimelineFieldsVisibility();
   updateMediaUI();
   setContactRole('Responsible');
   renderInfoPreview();
+  renderThumbs();
 }
 $('clearFormBtn').addEventListener('click', resetUI);
 
@@ -795,42 +937,52 @@ projectFormEl.addEventListener('submit', async function (e) {
   syncBdHiddenValue(); syncHoHiddenValue();
   if ($('pCoords').value.trim() && !parseCoords()) { alert('INVALID LATITUDE, LONGITUDE! EXAMPLE: 23.810331, 90.412521'); return; }
 
-  const photoLinks = $('pPhotosLink').value.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-  if (mediaMode === 'upload' && $('pPhotos').files.length > 15) { alert('MAXIMUM 15 PHOTOS IN UPLOAD MODE!'); return; }
+  addPhotoLinks();   /* links pasted but not yet added */
 
   await checkExisting();
+  if (photoItems.length > MAX_PHOTOS) { alert('MAXIMUM ' + MAX_PHOTOS + ' PHOTOS ALLOWED! PLEASE REMOVE ' + (photoItems.length - MAX_PHOTOS) + ' PHOTO(S).'); return; }
   if (existing && !editRecord) {
     const label = existingMatchedBy === 'HO-NUMBER' ? existing.ho_number : existing.bd_number;
-    if (!confirm(`"${label}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT, PHOTOS & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
+    if (!confirm(`"${label}" ALREADY EXISTS (${existing.project_name || ''}).\n\nUPDATE THE EXISTING PROJECT?\nNEW REPORT & RAW MEDIA WILL BE ADDED TO THE OLD ONES.`)) return;
   }
 
   const btn = document.querySelector('#projectForm button[type="submit"]');
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
 
-  let documentsUrl = null, cPhotoUrl = null, reportUrl = null, photoUrls = [], rawPhotos = null, rawVideos = null;
+  let documentsUrl = null, reportUrl = null, photoUrls = [], rawPhotos = null, rawVideos = null;
   const spin = t => btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ${t}`;
   try {
-    if (mediaMode === 'upload') {
+    /* Documents */
+    if (modes.docs === 'upload') {
       if ($('pDocs').files.length) { spin('Uploading Document...'); documentsUrl = await uploadFileAndGetUrl('documents', $('pDocs').files[0]); }
+    } else documentsUrl = $('pDocsLink').value.trim() || null;
+
+    /* Report */
+    if (modes.report === 'upload') {
       if ($('pReport').files.length) { spin('Uploading Report...'); reportUrl = await uploadFileAndGetUrl('reports', $('pReport').files[0]); }
-      if (mediaTypeSelect.value === 'Opening' && $('pCPhoto').files.length) { spin('Uploading C-Photo...'); cPhotoUrl = await uploadFileAndGetUrl('cphotos', $('pCPhoto').files[0]); }
-      if ($('pPhotos').files.length) {
-        spin('Uploading Photos...');
-        for (const f of $('pPhotos').files) photoUrls.push(await uploadFileAndGetUrl('photos', f));
-      }
-      const rp = [], rv = [];
-      if ($('pRawPhotos').files.length) { spin('Uploading Raw Photos...'); for (const f of $('pRawPhotos').files) rp.push(await uploadFileAndGetUrl('raw-photos', f)); }
-      if ($('pRawVideos').files.length) { spin('Uploading Raw Videos...'); for (const f of $('pRawVideos').files) rv.push(await uploadFileAndGetUrl('raw-videos', f)); }
-      rawPhotos = rp.join(', ') || null; rawVideos = rv.join(', ') || null;
-    } else {
-      documentsUrl = $('pDocsLink').value.trim() || null;
-      reportUrl = $('pReportLink').value.trim() || null;
-      cPhotoUrl = mediaTypeSelect.value === 'Opening' ? ($('pCPhotoLink').value.trim() || null) : null;
-      photoUrls = photoLinks;
-      rawPhotos = $('pRawPhotosLink').value.trim() || null;
-      rawVideos = $('pRawVideoLink').value.trim() || null;
+    } else reportUrl = $('pReportLink').value.trim() || null;
+
+    /* Photos — keep the serial order from the grid (first = cover) */
+    const totalNew = photoItems.filter(i => i.file).length; let n = 0;
+    for (const it of photoItems) {
+      if (it.file) { spin(`Uploading Photo ${++n}/${totalNew}...`); photoUrls.push(await uploadFileAndGetUrl('photos', it.file)); }
+      else photoUrls.push(it.url);
     }
+
+    /* Raw photos */
+    if (modes.rawPhotos === 'upload') {
+      const rp = [];
+      if ($('pRawPhotos').files.length) { spin('Uploading Raw Photos...'); for (const f of $('pRawPhotos').files) rp.push(await uploadFileAndGetUrl('raw-photos', f)); }
+      rawPhotos = rp.join(', ') || null;
+    } else rawPhotos = $('pRawPhotosLink').value.trim() || null;
+
+    /* Raw videos */
+    if (modes.rawVideos === 'upload') {
+      const rv = [];
+      if ($('pRawVideos').files.length) { spin('Uploading Raw Videos...'); for (const f of $('pRawVideos').files) rv.push(await uploadFileAndGetUrl('raw-videos', f)); }
+      rawVideos = rv.join(', ') || null;
+    } else rawVideos = $('pRawVideoLink').value.trim() || null;
   } catch (err) {
     console.error(err);
     alert('FILE UPLOAD FAILED: ' + err.message + '\n\nCheck that the "' + STORAGE_BUCKET + '" bucket exists in Supabase Storage and is set to Public.');
@@ -882,7 +1034,7 @@ projectFormEl.addEventListener('submit', async function (e) {
     video_link: v('pVideo'),
     video_urls: v('pVideo') ? [{ url: v('pVideo'), date: new Date().toISOString().slice(0, 10), type: (mediaTypeSelect.value || '').toLowerCase() }] : [],
     documents_url: documentsUrl,
-    c_photo_url: cPhotoUrl,
+    c_photo_url: photoUrls[0] || null,          /* cover photo = first photo in the grid */
     photo_urls: photoUrls,
     report_urls: reportUrl ? [{ url: reportUrl, date: new Date().toISOString().slice(0, 10), type: (mediaTypeSelect.value || '').toLowerCase() }] : [],
     raw_photos_link: rawPhotos,
@@ -894,9 +1046,10 @@ projectFormEl.addEventListener('submit', async function (e) {
     /* Update mode.
        - Normal (BD/HO-number match): only non-empty values overwrite.
        - Edit mode (?edit=id): empty text fields are cleared too.
-       - Photos / reports / raw media / documents / C-photo are always kept unless new ones are given. */
+       - Reports / raw media / documents are always kept unless new ones are given.
+       - Photos: the grid already holds the old photos, so the grid order is saved as is (cover = first). */
     const u = {};
-    const keepOld = ['photo_urls', 'report_urls', 'video_urls', 'raw_photos_link', 'raw_video_link', 'documents_url', 'c_photo_url'];
+    const keepOld = ['photo_urls', 'c_photo_url', 'report_urls', 'video_urls', 'raw_photos_link', 'raw_video_link', 'documents_url'];
     Object.entries(record).forEach(([k, val]) => {
       if (editRecord && !keepOld.includes(k)) { u[k] = val; return; }
       if (val === null || val === '' || (Array.isArray(val) && !val.length)) return;
@@ -904,7 +1057,8 @@ projectFormEl.addEventListener('submit', async function (e) {
     });
     if (!record.contact_name) delete u.contact_role;
     const join = (a, b) => [a, b].filter(Boolean).join(', ') || null;
-    u.photo_urls = [...(existing.photo_urls || []), ...photoUrls];
+    u.photo_urls = photoUrls;
+    u.c_photo_url = photoUrls[0] || null;
     u.report_urls = [...(existing.report_urls || []), ...record.report_urls];
     const oldVideos = existing.video_urls || [];
     u.video_urls = [...oldVideos, ...record.video_urls.filter(nv => !oldVideos.some(ov => ov.url === nv.url))];
@@ -982,7 +1136,8 @@ function formSnap() {
     [...projectFormEl.querySelectorAll('input, select, textarea')]
       .filter(el => el.type !== 'hidden')
       .map(el => el.type === 'file' ? el.files.length : el.value),
-    contactRole, mediaMode
+    contactRole, modes,
+    photoItems.map(i => i.url || ('f:' + i.file.name + i.file.size))
   ]);
 }
 function updateSaveState() {
@@ -991,7 +1146,6 @@ function updateSaveState() {
 }
 projectForm.addEventListener('input', updateSaveState);
 projectForm.addEventListener('change', updateSaveState);
-modeToggle.addEventListener('click', updateSaveState);
 if (new URLSearchParams(location.search).get('edit')) saveBtn.disabled = true;
 
 /* ---- Edit mode: ?edit=<project id> prefills the whole form ---- */
@@ -1030,7 +1184,14 @@ if (new URLSearchParams(location.search).get('edit')) saveBtn.disabled = true;
   set('pFeatures', (d.info_features || []).join('\t'));
   set('pOverview', (d.info_overview || []).map(r => `${r.key}\t${r.value}`).join('\n'));
   renderInfoPreview();
-  existing = d; showExisting(); updateFormProgress();
+  existing = d; showExisting();
+  /* old photos -> grid (cover = first). If an old c_photo exists but is not in the list, it becomes the first. */
+  const rec = Object.assign({}, d);
+  const list = (d.photo_urls || []).filter(Boolean);
+  if (d.c_photo_url && !list.includes(d.c_photo_url)) rec.photo_urls = [d.c_photo_url, ...list];
+  else if (d.c_photo_url && list[0] !== d.c_photo_url) rec.photo_urls = [d.c_photo_url, ...list.filter(u => u !== d.c_photo_url)];
+  syncOldPhotos(rec);
+  updateFormProgress();
   baseSnap = formSnap(); updateSaveState();
 })();
 
