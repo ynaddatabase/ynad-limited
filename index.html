@@ -4080,7 +4080,8 @@ function closeMenuWithEffect() {
                 slider.innerHTML = '<div class="w-full text-center py-16 text-slate-400 text-sm tracking-wide uppercase">No projects yet. Click the + icon to add your first project.</div>';
                 return;
             }
-
+            projectsDataById = {};
+            data.forEach(p => { projectsDataById[String(p.id)] = p; });
             slider.innerHTML = '';
             data.forEach((project, index) => {
                 slider.insertAdjacentHTML('beforeend', buildProjectCardHTML(project, index));
