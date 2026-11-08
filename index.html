@@ -2083,20 +2083,27 @@ body.theme-effective-dark .files-menu-link:hover > i{
 .files-menu .files-menu-item.open{
     background:transparent !important;
 }
-        /* ===== SEARCH HIT HIGHLIGHT ===== */
-/* scale korle slider-er top/side clip na hoy, tai ektu padding */
+/* ===== SEARCH HIT HIGHLIGHT ===== */
+/* Chaaridike joto jaygay scale + stroke clip na hoy */
 #mainProjectSlider{
-    padding: 14px 12px 24px;
-    margin: -14px -12px 0;
+    padding: 26px 26px 36px;
+    margin: -26px -26px 0;
 }
-html body #projects .recent-project-card.search-hit{
+/* Step 1: pop up (boro hoy) */
+html body #projects .recent-project-card.search-pop{
     transform: scale(1.07) !important;
     z-index: 150 !important;
     transition-delay: 0s !important;
-    transition: transform .45s cubic-bezier(.22,1,.36,1), opacity .7s ease, box-shadow .3s ease !important;
-    outline: 2px solid rgba(217,119,6,.55);
-    outline-offset: 0;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .3s ease !important;
     box-shadow: 0 22px 48px rgba(15,23,42,.28) !important;
+}
+/* Step 2: ager size-e phire, shob dike stroke */
+html body #projects .recent-project-card.search-hit{
+    transform: none !important;
+    z-index: 150 !important;
+    transition-delay: 0s !important;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .3s ease !important;
+    box-shadow: 0 0 0 2px #d97706, 0 14px 30px rgba(15,23,42,.18) !important;
 }
 </style>
 </head>
