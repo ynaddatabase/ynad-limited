@@ -3141,66 +3141,103 @@ document.addEventListener('mouseout', function (e) {
     }
 });
 
-        // Search Projects Functionality with 3 seconds auto-close delay
-        function executeSearch() {
-            const query = document.getElementById('projectSearchInput').value.trim().toUpperCase();
-            const feedback = document.getElementById('searchResultFeedback');
-            
-            if(!query) {
-                feedback.textContent = "Please enter project details.";
-                feedback.classList.remove('hidden');
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
-                return;
-            }
+        // Projects table-er shob text/number column ke ekta searchable string-e convert kore
+function buildProjectSearchText(p) {
+    const skip = new Set(['id', 'created_at', 'updated_at']);
+    const parts = [];
+    Object.keys(p || {}).forEach(k => {
+        if (skip.has(k)) return;
+        const v = p[k];
+        if (v === null || v === undefined || typeof v === 'object') return;
+        const s = String(v).trim();
+        if (!s || /^https?:\/\//i.test(s) || s[0] === '[' || s[0] === '{') return;
+        parts.push(s.toLowerCase());
+    });
+    return parts.join(' | ');
+}
 
-            const cards = document.querySelectorAll('#mainProjectSlider > div');
-            let matchCount = 0;
+function clearSearchHighlights() {
+    document.querySelectorAll('#mainProjectSlider .search-hit')
+        .forEach(c => c.classList.remove('search-hit'));
+    const fb = document.getElementById('searchResultFeedback');
+    if (fb) fb.classList.add('hidden');
+}
 
-            cards.forEach(card => {
-                const code = card.getAttribute('data-project-code') || '';
-                const hoNum = card.getAttribute('data-ho-number') || '';
-                const pName = card.getAttribute('data-project-name') || '';
-                const org = card.getAttribute('data-org') || '';
-                const donor = card.getAttribute('data-donor') || '';
-                const country = card.getAttribute('data-country') || '';
-                const location = card.getAttribute('data-location') || '';
-                
-                if(
-                    code.toUpperCase().includes(query) || 
-                    hoNum.toUpperCase().includes(query) || 
-                    pName.toUpperCase().includes(query) || 
-                    org.toUpperCase().includes(query) || 
-                    donor.toUpperCase().includes(query) || 
-                    country.toUpperCase().includes(query) || 
-                    location.toUpperCase().includes(query)
-                ) {
-                    matchCount++;
-                    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-                    card.classList.add('ring-4', 'ring-amber-500', 'scale-[1.02]');
-                    setTimeout(() => {
-                        card.classList.remove('ring-4', 'ring-amber-500', 'scale-[1.02]');
-                    }, 3000);
-                }
-            });
+// Matched card ke slider-e majhkhane ane, tarpor page scroll kore screen-er majhkhane ane
+function focusSearchHit(card) {
+    const slider = document.getElementById('mainProjectSlider');
+    if (slider) {
+        const sr = slider.getBoundingClientRect();
+        const cr = card.getBoundingClientRect();
+        const maxScroll = Math.max(0, slider.scrollWidth - slider.clientWidth);
+        let target = slider.scrollLeft + (cr.left - sr.left) - (slider.clientWidth - cr.width) / 2;
+        target = Math.max(0, Math.min(maxScroll, target));
+        animateMainProjectSlider(target);
+    }
+    const rect = card.getBoundingClientRect();
+    const y = Math.max(0, rect.top + window.scrollY - (window.innerHeight - rect.height) / 2);
+    window.scrollTo({ top: y, behavior: 'smooth' });
+}
 
-            feedback.classList.remove('hidden');
-            if(matchCount > 0) {
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
-                feedback.textContent = `Found ${matchCount} matching project(s)!`;
-                
-                // 3 seconds delay before minimizing/closing the search box automatically
-                setTimeout(() => {
-                    document.getElementById('searchDropdownMenu').classList.remove('open');
-                    document.getElementById('searchBoxWrap').classList.remove('search-open');
-                    const iconGroup = document.getElementById('homeContactLoginGroup');
-                    if(iconGroup) iconGroup.classList.remove('icons-pushed');
-                    feedback.classList.add('hidden');
-                }, 3000);
-            } else {
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50";
-                feedback.textContent = `No match found for "${query}".`;
-            }
-        }
+function executeSearch() {
+    const rawQuery = document.getElementById('projectSearchInput').value.trim();
+    const feedback = document.getElementById('searchResultFeedback');
+
+    clearSearchHighlights();
+
+    if (!rawQuery) {
+        feedback.textContent = "Please enter project details.";
+        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
+        return;
+    }
+
+    const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    const cards = document.querySelectorAll('#mainProjectSlider .recent-project-card');
+    const hits = [];
+
+    cards.forEach(card => {
+        const row = projectsDataById[String(card.dataset.id)];
+        let text = row ? buildProjectSearchText(row) : '';
+
+        // Fallback + card-e jei text dekha jay (jemon HO-123)
+        text += ' | ' + [
+            'data-project-code', 'data-ho-number', 'data-project-name',
+            'data-org', 'data-donor', 'data-country', 'data-location'
+        ].map(a => card.getAttribute(a) || '').join(' | ').toLowerCase();
+        text += ' | ' + (card.textContent || '').replace(/\s+/g, ' ').toLowerCase();
+
+        if (tokens.every(t => text.includes(t))) hits.push(card);
+    });
+
+    if (hits.length > 0) {
+        hits.forEach(c => c.classList.add('search-hit'));
+        focusSearchHit(hits[0]);
+
+        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
+        feedback.textContent = `Found ${hits.length} matching project(s)!`;
+        feedback.classList.remove('hidden');
+
+        // Search box 3 sec por auto-close hobe, kintu card-er stroke thakbe
+        setTimeout(() => {
+            document.getElementById('searchDropdownMenu').classList.remove('open');
+            document.getElementById('searchBoxWrap').classList.remove('search-open');
+            const iconGroup = document.getElementById('homeContactLoginGroup');
+            if (iconGroup) iconGroup.classList.remove('icons-pushed');
+            feedback.classList.add('hidden');
+        }, 3000);
+    } else {
+        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50";
+        feedback.textContent = `No match found for "${rawQuery}".`;
+        feedback.classList.remove('hidden');
+    }
+}
+
+// Card-er bahire (ba search box-er bahire) jekono jaygay click korle stroke chole jabe
+document.addEventListener('click', function (e) {
+    if (!document.querySelector('#mainProjectSlider .search-hit')) return;
+    if (e.target.closest('.search-hit') || e.target.closest('#searchBoxWrap')) return;
+    clearSearchHighlights();
+});
 
         function handleProjectSearch(event) {
             if(event.key === 'Enter') {
