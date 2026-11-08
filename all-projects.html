@@ -2163,67 +2163,129 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
         });
 
-        function executeSearch() {
-            const query = document.getElementById('projectSearchInput').value.trim().toUpperCase();
-            const feedback = document.getElementById('searchResultFeedback');
+                /* ================= SEARCH ================= */
+        let searchQuery = '';
+        let searchRingTimer = null;
 
-            if(!query) {
-                feedback.textContent = "Please enter project details.";
-                feedback.classList.remove('hidden');
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
+        // Project-er shob text/number column ke ekta searchable string-e convert kore
+        function buildProjectSearchText(p) {
+            const skip = new Set(['id', 'created_at', 'updated_at']);
+            const parts = [];
+            Object.keys(p || {}).forEach(k => {
+                if (skip.has(k)) return;
+                const v = p[k];
+                if (v === null || v === undefined || typeof v === 'object') return;
+                const s = String(v).trim();
+                if (!s || /^https?:\/\//i.test(s) || s[0] === '[' || s[0] === '{') return;
+                parts.push(s.toLowerCase());
+            });
+            return parts.join(' | ');
+        }
+
+        function clearSearchHighlights() {
+            clearTimeout(searchRingTimer);
+            document.querySelectorAll('#allProjectsGrid .search-hit, #allProjectsGrid .search-pop')
+                .forEach(c => c.classList.remove('search-hit', 'search-pop'));
+        }
+
+        function showSearchFeedback(msg, cls) {
+            const fb = document.getElementById('searchResultFeedback');
+            if (!fb) return;
+            fb.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border font-semibold z-50 ' + cls;
+            fb.textContent = msg;
+            clearTimeout(fb._t);
+            fb._t = setTimeout(() => fb.classList.add('hidden'), 3000);
+        }
+
+        function closeSearchBox() {
+            const d = document.getElementById('searchDropdownMenu');
+            const w = document.getElementById('searchBoxWrap');
+            const g = document.getElementById('homeContactLoginGroup');
+            if (d) d.classList.remove('open');
+            if (w) w.classList.remove('search-open');
+            if (g) g.classList.remove('icons-pushed');
+        }
+
+        // Matched card ke screen-er majhkhane ane
+        function focusSearchHit(card) {
+            const rect = card.getBoundingClientRect();
+            const y = Math.max(0, rect.top + window.scrollY - (window.innerHeight - rect.height) / 2);
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+
+        function executeSearch() {
+            const rawQuery = document.getElementById('projectSearchInput').value.trim();
+            clearSearchHighlights();
+
+            // ---------- TABLE MODE: shudhu matching row thakbe ----------
+            if (currentView === 'table') {
+                searchQuery = rawQuery;
+                applyAdvFilters();
+                if (!rawQuery) return;
+                const n = lastFilteredProjects.length;
+                if (n) {
+                    showSearchFeedback(`Found ${n} matching project(s)!`, 'text-emerald-600');
+                    setTimeout(closeSearchBox, 3000);
+                } else {
+                    showSearchFeedback(`No match found for "${rawQuery}".`, 'text-red-500');
+                }
                 return;
             }
 
-            const cards = document.querySelectorAll('#allProjectsGrid > div[data-project-code]');
-            let matchCount = 0;
+            // ---------- CARD MODE: pop up + stroke ----------
+            if (!rawQuery) {
+                showSearchFeedback('Please enter project details.', 'text-red-500');
+                return;
+            }
 
-            cards.forEach(card => {
-                const code = card.getAttribute('data-project-code') || '';
-                const hoNum = card.getAttribute('data-ho-number') || '';
-                const pName = card.getAttribute('data-project-name') || '';
-                const org = card.getAttribute('data-org') || '';
-                const donor = card.getAttribute('data-donor') || '';
-                const country = card.getAttribute('data-country') || '';
-                const location = card.getAttribute('data-location') || '';
+            const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
+            const byId = {};
+            allProjectsData.forEach(p => { byId[String(p.id)] = p; });
 
-                if(
-                    code.toUpperCase().includes(query) ||
-                    hoNum.toUpperCase().includes(query) ||
-                    pName.toUpperCase().includes(query) ||
-                    org.toUpperCase().includes(query) ||
-                    donor.toUpperCase().includes(query) ||
-                    country.toUpperCase().includes(query) ||
-                    location.toUpperCase().includes(query)
-                ) {
-                    matchCount++;
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    card.classList.add('ring-4', 'ring-amber-500', 'scale-[1.02]');
-                    setTimeout(() => {
-                        card.classList.remove('ring-4', 'ring-amber-500', 'scale-[1.02]');
-                    }, 3000);
-                }
+            const hits = [];
+            document.querySelectorAll('#allProjectsGrid .recent-project-card').forEach(card => {
+                const row = byId[String(card.dataset.id)];
+                let text = row ? buildProjectSearchText(row) : '';
+                text += ' | ' + (card.textContent || '').replace(/\s+/g, ' ').toLowerCase();
+                if (tokens.every(t => text.includes(t))) hits.push(card);
             });
 
-            feedback.classList.remove('hidden');
-            if(matchCount > 0) {
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
-                feedback.textContent = `Found ${matchCount} matching project(s)!`;
-
-                setTimeout(() => {
-                    document.getElementById('searchDropdownMenu').classList.remove('open');
-                    document.getElementById('searchBoxWrap').classList.remove('search-open');
-                    const iconGroup = document.getElementById('homeContactLoginGroup');
-                    if(iconGroup) iconGroup.classList.remove('icons-pushed');
-                    feedback.classList.add('hidden');
-                }, 3000);
-            } else {
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50";
-                feedback.textContent = `No match found for "${query}".`;
+            if (!hits.length) {
+                showSearchFeedback(`No match found for "${rawQuery}".`, 'text-red-500');
+                return;
             }
+
+            focusSearchHit(hits[0]);
+
+            // scroll shesh hole pop up, tarpor ager size-e phire stroke
+            searchRingTimer = setTimeout(() => {
+                hits.forEach(c => c.classList.add('search-pop'));
+                searchRingTimer = setTimeout(() => {
+                    hits.forEach(c => {
+                        c.classList.remove('search-pop');
+                        c.classList.add('search-hit');
+                    });
+                }, 700);
+            }, 1000);
+
+            showSearchFeedback(`Found ${hits.length} matching project(s)!`, 'text-emerald-600');
+            setTimeout(closeSearchBox, 3000); // box bondho hobe, card-er stroke thakbe
         }
 
+        // Card-er bahire jekono jaygay click korle stroke chole jabe
+        document.addEventListener('click', function (e) {
+            if (!document.querySelector('#allProjectsGrid .search-hit, #allProjectsGrid .search-pop')) return;
+            if (e.target.closest('.search-hit') || e.target.closest('.search-pop') || e.target.closest('#searchBoxWrap')) return;
+            clearSearchHighlights();
+        });
+
         function handleProjectSearch(event) {
-            if(event.key === 'Enter') {
+            if (currentView === 'table') {
+                // live filter: type korar sathe sathe table filter hobe
+                searchQuery = event.target.value.trim();
+                applyAdvFilters();
+                if (event.key === 'Enter') executeSearch();
+            } else if (event.key === 'Enter') {
                 executeSearch();
             }
         }
