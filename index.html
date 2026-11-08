@@ -3217,8 +3217,18 @@ function executeSearch() {
     });
 
     if (hits.length > 0) {
-        hits.forEach(c => c.classList.add('search-hit'));
-        focusSearchHit(hits[0]);
+                focusSearchHit(hits[0]);
+
+        // scroll shesh hole pop up, tarpor ager size-e phire stroke
+        searchRingTimer = setTimeout(() => {
+            hits.forEach(c => c.classList.add('search-pop'));
+            searchRingTimer = setTimeout(() => {
+                hits.forEach(c => {
+                    c.classList.remove('search-pop');
+                    c.classList.add('search-hit');
+                });
+            }, 700);
+        }, 1000);
 
         feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
         feedback.textContent = `Found ${hits.length} matching project(s)!`;
