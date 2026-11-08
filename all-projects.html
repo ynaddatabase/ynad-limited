@@ -1409,7 +1409,20 @@
         .files-menu .files-menu-item.open{
             background:transparent !important;
         }
-        /* ===== SEARCH HIT HIGHLIGHT (card mode) ===== */
+        /* ===== TABLE ROW ANIMATION on search / filter (same as project-management) ===== */
+.projects-table tbody.row-anim td{
+    animation: pmRowIn .45s cubic-bezier(.22,1,.36,1) both;
+    animation-delay: var(--d, 0s);
+}
+@keyframes pmRowIn{
+    from{ opacity:0; transform:translateY(-12px); }
+    to{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){
+    .projects-table tbody.row-anim td{ animation:none; }
+}
+
+/* ===== SEARCH HIT HIGHLIGHT (card mode) ===== */
 html body #allProjectsGrid .recent-project-card.search-pop{
     transform: scale(1.07) !important;
     z-index: 150 !important;
