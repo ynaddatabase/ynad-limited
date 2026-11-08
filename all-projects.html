@@ -3070,7 +3070,8 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             document.querySelectorAll('.view-switch-btn').forEach(b =>
                 b.classList.toggle('active', b.getAttribute('data-view') === currentView));
             moveViewSwitchIndicator();
-            renderCurrentView(lastFilteredProjects);
+            clearSearchHighlights();
+            applyAdvFilters();
             if (currentView === 'table') playTableAnimation();
         }
 
