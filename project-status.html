@@ -2176,20 +2176,6 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             window.location.href = 'project_view.html?id=' + encodeURIComponent(card.dataset.id);
         });
 
-        function executeSearch() {
-            const query = document.getElementById('projectSearchInput').value.trim().toUpperCase();
-            const feedback = document.getElementById('searchResultFeedback');
-
-            if(!query) {
-                feedback.textContent = "Please enter project details.";
-                feedback.classList.remove('hidden');
-                feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
-                return;
-            }
-
-            const cards = document.querySelectorAll('#allProjectsGrid > div[data-project-code]');
-            let matchCount = 0;
-
                     /* ================= SEARCH ================= */
         let searchQuery = '';
         let searchRingTimer = null;
