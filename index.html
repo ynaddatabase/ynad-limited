@@ -3525,6 +3525,7 @@ function closeMenuWithEffect() {
 
         // Project Card Image Slider Function (index is now dynamic per loaded project)
         const cardImageIndices = {};
+        let projectsDataById = {};
         function changeCardImage(cardId, direction) {
             const slider = document.getElementById('cardImages-' + cardId);
             const totalImages = slider.children.length;
