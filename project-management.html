@@ -368,7 +368,26 @@ function moveInd(boxId,cur){
   ind.style.transform=`translate(${b.offsetLeft}px,${b.offsetTop}px)`;
   setTimeout(()=>b.classList.add('on'),300);
 }
-const matchQ=p=>!q||[p.bd_number,p.ho_number,p.project_name,p.local_name,p.district,p.category].some(v=>String(v||'').toLowerCase().includes(q));
+/* project er shob text/number field ke ekta searchable string e convert kore */
+function buildProjectSearchText(p){
+  const skip=new Set(['id','created_at','updated_at']);
+  const parts=[];
+  Object.keys(p||{}).forEach(k=>{
+    if(skip.has(k))return;
+    const v=p[k];
+    if(v===null||v===undefined||typeof v==='object')return;
+    const s=String(v).trim();
+    if(!s||/^https?:\/\//i.test(s)||s[0]==='['||s[0]==='{')return;
+    parts.push(s.toLowerCase());
+  });
+  return parts.join(' | ');
+}
+const matchQ=p=>{
+  if(!q)return true;
+  const tokens=q.split(/\s+/).filter(Boolean);
+  const text=buildProjectSearchText(p);
+  return tokens.every(t=>text.includes(t));
+};
 /* category compare is case-insensitive, so old "Masjid" and new "MASJID" both match */
 const catOk=(p,k)=>k==='all'||U(p.category)===U(k);
 const base=(skipStatus,skipCat)=>all.filter(p=>(skipStatus||st==='all'||p.status===st)&&(skipCat||catOk(p,cat))&&matchQ(p));
