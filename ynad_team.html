@@ -731,8 +731,8 @@ const DEMO_MEMBERS = [
 let members = [], editing = null;
 
 const isResigned = m => m.status === 'resigned';
-const activeList = () => members.filter(m => !isResigned(m));
-const resignedList = () => members.filter(isResigned);
+const activeList = () => members.filter(m => !isResigned(m) && matchMember(m));
+const resignedList = () => members.filter(m => isResigned(m) && matchMember(m));
 const nextOrder = () => members.reduce((a, m) => Math.max(a, m.sort_order || 0), 0) + 1;
 
 /* ---------- render ---------- */
