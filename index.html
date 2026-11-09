@@ -4745,54 +4745,33 @@ function closeMenuWithEffect() {
         }
     }, true);
 
-        // Search state ke pura default (faka search bar) obosthay ana
-    function ynadResetSearchState() {
-        const input = document.getElementById('projectSearchInput');
-        const fb = document.getElementById('searchResultFeedback');
-
-        if (input) input.value = '';
-
-        if (fb) {
-            clearTimeout(fb._t);
-            fb.classList.add('hidden');
-            fb.textContent = '';
-        }
-
-        if (typeof window.clearSearchHighlights === 'function') {
-            window.clearSearchHighlights();
-        }
-        document.querySelectorAll('.search-hit, .search-pop').forEach(function (c) {
-            c.classList.remove('search-hit', 'search-pop');
-        });
-    }
-
-    // Esc: text + feedback message + card highlight, shob clear. Notun kore search chalabe na.
+    // Esc: text clear -> tarpor faka search bar-e Enter dile jei default result ashe sheta dekhao.
+    // Capture phase-e chole, jate page-er nijer Esc handler-er aage input-er text dekhte pay.
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
 
         const input = document.getElementById('projectSearchInput');
-        const fb = document.getElementById('searchResultFeedback');
+        if (!input) return;
 
-        const hadText = !!(input && input.value);
-        const feedbackVisible = !!(fb && !fb.classList.contains('hidden'));
-        const hasHighlight = !!document.querySelector('.search-hit, .search-pop');
+        // Age theke faka thakle Esc-e kichu hobe na
+        if (!input.value.trim()) return;
 
-        if (!hadText && !feedbackVisible && !hasHighlight) return;
+        input.value = '';
 
-        ynadResetSearchState();
-
-        // Table-filter-wala page-e filter reset hobe (Backspace keyup)
-        if (hadText && input) {
-            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }));
+        // Purano card highlight / feedback muche dao (jei page-e function ache)
+        if (typeof window.clearSearchHighlights === 'function') {
+            window.clearSearchHighlights();
         }
 
-        // Kono page-e purano Esc handler thakle (faka search chalay), tar por abar safe kore dao
-        [0, 80].forEach(function (ms) {
-            setTimeout(function () {
-                if (input && !input.value) ynadResetSearchState();
-            }, ms);
-        });
-    });
+        // Live-filter (input event) use kora page-gulo-r jonno
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+
+        // Faka search bar-e Enter-er moto: page-er nijer search handler default result dekhabe.
+        // setTimeout dorkar, jate page-er onno Esc handler-er kaj shesh hobar por cholte pare.
+        setTimeout(function () {
+            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+        }, 0);
+    }, true);
 })();
 </script>
 </body>
