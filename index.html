@@ -4745,14 +4745,53 @@ function closeMenuWithEffect() {
         }
     }, true);
 
-    // Esc: text clear + table filter reset (feedback/highlight main script-ei handle hoy)
+        // Search state ke pura default (faka search bar) obosthay ana
+    function ynadResetSearchState() {
+        const input = document.getElementById('projectSearchInput');
+        const fb = document.getElementById('searchResultFeedback');
+
+        if (input) input.value = '';
+
+        if (fb) {
+            clearTimeout(fb._t);
+            fb.classList.add('hidden');
+            fb.textContent = '';
+        }
+
+        if (typeof window.clearSearchHighlights === 'function') {
+            window.clearSearchHighlights();
+        }
+        document.querySelectorAll('.search-hit, .search-pop').forEach(function (c) {
+            c.classList.remove('search-hit', 'search-pop');
+        });
+    }
+
+    // Esc: text + feedback message + card highlight, shob clear. Notun kore search chalabe na.
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
+
         const input = document.getElementById('projectSearchInput');
-        if (input && input.value) {
-            input.value = '';
+        const fb = document.getElementById('searchResultFeedback');
+
+        const hadText = !!(input && input.value);
+        const feedbackVisible = !!(fb && !fb.classList.contains('hidden'));
+        const hasHighlight = !!document.querySelector('.search-hit, .search-pop');
+
+        if (!hadText && !feedbackVisible && !hasHighlight) return;
+
+        ynadResetSearchState();
+
+        // Table-filter-wala page-e filter reset hobe (Backspace keyup)
+        if (hadText && input) {
             input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }));
         }
+
+        // Kono page-e purano Esc handler thakle (faka search chalay), tar por abar safe kore dao
+        [0, 80].forEach(function (ms) {
+            setTimeout(function () {
+                if (input && !input.value) ynadResetSearchState();
+            }, ms);
+        });
     });
 })();
 </script>
