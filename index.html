@@ -4604,7 +4604,7 @@ function closeMenuWithEffect() {
                 // Keyboard-er Enter-er moto: input-e Enter keyup pathao
                 // (onkeyup="handleProjectSearch(event)" eta dhore executeSearch() chalay)
                 setTimeout(function () {
-                    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                    /* Esc must not re-run the search; shared-header handler resets the search state */
                 }, 0);
             }
         });
