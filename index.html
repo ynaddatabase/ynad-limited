@@ -2953,6 +2953,13 @@ if (currentScrollY <= 4) {
             }
         }
 
+                // Search box-er bhitore mousedown hole (text select drag), pore bahire mouseup holeo box close hobe na
+        let searchMouseDownInside = false;
+        document.addEventListener('mousedown', function (e) {
+            const wrap = document.getElementById('searchBoxWrap');
+            searchMouseDownInside = !!(wrap && wrap.contains(e.target));
+        }, true);
+
         // Window click handler
         window.addEventListener('click', function(e) {
             const userDropdown = document.getElementById('userDropdownMenu');
