@@ -847,8 +847,13 @@ function dragEnd() {
   saveOrder([...$('grid').querySelectorAll('.card')].map(c => c.dataset.id));
 }
 async function saveOrder(ids) {
-  const act = ids.map(id => members.find(m => m.id === id)).filter(Boolean);
-  const ordered = [...act, ...resignedList()], changed = [];
+    /* search chalu thakle shudhu visible card gulo reorder hoy; baki active member der jayga thik thake */
+  const allAct = members.filter(m => !isResigned(m));
+  const moved = ids.map(id => members.find(m => m.id === id)).filter(Boolean);
+  const slots = [];
+  allAct.forEach((m, i) => { if (ids.includes(m.id)) slots.push(i); });
+  slots.forEach((s, k) => { allAct[s] = moved[k]; });
+  const ordered = [...allAct, ...members.filter(isResigned)], changed = [];
   ordered.forEach((m, i) => { const n = i + 1; if (m.sort_order !== n) { m.sort_order = n; changed.push(m); } });
   members.sort((a, b) => a.sort_order - b.sort_order);
   if (!changed.length) return;
