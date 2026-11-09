@@ -3250,8 +3250,11 @@ function executeSearch() {
     clearSearchHighlights();
 
     if (!rawQuery) {
-        feedback.textContent = "Please enter project details.";
-        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 z-50";
+                feedback.textContent = "Please enter project details.";
+        feedback.className = "text-red-500";
+        feedback.style.animation = 'none'; void feedback.offsetWidth; feedback.style.animation = '';
+        clearTimeout(feedback._t);
+        feedback._t = setTimeout(() => feedback.classList.add('hidden'), 3000);
         return;
     }
 
