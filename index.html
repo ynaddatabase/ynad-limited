@@ -4593,13 +4593,15 @@ function closeMenuWithEffect() {
             if (e.key !== 'Escape') return;
 
             const input = document.getElementById('projectSearchInput');
+            const hadText = !!(input && input.value.trim());
             if (input) input.value = '';
 
             clearSearchHighlights();
 
-            // Search bar khola thakle: faka input diye Enter-er moto search chalao
+            // Age lekha thakle tobei Enter-er moto search chalao
+            // (already faka thakle Esc chaple kichu hobe na)
             const searchDropdown = document.getElementById('searchDropdownMenu');
-            if (searchDropdown && searchDropdown.classList.contains('open')) {
+            if (hadText && searchDropdown && searchDropdown.classList.contains('open')) {
                 executeSearch();
             }
         });
