@@ -2982,7 +2982,7 @@ if (currentScrollY <= 4) {
             const searchBoxWrap = document.getElementById('searchBoxWrap');
             const searchDropdown = document.getElementById('searchDropdownMenu');
             if (searchDropdown && searchDropdown.classList.contains('open')) {
-                if (searchBoxWrap && !searchBoxWrap.contains(e.target)) {
+                    if (searchBoxWrap && !searchBoxWrap.contains(e.target) && !searchMouseDownInside) {
                     searchDropdown.classList.remove('open');
                     searchBoxWrap.classList.remove('search-open');
                     const iconGroup = document.getElementById('homeContactLoginGroup');
