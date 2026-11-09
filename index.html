@@ -4484,6 +4484,16 @@ function closeMenuWithEffect() {
             animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
+                /* ---- Search input: Esc chaple text clear hobe ---- */
+        document.getElementById('projectSearchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                const fb = document.getElementById('searchResultFeedback');
+                if (fb) fb.classList.add('hidden');
+                e.stopPropagation();
+            }
+        });
+
         /* ---- Escape handling ---- */
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
