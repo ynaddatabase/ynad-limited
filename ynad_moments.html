@@ -559,18 +559,71 @@ window.addEventListener('click', e => {
   const wrap = $('searchBoxWrap'), dd = $('searchDropdownMenu');
   if (dd && dd.classList.contains('open') && wrap && !wrap.contains(e.target)) closeHeaderPanels();
 });
-async function executeSearch() {
-  const input = $('projectSearchInput'), fb = $('searchResultFeedback'), q = input.value.trim().toUpperCase();
-  const show = (txt, cls) => { fb.textContent = txt; fb.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border z-50 ' + cls; };
-  if (!q) return show('Please enter project details.', 'text-red-500');
-  const { data, error } = await supabaseClient.from('projects').select('id,bd_number,ho_number,project_name,local_name,organization,donor_name,donated_country,district');
-  if (error) return show('Search failed. Please try again.', 'text-red-500');
-  const hits = (data || []).filter(p => [p.bd_number, p.ho_number, p.project_name, p.local_name, p.organization, p.donor_name, p.donated_country, p.district].some(v => String(v || '').toUpperCase().includes(q)));
-  if (!hits.length) return show(`No match found for "${input.value.trim()}".`, 'text-red-500 font-semibold');
-  show(hits.length === 1 ? 'Found 1 matching project! Opening...' : `Found ${hits.length} matching projects! Opening the first one...`, 'text-emerald-600 font-semibold');
-  setTimeout(() => { location.href = 'project_view.html?id=' + encodeURIComponent(hits[0].id); }, 700);
+/* ---------- moments search (token wise, shob field e) ---------- */
+let searchQ = '';
+let searchMouseDownInside = false;
+
+/* moment er shob text field ke ekta searchable string e convert kore */
+function buildMomentSearchText(m) {
+  const parts = [m.title, m.event_date, m.event_date ? fmtDate(m.event_date) : '', m.description, m.link_url];
+  return parts.filter(v => v !== null && v !== undefined && String(v).trim()).map(v => String(v).toLowerCase()).join(' | ');
 }
-function handleProjectSearch(e) { if (e.key === 'Enter') executeSearch(); }
+function matchMoment(m) {
+  if (!searchQ) return true;
+  const text = buildMomentSearchText(m);
+  return searchQ.split(/\s+/).filter(Boolean).every(t => text.includes(t));
+}
+
+/* search box er bhitore mousedown hole (text select drag), pore bahire mouseup holeo box close hobe na */
+document.addEventListener('mousedown', e => {
+  const w = $('searchBoxWrap');
+  searchMouseDownInside = !!(w && w.contains(e.target));
+}, true);
+
+function showSearchFeedback(msg, cls) {
+  const fb = $('searchResultFeedback');
+  if (!fb) return;
+  fb.className = cls;
+  fb.textContent = msg;
+  fb.style.animation = 'none'; void fb.offsetWidth; fb.style.animation = '';
+  clearTimeout(fb._t);
+  fb._t = setTimeout(() => fb.classList.add('hidden'), 3000);
+}
+function closeSearchBox() {
+  if ($('searchDropdownMenu')) $('searchDropdownMenu').classList.remove('open');
+  if ($('searchBoxWrap')) $('searchBoxWrap').classList.remove('search-open');
+  if ($('homeContactLoginGroup')) $('homeContactLoginGroup').classList.remove('icons-pushed');
+}
+
+/* live filter: type korar sathe sathe card filter hobe */
+function handleProjectSearch(e) {
+  searchQ = e.target.value.trim().toLowerCase();
+  render();
+  if (e.key === 'Enter') executeSearch();
+}
+function executeSearch() {
+  const raw = $('projectSearchInput').value.trim();
+  searchQ = raw.toLowerCase();
+  render();
+  if (!raw) return;
+  const n = moments.filter(matchMoment).length;
+  if (n) {
+    showSearchFeedback(`Found ${n} matching moment(s)!`, 'text-emerald-600');
+    setTimeout(closeSearchBox, 3000);
+  } else {
+    showSearchFeedback(`No match found for "${raw}".`, 'text-red-500');
+  }
+}
+
+/* Esc chaple: search text clear + sob card phire ashbe (viewer / popup khola thakle kichu hobe na) */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('lightbox') && $('lightbox').classList.contains('open')) return;
+  if (document.querySelector('.md-bg.open')) return;
+  const input = $('projectSearchInput');
+  if (input) input.value = '';
+  if (searchQ) { searchQ = ''; render(); }
+});
 
 function setThemeMode(mode) {
   if (!['light', 'dynamic', 'dark'].includes(mode)) mode = 'dynamic';
