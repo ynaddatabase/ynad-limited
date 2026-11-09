@@ -2292,9 +2292,20 @@ html body #allProjectsGrid .recent-project-card.search-hit{
             setTimeout(closeSearchBox, 3000); // box bondho hobe, card-er stroke thakbe
         }
 
-        // Esc chaple card-er pop up / stroke chole jabe
+                // Esc chaple: search text clear + card-er pop up / stroke clear
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') clearSearchHighlights();
+            if (e.key !== 'Escape') return;
+
+            const input = document.getElementById('projectSearchInput');
+            if (input) input.value = '';
+
+            clearSearchHighlights();
+
+            // Table mode-e text clear hole filter-o reset hobe, jate sob row phire ashe
+            if (typeof currentView !== 'undefined' && currentView === 'table' && searchQuery) {
+                searchQuery = '';
+                applyAdvFilters();
+            }
         });
 
         // Card-er bahire jekono jaygay click korle stroke chole jabe
