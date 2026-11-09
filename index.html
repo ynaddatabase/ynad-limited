@@ -4588,7 +4588,7 @@ function closeMenuWithEffect() {
             animateNumber(document.getElementById('statUpcoming'), statValues.statUpcoming, 1200);
             animateAllVisibleCounters();
         }
-                        /* ---- Esc chaple: search text clear + card-er stroke/highlight clear ---- */
+        /* ---- Esc chaple: search text clear + card-er stroke/highlight clear + faka search bar-e Enter ---- */
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
 
@@ -4596,6 +4596,12 @@ function closeMenuWithEffect() {
             if (input) input.value = '';
 
             clearSearchHighlights();
+
+            // Search bar khola thakle: faka input diye Enter-er moto search chalao
+            const searchDropdown = document.getElementById('searchDropdownMenu');
+            if (searchDropdown && searchDropdown.classList.contains('open')) {
+                executeSearch();
+            }
         });
 
         /* ---- Escape handling ---- */
