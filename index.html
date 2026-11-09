@@ -4600,18 +4600,12 @@ function closeMenuWithEffect() {
 
             // Age lekha thakle tobei Enter-er moto search chalao
             // (already faka thakle Esc chaple kichu hobe na)
-                if (hadText) {
-                // Box bondho thakleo khule nao, noile feedback dekha jay na
-                const searchDropdown = document.getElementById('searchDropdownMenu');
-                const searchBoxWrap = document.getElementById('searchBoxWrap');
-                const iconGroup = document.getElementById('homeContactLoginGroup');
-                if (searchDropdown) searchDropdown.classList.add('open');
-                if (searchBoxWrap) searchBoxWrap.classList.add('search-open');
-                if (iconGroup) iconGroup.classList.add('icons-pushed');
-                if (input) input.focus();
-
-                // Onno Esc handler gulo shesh howar por chalao
-                setTimeout(executeSearch, 0);
+                if (hadText && input) {
+                // Keyboard-er Enter-er moto: input-e Enter keyup pathao
+                // (onkeyup="handleProjectSearch(event)" eta dhore executeSearch() chalay)
+                setTimeout(function () {
+                    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                }, 0);
             }
         });
 
