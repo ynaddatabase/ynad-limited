@@ -3290,9 +3290,10 @@ function executeSearch() {
             }, 700);
         }, 1000);
 
-        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-emerald-600 font-semibold z-50";
+                feedback.className = "text-emerald-600";
         feedback.textContent = `Found ${hits.length} matching project(s)!`;
-        feedback.classList.remove('hidden');
+        feedback.style.animation = 'none'; void feedback.offsetWidth; feedback.style.animation = '';
+        clearTimeout(feedback._t);
 
         // Search box 3 sec por auto-close hobe, kintu card-er stroke thakbe
         setTimeout(() => {
