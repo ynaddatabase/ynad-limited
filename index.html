@@ -4742,7 +4742,7 @@ function closeMenuWithEffect() {
         }
     }, true);
 
-    // Esc: text clear + card stroke clear + table filter reset + faka search bar-e Enter
+    // Esc: text clear + table filter reset (feedback/highlight main script-ei handle hoy)
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         const input = document.getElementById('projectSearchInput');
@@ -4750,9 +4750,6 @@ function closeMenuWithEffect() {
             input.value = '';
             input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }));
         }
-        if (typeof window.clearSearchHighlights === 'function') window.clearSearchHighlights();
-        const fb = document.getElementById('searchResultFeedback');
-        if (fb) fb.classList.add('hidden');
     });
 })();
 </script>
