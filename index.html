@@ -2152,12 +2152,13 @@ html body #projects .recent-project-card.search-hit{
                             <input type="text" id="projectSearchInput" onkeyup="handleProjectSearch(event)" placeholder="Enter Project Details" class="w-full bg-transparent border-none pl-4 pr-1 py-1.5 text-xs text-slate-800 focus:outline-none">
                         </div>
 
-                        <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
+                                                <button type="button" id="searchIconBtn" onclick="toggleSearchDropdown(event)" title="Search Project"
                                 class="nav-icon-btn nav-adaptive w-10 h-10 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 relative z-10">
                             <i class="fa-solid fa-magnifying-glass text-sm"></i>
                         </button>
+
+                        <div id="searchResultFeedback" class="hidden"></div>
                     </div>
-                    <div id="searchResultFeedback" class="absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border hidden z-50"></div>
 
                     <!-- Settings Icon -->
                     <div class="relative">
