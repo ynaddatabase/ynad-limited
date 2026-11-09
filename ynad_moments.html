@@ -738,7 +738,9 @@ function cardHtml(m, i) {
 function render() {
   const g = $('grid');
   if (!moments.length) { g.innerHTML = '<div class="empty">No moments added yet.</div>'; return; }
-  g.innerHTML = moments.map(cardHtml).join('');
+  const list = moments.filter(matchMoment);
+  if (!list.length) { g.innerHTML = '<div class="empty">No moments match your search.</div>'; return; }
+  g.innerHTML = list.map(cardHtml).join('');
   observeCards(g);
 }
 async function load() {
