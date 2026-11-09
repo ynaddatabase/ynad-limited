@@ -1422,6 +1422,51 @@
     .projects-table tbody.row-anim td{ animation:none; }
 }
 
+/* ===== SEARCH FEEDBACK MESSAGE (search bar-er thik niche) ===== */
+#searchResultFeedback{
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 60;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 26px rgba(15,23,42,.18);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    transform-origin: top right;
+    animation: searchFbIn .35s cubic-bezier(.22,1,.36,1) both;
+}
+#searchResultFeedback.hidden{ display: none; }
+#searchResultFeedback::before{
+    content: "";
+    position: absolute;
+    top: -5px;
+    right: 22px;
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    transform: rotate(45deg);
+}
+body.theme-effective-dark #searchResultFeedback{
+    background: #232525;
+    border-color: #3a3c3c;
+}
+body.theme-effective-dark #searchResultFeedback::before{
+    border-left-color: #3a3c3c;
+    border-top-color: #3a3c3c;
+}
+@keyframes searchFbIn{
+    from{ opacity: 0; transform: translateY(-8px) scale(.94); }
+    to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ===== SEARCH HIT HIGHLIGHT (card mode) ===== */
 html body #allProjectsGrid .recent-project-card.search-pop{
     transform: scale(1.07) !important;
