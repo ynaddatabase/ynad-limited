@@ -566,7 +566,10 @@ window.addEventListener('click', e => {
     const menu = $(m), btn = $(b); if (menu && menu.classList.contains('open') && !menu.contains(e.target) && !(btn && btn.contains(e.target))) menu.classList.remove('open');
   });
   const wrap = $('searchBoxWrap'), dd = $('searchDropdownMenu');
-  if (dd && dd.classList.contains('open') && wrap && !wrap.contains(e.target)) closeHeaderPanels();
+    if (dd && dd.classList.contains('open') && wrap && !wrap.contains(e.target) && !searchMouseDownInside) {
+    const fbBox = $('searchResultFeedback'); if (fbBox) fbBox.classList.add('hidden');
+    closeHeaderPanels();
+  }
 });
 /* ---------- team search (token wise, shob field e) ---------- */
 let searchQ = '';
