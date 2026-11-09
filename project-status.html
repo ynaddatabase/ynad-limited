@@ -1514,6 +1514,18 @@ html body #allProjectsGrid .recent-project-card.search-hit{
 
                 container.replaceChildren(nav.cloneNode(true));
 
+                // index.html er shared style/script ei page-e niye ashe
+                doc.querySelectorAll('style[data-shared-header]').forEach(function (s) {
+                    const st = document.createElement('style');
+                    st.textContent = s.textContent;
+                    document.head.appendChild(st);
+                });
+                doc.querySelectorAll('script[data-shared-header]').forEach(function (s) {
+                    const sc = document.createElement('script');
+                    sc.textContent = s.textContent;
+                    document.body.appendChild(sc);
+                });
+
                 // Keep header navigation meaningful on this page.
                 const homeLink = container.querySelector('#homeContactLoginGroup a[title="Home"]');
                 const contactLink = container.querySelector('#homeContactLoginGroup a[title="Contact"]');
