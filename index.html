@@ -3304,9 +3304,11 @@ function executeSearch() {
             feedback.classList.add('hidden');
         }, 3000);
     } else {
-        feedback.className = "absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border text-red-500 font-semibold z-50";
+                feedback.className = "text-red-500";
         feedback.textContent = `No match found for "${rawQuery}".`;
-        feedback.classList.remove('hidden');
+        feedback.style.animation = 'none'; void feedback.offsetWidth; feedback.style.animation = '';
+        clearTimeout(feedback._t);
+        feedback._t = setTimeout(() => feedback.classList.add('hidden'), 3000);
     }
 }
 
