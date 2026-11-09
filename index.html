@@ -2152,6 +2152,55 @@ html body #projects .recent-project-card.search-hit{
     box-shadow: 0 0 0 2px #d97706, 0 14px 30px rgba(15,23,42,.18) !important;
 }
 </style>
+
+<style data-shared-header>
+/* ===== SHARED SEARCH FEEDBACK (index.html theke sob page-e jay) ===== */
+#searchResultFeedback{
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 60 !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 26px rgba(15,23,42,.18) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+    transform-origin: top right;
+    animation: searchFbIn .35s cubic-bezier(.22,1,.36,1) both;
+}
+#searchResultFeedback.hidden{ display: none !important; }
+#searchBoxWrap:not(.search-open) #searchResultFeedback{ display: none !important; }
+#searchResultFeedback::before{
+    content: "";
+    position: absolute;
+    top: -5px;
+    right: 22px;
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    transform: rotate(45deg);
+}
+body.theme-effective-dark #searchResultFeedback{
+    background: #232525 !important;
+    border-color: #3a3c3c !important;
+}
+body.theme-effective-dark #searchResultFeedback::before{
+    border-left-color: #3a3c3c;
+    border-top-color: #3a3c3c;
+}
+@keyframes searchFbIn{
+    from{ opacity: 0; transform: translateY(-8px) scale(.94); }
+    to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
 </head>
 
 <body class="bg-white text-slate-800">
