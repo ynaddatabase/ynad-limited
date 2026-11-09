@@ -3262,7 +3262,7 @@ function executeSearch() {
 // Card-er bahire (ba search box-er bahire) jekono jaygay click korle stroke chole jabe
 document.addEventListener('click', function (e) {
     if (!document.querySelector('#mainProjectSlider .search-hit, #mainProjectSlider .search-pop')) return;
-    if (e.target.closest('.search-hit') || e.target.closest('.search-pop') || e.target.closest('#searchBoxWrap')) return;
+    if (searchMouseDownInside || e.target.closest('.search-hit') || e.target.closest('.search-pop') || e.target.closest('#searchBoxWrap')) return;
     clearSearchHighlights();
 });
 
