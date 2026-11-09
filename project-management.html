@@ -283,7 +283,10 @@ addEventListener('click',e=>{
   const u=$('userDropdownMenu'),s=$('settingsDropdownMenu'),w=$('searchBoxWrap');
   if(u&&!u.contains(e.target)&&!$('userProfileBtn').contains(e.target))u.classList.remove('open');
   if(s&&!s.contains(e.target)&&!$('settingsIconBtn').contains(e.target))s.classList.remove('open');
-  if(w&&!w.contains(e.target))closeDrops();
+    if(w&&!w.contains(e.target)&&!searchMouseDownInside){
+    $('searchResultFeedback')?.classList.add('hidden');
+    closeDrops();
+  }
 });
 
 /* Search filters the table live */
