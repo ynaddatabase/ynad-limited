@@ -287,14 +287,55 @@ addEventListener('click',e=>{
 });
 
 /* Search filters the table live */
-function handleProjectSearch(e){q=e.target.value.trim().toLowerCase();render();if(e.key==='Enter')executeSearch()}
-function executeSearch(){
-  q=$('projectSearchInput').value.trim().toLowerCase();render();
-  const fb=$('searchResultFeedback'),n=filtered().length;
-  fb.className='absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border z-50 '+(n?'text-emerald-600':'text-red-500')+' font-semibold';
-  fb.textContent=n?`Found ${n} matching project(s)!`:'No match found.';
-  setTimeout(()=>{fb.classList.add('hidden');if(n)closeDrops()},3000);
+/* search box er bhitore mousedown hole (text select drag), pore bahire mouseup holeo box close hobe na */
+let searchMouseDownInside=false;
+document.addEventListener('mousedown',e=>{
+  const w=$('searchBoxWrap');
+  searchMouseDownInside=!!(w&&w.contains(e.target));
+},true);
+
+function showSearchFeedback(msg,cls){
+  const fb=$('searchResultFeedback');
+  if(!fb)return;
+  fb.className=cls;
+  fb.textContent=msg;
+  fb.style.animation='none';void fb.offsetWidth;fb.style.animation='';
+  clearTimeout(fb._t);
+  fb._t=setTimeout(()=>fb.classList.add('hidden'),3000);
 }
+function closeSearchBox(){
+  $('searchDropdownMenu')?.classList.remove('open');
+  $('searchBoxWrap')?.classList.remove('search-open');
+  $('homeContactLoginGroup')?.classList.remove('icons-pushed');
+}
+
+/* live filter: type korar sathe sathe table filter hobe */
+function handleProjectSearch(e){
+  q=e.target.value.trim().toLowerCase();
+  render();
+  if(e.key==='Enter')executeSearch();
+}
+function executeSearch(){
+  const raw=$('projectSearchInput').value.trim();
+  q=raw.toLowerCase();
+  render();
+  if(!raw)return;
+  const n=filtered().length;
+  if(n){
+    showSearchFeedback(`Found ${n} matching project(s)!`,'text-emerald-600');
+    setTimeout(closeSearchBox,3000);
+  }else{
+    showSearchFeedback(`No match found for "${raw}".`,'text-red-500');
+  }
+}
+
+/* Esc chaple: search text clear + sob row phire ashbe */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  const input=$('projectSearchInput');
+  if(input)input.value='';
+  if(q){q='';render()}
+});
 
 /* Theme */
 function setThemeMode(mode){
