@@ -2256,8 +2256,9 @@ html body #allProjectsGrid .recent-project-card.search-hit{
         function showSearchFeedback(msg, cls) {
             const fb = document.getElementById('searchResultFeedback');
             if (!fb) return;
-            fb.className = 'absolute right-24 top-16 text-[11px] bg-white px-3 py-1 rounded shadow-md border font-semibold z-50 ' + cls;
+            fb.className = cls;
             fb.textContent = msg;
+            fb.style.animation = 'none'; void fb.offsetWidth; fb.style.animation = '';
             clearTimeout(fb._t);
             fb._t = setTimeout(() => fb.classList.add('hidden'), 3000);
         }
