@@ -782,7 +782,7 @@ function renderResigned() {
 }
 function render() {
   const g = $('grid'), list = activeList();
-  g.innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="empty">No team members added yet.</div>';
+  g.innerHTML = list.length ? list.map(cardHtml).join('') : `<div class="empty">${searchQ ? 'No members match your search.' : 'No team members added yet.'}</div>`;
   observeCards(g); markLoadedImages(g); renderResigned();
 }
 async function load() {
