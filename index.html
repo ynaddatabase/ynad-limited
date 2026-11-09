@@ -4740,7 +4740,7 @@ function closeMenuWithEffect() {
         }
     }, true);
 
-    // Esc: text clear + card stroke clear + table filter reset
+    // Esc: text clear + card stroke clear + table filter reset + faka search bar-e Enter
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         const input = document.getElementById('projectSearchInput');
@@ -4751,6 +4751,12 @@ function closeMenuWithEffect() {
         if (typeof window.clearSearchHighlights === 'function') window.clearSearchHighlights();
         const fb = document.getElementById('searchResultFeedback');
         if (fb) fb.classList.add('hidden');
+
+        // Search bar khola thakle: faka input diye Enter press-er moto kaj koro
+        const dd = document.getElementById('searchDropdownMenu');
+        if (input && dd && dd.classList.contains('open')) {
+            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+        }
     });
 })();
 </script>
