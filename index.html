@@ -3030,6 +3030,8 @@ if (currentScrollY <= 4) {
             const searchDropdown = document.getElementById('searchDropdownMenu');
             if (searchDropdown && searchDropdown.classList.contains('open')) {
                     if (searchBoxWrap && !searchBoxWrap.contains(e.target) && !searchMouseDownInside) {
+                    const fbBox = document.getElementById('searchResultFeedback');
+                    if (fbBox) fbBox.classList.add('hidden');
                     searchDropdown.classList.remove('open');
                     searchBoxWrap.classList.remove('search-open');
                     const iconGroup = document.getElementById('homeContactLoginGroup');
