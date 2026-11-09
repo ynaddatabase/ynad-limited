@@ -4713,5 +4713,40 @@ function closeMenuWithEffect() {
             }
         });
     </script>
+
+<script data-shared-header>
+(function () {
+    if (window.__ynadSharedSearchReady) return;
+    window.__ynadSharedSearchReady = true;
+
+    // Search box-er bhitore mousedown hoye bahire mouseup holeo (text select drag)
+    // box bondho hobe na, card highlight-o muchbe na.
+    let downInside = false;
+    document.addEventListener('mousedown', function (e) {
+        const wrap = document.getElementById('searchBoxWrap');
+        downInside = !!(wrap && wrap.contains(e.target));
+    }, true);
+    window.addEventListener('click', function (e) {
+        const wrap = document.getElementById('searchBoxWrap');
+        if (downInside && wrap && !wrap.contains(e.target)) {
+            downInside = false;
+            e.stopImmediatePropagation();
+        }
+    }, true);
+
+    // Esc: text clear + card stroke clear + table filter reset
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        const input = document.getElementById('projectSearchInput');
+        if (input && input.value) {
+            input.value = '';
+            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }));
+        }
+        if (typeof window.clearSearchHighlights === 'function') window.clearSearchHighlights();
+        const fb = document.getElementById('searchResultFeedback');
+        if (fb) fb.classList.add('hidden');
+    });
+})();
+</script>
 </body>
 </html>
