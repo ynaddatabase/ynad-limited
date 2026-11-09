@@ -4753,12 +4753,6 @@ function closeMenuWithEffect() {
         if (typeof window.clearSearchHighlights === 'function') window.clearSearchHighlights();
         const fb = document.getElementById('searchResultFeedback');
         if (fb) fb.classList.add('hidden');
-
-        // Search bar khola thakle: faka input diye Enter press-er moto kaj koro
-        const dd = document.getElementById('searchDropdownMenu');
-        if (input && dd && dd.classList.contains('open')) {
-            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
-        }
     });
 })();
 </script>
