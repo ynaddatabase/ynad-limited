@@ -2300,7 +2300,7 @@ html body #allProjectsGrid .recent-project-card.search-hit{
         // Card-er bahire jekono jaygay click korle stroke chole jabe
         document.addEventListener('click', function (e) {
             if (!document.querySelector('#allProjectsGrid .search-hit, #allProjectsGrid .search-pop')) return;
-            if (e.target.closest('.search-hit') || e.target.closest('.search-pop') || e.target.closest('#searchBoxWrap')) return;
+            if (searchMouseDownInside || e.target.closest('.search-hit') || e.target.closest('.search-pop') || e.target.closest('#searchBoxWrap')) return;
             clearSearchHighlights();
         });
 
